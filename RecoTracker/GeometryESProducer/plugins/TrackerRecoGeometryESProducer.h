@@ -15,6 +15,7 @@ class  TrackerRecoGeometryESProducer: public edm::ESProducer{
   std::unique_ptr<GeometricSearchTracker> produce(const TrackerRecoGeometryRecord &);
  private:
  std::string geoLabel;
+ bool _usePhase2Stacks;
 };
 
 
