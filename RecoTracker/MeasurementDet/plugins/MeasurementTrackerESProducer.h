@@ -17,6 +17,7 @@ class  dso_hidden MeasurementTrackerESProducer: public edm::ESProducer{
   std::string pixelCPEName;
   std::string stripCPEName;
   std::string matcherName;
+  std::string phase2matcherName;
   std::string phase2TrackerCPEName;
 };
 
