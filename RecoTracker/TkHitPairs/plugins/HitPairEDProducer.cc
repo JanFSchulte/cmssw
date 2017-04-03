@@ -103,7 +103,13 @@ namespace {
 
         for(SeedingLayerSetsHits::SeedingLayerSet layerSet: regionLayers.layerPairs()) {
           auto doublets = generator_.doublets(region, iEvent, iSetup, layerSet, *hitCachePtr);
+
           LogTrace("HitPairEDProducer") << " created " << doublets.size() << " doublets for layers " << layerSet[0].index() << "," << layerSet[1].index();
+          for(unsigned int i = 0; i < doublets.size(); ++i){
+            LogTrace("HitPairEDProducer") << " \thit in inner layer " << doublets.hit(i,HitDoublets::layer::inner)->geographicalId().rawId();
+            LogTrace("HitPairEDProducer") << " \thit in outer layer " << doublets.hit(i,HitDoublets::layer::outer)->geographicalId().rawId();
+          }
+
           if(doublets.empty()) continue; // don't bother if no pairs from these layers
           nDoublets += doublets.size();
           if (nDoublets >= maxElementTotal_){
