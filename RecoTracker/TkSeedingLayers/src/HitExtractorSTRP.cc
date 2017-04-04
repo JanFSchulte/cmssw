@@ -197,6 +197,15 @@ HitExtractor::Hits HitExtractorSTRP::hits(const TkTransientTrackingRecHitBuilder
       range2SeedingHits( *stereoHits, result, tTopo->tibDetIdLayerComparator(theIdLayer)); 
       if (skipClusters) cleanedOfClusters(ttrhBuilder, ev,result,false,cleanFrom);
     }
+    if (hasVectorHits) {
+      LogError("HitExtractorSTRP")<<"TIB is not supposed to be in Phase2 TRK detector configuration. What follows have never been checked before! ";
+      edm::Handle<VectorHitCollectionNew> vectorHits;
+      ev.getByToken( theVectorHits, vectorHits);
+      if (skipClusters) cleanFrom=result.size();
+        range2SeedingHits( *vectorHits, result, tTopo->tibDetIdLayerComparator(theIdLayer));
+        if (skipClusters) cleanedOfClusters(ttrhBuilder, ev,result,false,cleanFrom);
+    }
+      
   }
   
   //
@@ -253,7 +262,14 @@ HitExtractor::Hits HitExtractorSTRP::hits(const TkTransientTrackingRecHitBuilder
       ev.getByToken( theVectorHits, vectorHits);
       //FIXME: check the skipClusters with VHits
       if (skipClusters) cleanFrom=result.size();
-      range2SeedingHits( *vectorHits, result, tTopo->tobDetIdLayerComparator(theIdLayer));
+      auto getter = tTopo->tidDetIdWheelComparator(theSide,theIdLayer);
+      VectorHitCollection::Range range = vectorHits->equal_range(getter.first, getter.second);
+      for (VectorHitCollection::const_iterator it = range.first; it != range.second; ++it) {
+        int ring = tTopo->tidRing( it->detId() );  if (!ringRange(ring)) continue;
+        for (VectorHitCollection::DetSet::const_iterator hit = it->begin(), end = it->end(); hit != end; ++hit) {
+          result.emplace_back(*hit);
+        }
+      }
       if (skipClusters) cleanedOfClusters(ttrhBuilder, ev,result,false,cleanFrom);
     }
   }
@@ -318,6 +334,7 @@ HitExtractor::Hits HitExtractorSTRP::hits(const TkTransientTrackingRecHitBuilder
   //
   else if (theLayerSubDet == GeomDetEnumerators::TEC) {
     LogTrace("HitExtractorSTRP")<<"Getting hits into the TEC";
+<<<<<<< HEAD
       if (hasMatchedHits) {
           edm::Handle<SiStripMatchedRecHit2DCollection> matchedHits;
           ev.getByToken( theMatchedHits, matchedHits);
@@ -346,8 +363,66 @@ HitExtractor::Hits HitExtractorSTRP::hits(const TkTransientTrackingRecHitBuilder
               }
           }
 	  if (skipClusters) cleanedOfClusters(ttrhBuilder, ev,result,false,cleanFrom);
+=======
+    if (hasMatchedHits) {
+        edm::Handle<SiStripMatchedRecHit2DCollection> matchedHits;
+        ev.getByToken( theMatchedHits, matchedHits);
+        if (skipClusters) cleanFrom=result.size();
+        auto getter = tTopo->tecDetIdWheelComparator(theSide,theIdLayer);
+        SiStripMatchedRecHit2DCollection::Range range = matchedHits->equal_range(getter.first, getter.second);
+        for (SiStripMatchedRecHit2DCollection::const_iterator it = range.first; it != range.second; ++it) {
+            int ring = tTopo->tecRing( it->detId() );  if (!ringRange(ring)) continue;
+            for (SiStripMatchedRecHit2DCollection::DetSet::const_iterator hit = it->begin(), end = it->end(); hit != end; ++hit) {
+                result.emplace_back(*hit);
+            }
+        }
+        if (skipClusters) cleanedOfClusters(ttrhBuilder, ev,result,true,cleanFrom);
+    }
+    if (hasRPhiHits) {
+        edm::Handle<SiStripRecHit2DCollection> rphiHits;
+        ev.getByToken( theRPhiHits, rphiHits);
+        if (skipClusters) cleanFrom=result.size();
+        auto getter = tTopo->tecDetIdWheelComparator(theSide,theIdLayer);
+        SiStripRecHit2DCollection::Range range = rphiHits->equal_range(getter.first, getter.second);
+        for (SiStripRecHit2DCollection::const_iterator it = range.first; it != range.second; ++it) {
+            int ring = tTopo->tecRing( it->detId() );  if (!ringRange(ring)) continue;
+            if ((SiStripDetId(it->detId()).partnerDetId() != 0) && hasSimpleRphiHitsCleaner) continue;  // this is a brutal "cleaning". Add something smarter in the future
+            for (SiStripRecHit2DCollection::DetSet::const_iterator hit = it->begin(), end = it->end(); hit != end; ++hit) {
+                result.emplace_back(*hit);
+            }
+        }
+        if (skipClusters) cleanedOfClusters(ttrhBuilder, ev,result,false,cleanFrom);
+>>>>>>> add seeding in TID1/2
 
+    }
+    if (hasStereoHits) {
+        edm::Handle<SiStripRecHit2DCollection> stereoHits;
+        ev.getByToken( theStereoHits, stereoHits);
+        if (skipClusters) cleanFrom=result.size();
+        auto getter = tTopo->tecDetIdWheelComparator(theSide,theIdLayer);
+        SiStripRecHit2DCollection::Range range = stereoHits->equal_range(getter.first, getter.second);
+        for (SiStripRecHit2DCollection::const_iterator it = range.first; it != range.second; ++it) {
+            int ring = tTopo->tecRing( it->detId() );  if (!ringRange(ring)) continue;
+            for (SiStripRecHit2DCollection::DetSet::const_iterator hit = it->begin(), end = it->end(); hit != end; ++hit) {
+                result.emplace_back(*hit);
+            }
+        }
+        if (skipClusters) cleanedOfClusters(ttrhBuilder, ev,result,false,cleanFrom);
+    }
+    if (hasVectorHits) {
+      LogError("HitExtractorSTRP")<<"TEC is not supposed to be in Phase2 TRK detector configuration. What follows have never been checked before! ";
+      edm::Handle<VectorHitCollectionNew> vectorHits;
+      ev.getByToken( theVectorHits, vectorHits);
+      if (skipClusters) cleanFrom=result.size();
+      auto getter = tTopo->tidDetIdWheelComparator(theSide,theIdLayer);
+      VectorHitCollection::Range range = vectorHits->equal_range(getter.first, getter.second);
+      for (VectorHitCollection::const_iterator it = range.first; it != range.second; ++it) {
+        int ring = tTopo->tidRing( it->detId() );  if (!ringRange(ring)) continue;
+        for (VectorHitCollection::DetSet::const_iterator hit = it->begin(), end = it->end(); hit != end; ++hit) {
+          result.emplace_back(*hit);
+        }
       }
+<<<<<<< HEAD
       if (hasStereoHits) {
           edm::Handle<SiStripRecHit2DCollection> stereoHits;
           ev.getByToken( theStereoHits, stereoHits);
@@ -362,6 +437,10 @@ HitExtractor::Hits HitExtractorSTRP::hits(const TkTransientTrackingRecHitBuilder
           }
 	  if (skipClusters) cleanedOfClusters(ttrhBuilder, ev,result,false,cleanFrom);
       }
+=======
+      if (skipClusters) cleanedOfClusters(ttrhBuilder, ev,result,false,cleanFrom);
+    }
+>>>>>>> add seeding in TID1/2
   }
 
   LogDebug("HitExtractorSTRP")<<" giving: "<<result.size()<<" out for charge cut " << minGoodCharge;
