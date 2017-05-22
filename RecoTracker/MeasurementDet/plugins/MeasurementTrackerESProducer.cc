@@ -146,7 +146,8 @@ MeasurementTrackerESProducer::produce(const CkfComponentsRecord& iRecord)
 
 
   if(phase2TrackerCPEName != ""){
-      iRecord.getRecord<TkStripCPERecord>().get(phase2TrackerCPEName,phase2TrackerCPE);
+<<<<<<< HEAD
+      iRecord.getRecord<TkPhase2OTCPERecord>().get(phase2TrackerCPEName,phase2TrackerCPE);
       return             std::make_unique<MeasurementTrackerImpl>(pset_,
 							          pixelCPE.product(),
 							          stripCPE.product(),
