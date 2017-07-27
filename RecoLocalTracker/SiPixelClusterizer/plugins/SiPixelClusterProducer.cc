@@ -168,7 +168,7 @@ void SiPixelClusterProducer::fillDescriptions(edm::ConfigurationDescriptions& de
       ++numberOfDetUnits;
 
       //  LogDebug takes very long time, get rid off.
-      //LogDebug("SiStripClusterizer") << "[SiPixelClusterProducer::run] DetID" << DSViter->id;
+      LogTrace("SiPixelClusterProducer") << "[SiPixelClusterProducer::run] DetID" << DSViter->detId();
 
       std::vector<short> badChannels; 
       DetId detIdObject(DSViter->detId());
@@ -203,9 +203,9 @@ void SiPixelClusterProducer::fillDescriptions(edm::ConfigurationDescriptions& de
       }
     } // end of DetUnit loop
     
-    //LogDebug ("SiPixelClusterProducer") << " Executing " 
-    //      << clusterMode_ << " resulted in " << numberOfClusters
-    //				    << " SiPixelClusters in " << numberOfDetUnits << " DetUnits."; 
+    LogDebug ("SiPixelClusterProducer") << " Executing " 
+          << clusterMode_ << " resulted in " << numberOfClusters
+    				    << " SiPixelClusters in " << numberOfDetUnits << " DetUnits."; 
   }
 
 
