@@ -6,6 +6,9 @@
 #include "DataFormats/Math/interface/deltaPhi.h"
 #include "RecoTracker/MeasurementDet/interface/MeasurementTrackerEvent.h"
 
+#include "DataFormats/Candidate/interface/Candidate.h"
+#include "DataFormats/Math/interface/deltaPhi.h"
+
 #include <array>
 #include <limits>
 
@@ -15,10 +18,11 @@ namespace {
   }
 }
 
-AreaSeededTrackingRegionsBuilder::AreaSeededTrackingRegionsBuilder(const edm::ParameterSet& regPSet, edm::ConsumesCollector& iC) {
+AreaSeededTrackingRegionsBuilder::AreaSeededTrackingRegionsBuilder(const edm::ParameterSet& regPSet, edm::ConsumesCollector& iC):
+ candidates_(regPSet, iC)
+ {
   m_extraPhi = regPSet.getParameter<double>("extraPhi");
   m_extraEta = regPSet.getParameter<double>("extraEta");
-
   // RectangularEtaPhiTrackingRegion parameters:
   m_ptMin            = regPSet.getParameter<double>("ptMin");
   m_originRadius     = regPSet.getParameter<double>("originRadius");
@@ -40,7 +44,9 @@ void AreaSeededTrackingRegionsBuilder::fillDescriptions(edm::ParameterSetDescrip
 
   desc.add<std::string>("whereToUseMeasurementTracker", "Never");
   desc.add<edm::InputTag>("measurementTrackerName", edm::InputTag(""));
-
+  //edm::ParameterSetDescription descRegion; 
+  Candidates::fillDescriptions(desc);
+ //desc.add<edm::ParameterSetDescription>("RegionPSet", descRegion);
   desc.add<bool>("searchOpt", false);
 }
 
@@ -52,7 +58,7 @@ AreaSeededTrackingRegionsBuilder::Builder AreaSeededTrackingRegionsBuilder::begi
     e.getByToken(token_measurementTracker, hmte);
     builder.setMeasurementTracker(hmte.product());
   }
-
+  const auto candidates = candidates_.objects(e);
   return builder;
 }
 
@@ -72,6 +78,14 @@ std::vector<std::unique_ptr<TrackingRegion> > AreaSeededTrackingRegionsBuilder::
 }
 
 std::unique_ptr<TrackingRegion> AreaSeededTrackingRegionsBuilder::Builder::region(const Origin& origin, const std::vector<Area>& areas) const {
+
+
+  int n_objects = 0;
+  if( candidates.first.isValid() ){
+    n_objects = candidates.first->size();
+  }
+
+
   float minEta=std::numeric_limits<float>::max(), maxEta=std::numeric_limits<float>::lowest();
   float minPhi=std::numeric_limits<float>::max(), maxPhi=std::numeric_limits<float>::lowest();
 
@@ -217,29 +231,149 @@ std::unique_ptr<TrackingRegion> AreaSeededTrackingRegionsBuilder::Builder::regio
 
   const auto meanEta = (minEta+maxEta)/2.f;
   const auto meanPhi = (minPhi+maxPhi)/2.f;
-  const auto deltaEta = maxEta-meanEta + m_conf->m_extraEta;
-  const auto deltaPhi = maxPhi-meanPhi + m_conf->m_extraPhi;
+  const auto dEta = maxEta-meanEta + m_conf->m_extraEta;
+  const auto dPhi = maxPhi-meanPhi + m_conf->m_extraPhi;
 
-  const auto x = std::cos(meanPhi);
-  const auto y = std::sin(meanPhi);
-  const auto z = (x*x+y*y)/std::tan(2.f*std::atan(std::exp(-meanEta))); // simplify?
 
-  LogTrace("AreaSeededTrackingRegionsBuilder") << "Direction x,y,z " << x << "," << y << "," << z
+  if (n_objects > 0){
+	for(const auto& object : *candidates.first) {
+		float dEta_Cand = candidates.second.first;
+		float dPhi_Cand = candidates.second.second;
+	       	double eta_Cand = object.eta();
+                double phi_Cand = object.phi();
+          	double dEta_Cand_Point = std::abs(eta_Cand-meanEta);
+          	double dPhi_Cand_Point = std::abs(deltaPhi(phi_Cand,meanPhi));
+
+		if(dEta_Cand_Point > (dEta_Cand + dEta) || dPhi_Cand_Point > (dPhi_Cand + dPhi)) continue;
+
+		double maxPhiTemp = 0.;
+		double minPhiTemp = 0.;
+		double maxEtaTemp = 0.;
+		double minEtaTemp = 0.;
+
+		if (meanPhi <= phi_Cand){
+			maxPhiTemp = meanPhi + dPhi;
+			if (maxPhiTemp > phi_Cand + dPhi_Cand){
+				maxPhiTemp = phi_Cand + dPhi_Cand;
+			}
+			minPhiTemp = phi_Cand - dPhi_Cand;
+			if (minPhiTemp < meanPhi - dPhi){
+				minPhiTemp = meanPhi - dPhi;
+			}	
+		}		
+		else if (meanPhi > phi_Cand){
+			maxPhiTemp = phi_Cand + dPhi_Cand;
+			if (maxPhiTemp > meanPhi + dPhi){
+				maxPhiTemp = meanPhi + dPhi;
+			}
+			minPhiTemp = meanPhi - dPhi;
+			if (minPhiTemp < phi_Cand - dPhi_Cand){
+				minPhiTemp = phi_Cand - dPhi_Cand;
+			}	
+		}
+
+		if (meanEta <= eta_Cand){
+			maxEtaTemp = meanEta + dEta;
+			if (maxEtaTemp > eta_Cand + dEta_Cand){
+				maxEtaTemp = eta_Cand + dEta_Cand;
+			}
+			minEtaTemp = eta_Cand - dEta_Cand;
+			if (minEtaTemp < meanEta - dEta){
+				minEtaTemp = meanEta - dEta;
+			}	
+		}		
+		else if (meanEta > eta_Cand){
+			maxEtaTemp = eta_Cand + dEta_Cand;
+			if (maxEtaTemp > meanEta + dEta){
+				maxEtaTemp = meanEta + dEta;
+			}
+			minEtaTemp = meanEta - dEta;
+			if (minEtaTemp < eta_Cand - dEta_Cand){
+				minEtaTemp = eta_Cand - dEta_Cand;
+			}	
+		}
+
+		const auto meanEtaTemp = (minEtaTemp+maxEtaTemp)/2.f;
+                const auto meanPhiTemp = (minPhiTemp+maxPhiTemp)/2.f;
+                const auto dEtaTemp = maxEtaTemp-meanEtaTemp;
+                const auto dPhiTemp = maxPhiTemp-meanPhiTemp;
+
+
+
+		const auto x = std::cos(meanPhiTemp);
+  	  	const auto y = std::sin(meanPhiTemp);
+  	  	const auto z = (x*x+y*y)/std::tan(2.f*std::atan(std::exp(-meanEtaTemp))); // simplify?
+
+  		LogTrace("AreaSeededTrackingRegionsBuilder") << "Direction x,y,z " << x << "," << y << "," << z
+                                               << " eta,phi " << meanEtaTemp << "," << meanPhiTemp
+                                               << " window eta " << (meanEtaTemp-dEtaTemp) << "," << (meanEtaTemp+dEtaTemp)
+                                               << " phi " << (meanPhiTemp-dPhiTemp) << "," << (meanPhiTemp+dPhiTemp);
+
+  		return std::make_unique<RectangularEtaPhiTrackingRegion>(
+      			GlobalVector(x,y,z),
+      			origin.first, // GlobalPoint
+      			m_conf->m_ptMin,
+      			m_conf->m_originRadius,
+      			origin.second,
+      			dEtaTemp,
+      			dPhiTemp,
+      			m_conf->m_whereToUseMeasurementTracker,
+      			m_conf->m_precise,
+      			m_measurementTracker,
+      			m_conf->m_searchOpt
+  		);  
+	}
+
+	//if (!found){
+		const auto x = std::cos(meanPhi);
+  	  	const auto y = std::sin(meanPhi);
+  	 	const auto z = (x*x+y*y)/std::tan(2.f*std::atan(std::exp(-meanEta))); // simplify?
+
+  		LogTrace("AreaSeededTrackingRegionsBuilder") << "Direction x,y,z " << x << "," << y << "," << z
                                                << " eta,phi " << meanEta << "," << meanPhi
-                                               << " window eta " << (meanEta-deltaEta) << "," << (meanEta+deltaEta)
-                                               << " phi " << (meanPhi-deltaPhi) << "," << (meanPhi+deltaPhi);
+                                               << " window eta " << (meanEta-dEta) << "," << (meanEta+dEta)
+                                               << " phi " << (meanPhi-dPhi) << "," << (meanPhi+dPhi);
+  		return std::make_unique<RectangularEtaPhiTrackingRegion>(
+      			GlobalVector(x,y,z),
+      			origin.first, // GlobalPoint
+      			m_conf->m_ptMin,
+      			m_conf->m_originRadius,
+      			origin.second,
+      			0,
+      			0,
+      			m_conf->m_whereToUseMeasurementTracker,
+      			m_conf->m_precise,
+      			m_measurementTracker,
+      			m_conf->m_searchOpt
+  		);  
 
-  return std::make_unique<RectangularEtaPhiTrackingRegion>(
-      GlobalVector(x,y,z),
-      origin.first, // GlobalPoint
-      m_conf->m_ptMin,
-      m_conf->m_originRadius,
-      origin.second,
-      deltaEta,
-      deltaPhi,
-      m_conf->m_whereToUseMeasurementTracker,
-      m_conf->m_precise,
-      m_measurementTracker,
-      m_conf->m_searchOpt
-  );  
+
+
+	//}
+
+  }
+  else{
+  	const auto x = std::cos(meanPhi);
+  	const auto y = std::sin(meanPhi);
+  	const auto z = (x*x+y*y)/std::tan(2.f*std::atan(std::exp(-meanEta))); // simplify?
+
+  	LogTrace("AreaSeededTrackingRegionsBuilder") << "Direction x,y,z " << x << "," << y << "," << z
+                                               << " eta,phi " << meanEta << "," << meanPhi
+                                               << " window eta " << (meanEta-dEta) << "," << (meanEta+dEta)
+                                               << " phi " << (meanPhi-dPhi) << "," << (meanPhi+dPhi);
+
+  	return std::make_unique<RectangularEtaPhiTrackingRegion>(
+      		GlobalVector(x,y,z),
+      		origin.first, // GlobalPoint
+      		m_conf->m_ptMin,
+      		m_conf->m_originRadius,
+      		origin.second,
+      		dEta,
+      		dPhi,
+      		m_conf->m_whereToUseMeasurementTracker,
+      		m_conf->m_precise,
+      		m_measurementTracker,
+      		m_conf->m_searchOpt
+  	);  
+  }
 }
