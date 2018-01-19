@@ -8,6 +8,7 @@
 
 #include "DataFormats/Candidate/interface/Candidate.h"
 #include "DataFormats/Math/interface/deltaPhi.h"
+#include "DataFormats/Math/interface/normalizedPhi.h"
 
 #include <array>
 #include <limits>
@@ -45,7 +46,7 @@ void AreaSeededTrackingRegionsBuilder::fillDescriptions(edm::ParameterSetDescrip
   desc.add<std::string>("whereToUseMeasurementTracker", "Never");
   desc.add<edm::InputTag>("measurementTrackerName", edm::InputTag(""));
   //edm::ParameterSetDescription descRegion; 
-  Candidates::fillDescriptions(desc);
+  TrackingSeedCandidates::fillDescriptions(desc);
  //desc.add<edm::ParameterSetDescription>("RegionPSet", descRegion);
   desc.add<bool>("searchOpt", false);
 }
@@ -239,64 +240,35 @@ std::unique_ptr<TrackingRegion> AreaSeededTrackingRegionsBuilder::Builder::regio
 	for(const auto& object : *candidates.first) {
 		float dEta_Cand = candidates.second.first;
 		float dPhi_Cand = candidates.second.second;
-	       	double eta_Cand = object.eta();
-                double phi_Cand = object.phi();
-          	double dEta_Cand_Point = std::abs(eta_Cand-meanEta);
-          	double dPhi_Cand_Point = std::abs(deltaPhi(phi_Cand,meanPhi));
+	       	float eta_Cand = object.eta();
+                float phi_Cand = object.phi();
+          	float dEta_Cand_Point = std::abs(eta_Cand-meanEta);
+          	float dPhi_Cand_Point = std::abs(deltaPhi(phi_Cand,meanPhi));
 
 		if(dEta_Cand_Point > (dEta_Cand + dEta) || dPhi_Cand_Point > (dPhi_Cand + dPhi)) continue;
 
-		double maxPhiTemp = 0.;
-		double minPhiTemp = 0.;
-		double maxEtaTemp = 0.;
-		double minEtaTemp = 0.;
+		float  etaMin_RoI = std::max(eta_Cand-dEta_Cand,meanEta-dEta);
+		float  etaMax_RoI = std::min(eta_Cand+dEta_Cand,meanEta+dEta);
 
-		if (meanPhi <= phi_Cand){
-			maxPhiTemp = meanPhi + dPhi;
-			if (maxPhiTemp > phi_Cand + dPhi_Cand){
-				maxPhiTemp = phi_Cand + dPhi_Cand;
-			}
-			minPhiTemp = phi_Cand - dPhi_Cand;
-			if (minPhiTemp < meanPhi - dPhi){
-				minPhiTemp = meanPhi - dPhi;
-			}	
-		}		
-		else if (meanPhi > phi_Cand){
-			maxPhiTemp = phi_Cand + dPhi_Cand;
-			if (maxPhiTemp > meanPhi + dPhi){
-				maxPhiTemp = meanPhi + dPhi;
-			}
-			minPhiTemp = meanPhi - dPhi;
-			if (minPhiTemp < phi_Cand - dPhi_Cand){
-				minPhiTemp = phi_Cand - dPhi_Cand;
-			}	
-		}
+		float  phi_Cand_minus  = normalizedPhi(phi_Cand-dPhi_Cand);
+		float  phi_Point_minus = normalizedPhi(meanPhi-dPhi);
+		float  phi_Cand_plus  = normalizedPhi(phi_Cand+dPhi_Cand);
+		float  phi_Point_plus = normalizedPhi(meanPhi+dPhi);
 
-		if (meanEta <= eta_Cand){
-			maxEtaTemp = meanEta + dEta;
-			if (maxEtaTemp > eta_Cand + dEta_Cand){
-				maxEtaTemp = eta_Cand + dEta_Cand;
-			}
-			minEtaTemp = eta_Cand - dEta_Cand;
-			if (minEtaTemp < meanEta - dEta){
-				minEtaTemp = meanEta - dEta;
-			}	
-		}		
-		else if (meanEta > eta_Cand){
-			maxEtaTemp = eta_Cand + dEta_Cand;
-			if (maxEtaTemp > meanEta + dEta){
-				maxEtaTemp = meanEta + dEta;
-			}
-			minEtaTemp = meanEta - dEta;
-			if (minEtaTemp < eta_Cand - dEta_Cand){
-				minEtaTemp = eta_Cand - dEta_Cand;
-			}	
-		}
+		float phiMin_RoI = deltaPhi(phi_Cand_minus,phi_Point_minus)>0. ? phi_Cand_minus : phi_Point_minus ;	
+		float phiMax_RoI = deltaPhi(phi_Cand_plus,phi_Point_plus)<0. ? phi_Cand_plus : phi_Point_plus;
 
-		const auto meanEtaTemp = (minEtaTemp+maxEtaTemp)/2.f;
-                const auto meanPhiTemp = (minPhiTemp+maxPhiTemp)/2.f;
-                const auto dEtaTemp = maxEtaTemp-meanEtaTemp;
-                const auto dPhiTemp = maxPhiTemp-meanPhiTemp;
+
+
+		const auto meanEtaTemp = (etaMin_RoI+etaMax_RoI)/2.f;
+                auto meanPhiTemp = (phiMin_RoI+phiMax_RoI)/2.f;
+		if( phiMax_RoI < phiMin_RoI ) meanPhiTemp-=M_PI;
+	        meanPhiTemp = normalizedPhi(meanPhiTemp);
+	        
+		const auto dPhiTemp = deltaPhi(phiMax_RoI,meanPhiTemp);
+                const auto dEtaTemp = etaMax_RoI-meanEtaTemp;
+
+
 
 
 
@@ -325,7 +297,7 @@ std::unique_ptr<TrackingRegion> AreaSeededTrackingRegionsBuilder::Builder::regio
 	}
 
 	//if (!found){
-		const auto x = std::cos(meanPhi);
+/*		const auto x = std::cos(meanPhi);
   	  	const auto y = std::sin(meanPhi);
   	 	const auto z = (x*x+y*y)/std::tan(2.f*std::atan(std::exp(-meanEta))); // simplify?
 
@@ -347,7 +319,8 @@ std::unique_ptr<TrackingRegion> AreaSeededTrackingRegionsBuilder::Builder::regio
       			m_conf->m_searchOpt
   		);  
 
-
+*/
+	return nullptr;
 
 	//}
 

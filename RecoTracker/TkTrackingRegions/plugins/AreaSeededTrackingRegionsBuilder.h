@@ -11,7 +11,7 @@
 #include "DataFormats/VertexReco/interface/Vertex.h"
 #include "DataFormats/VertexReco/interface/VertexFwd.h"
 
-#include "Candidates.h"
+#include "TrackingSeedCandidates.h"
 class AreaSeededTrackingRegionsBuilder {
 public:
   using Origin = std::pair<GlobalPoint, float>; // (origin, half-length in z)
@@ -83,28 +83,27 @@ public:
   private:
     const AreaSeededTrackingRegionsBuilder *m_conf = nullptr;
     const MeasurementTrackerEvent *m_measurementTracker = nullptr;
-    const Candidates::Objects candidates;
+    const TrackingSeedCandidates::Objects candidates;
   };
 
   AreaSeededTrackingRegionsBuilder(const edm::ParameterSet& regPSet, edm::ConsumesCollector&& iC): AreaSeededTrackingRegionsBuilder(regPSet, iC) {}
   AreaSeededTrackingRegionsBuilder(const edm::ParameterSet& regPSet, edm::ConsumesCollector& iC);
   ~AreaSeededTrackingRegionsBuilder() = default;
   
-  enum class MODE {GLOBAL, CANDIDATE_SEEDED};
-  static void fillDescriptions(edm::ParameterSetDescription& desc);
+	  static void fillDescriptions(edm::ParameterSetDescription& desc);
 
-  Builder beginEvent(const edm::Event& e) const;
+	  Builder beginEvent(const edm::Event& e) const;
 
-private:
-  std::vector<Area> m_areas;
-  Candidates candidates_;
+	private:
+	  std::vector<Area> m_areas;
+	  TrackingSeedCandidates candidates_;
   float m_extraPhi;
   float m_extraEta;
   float m_ptMin;
   float m_originRadius;
   bool m_precise;
   edm::EDGetTokenT<MeasurementTrackerEvent> token_measurementTracker;
-  edm::EDGetTokenT<Candidates> token_candidates;
+  edm::EDGetTokenT<TrackingSeedCandidates> token_candidates;
   RectangularEtaPhiTrackingRegion::UseMeasurementTracker m_whereToUseMeasurementTracker;
   bool m_searchOpt;
 };
