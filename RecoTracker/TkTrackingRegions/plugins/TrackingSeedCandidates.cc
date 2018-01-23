@@ -35,6 +35,7 @@ TrackingSeedCandidates::Objects TrackingSeedCandidates::objects(const edm::Event
       iEvent.getByToken( m_token_input, objects ); 
 
   }
+  std::cout << m_deltaEta_Cand << " " << m_deltaPhi_Cand << std::endl;
   std::pair <float,float> dimensions = std::make_pair(m_deltaEta_Cand,m_deltaPhi_Cand);
   result = std::make_pair(objects,dimensions); 
   return result;

@@ -59,7 +59,7 @@ AreaSeededTrackingRegionsBuilder::Builder AreaSeededTrackingRegionsBuilder::begi
     e.getByToken(token_measurementTracker, hmte);
     builder.setMeasurementTracker(hmte.product());
   }
-  const auto candidates = candidates_.objects(e);
+  builder.setCandidates( (candidates_.objects(e)));
   return builder;
 }
 
@@ -80,12 +80,11 @@ std::vector<std::unique_ptr<TrackingRegion> > AreaSeededTrackingRegionsBuilder::
 
 std::unique_ptr<TrackingRegion> AreaSeededTrackingRegionsBuilder::Builder::region(const Origin& origin, const std::vector<Area>& areas) const {
 
-
+ 
   int n_objects = 0;
-  if( candidates.first.isValid() ){
-    n_objects = candidates.first->size();
+  if( candidates->first.isValid() ){
+    n_objects = candidates->first->size();
   }
-
 
   float minEta=std::numeric_limits<float>::max(), maxEta=std::numeric_limits<float>::lowest();
   float minPhi=std::numeric_limits<float>::max(), maxPhi=std::numeric_limits<float>::lowest();
@@ -237,9 +236,9 @@ std::unique_ptr<TrackingRegion> AreaSeededTrackingRegionsBuilder::Builder::regio
 
 
   if (n_objects > 0){
-	for(const auto& object : *candidates.first) {
-		float dEta_Cand = candidates.second.first;
-		float dPhi_Cand = candidates.second.second;
+	for(const auto& object : *candidates->first) {
+		float dEta_Cand = candidates->second.first;
+		float dPhi_Cand = candidates->second.second;
 	       	float eta_Cand = object.eta();
                 float phi_Cand = object.phi();
           	float dEta_Cand_Point = std::abs(eta_Cand-meanEta);
@@ -297,7 +296,7 @@ std::unique_ptr<TrackingRegion> AreaSeededTrackingRegionsBuilder::Builder::regio
 	}
 
 	//if (!found){
-/*		const auto x = std::cos(meanPhi);
+		const auto x = std::cos(meanPhi);
   	  	const auto y = std::sin(meanPhi);
   	 	const auto z = (x*x+y*y)/std::tan(2.f*std::atan(std::exp(-meanEta))); // simplify?
 
@@ -319,9 +318,8 @@ std::unique_ptr<TrackingRegion> AreaSeededTrackingRegionsBuilder::Builder::regio
       			m_conf->m_searchOpt
   		);  
 
-*/
-	return nullptr;
 
+//	return nullptr;
 	//}
 
   }

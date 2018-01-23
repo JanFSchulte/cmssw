@@ -76,6 +76,7 @@ public:
     ~Builder() = default;
 
     void setMeasurementTracker(const MeasurementTrackerEvent *mte) { m_measurementTracker = mte; }
+    void setCandidates(const TrackingSeedCandidates::Objects cands) { candidates = &cands; }
 
     std::vector<std::unique_ptr<TrackingRegion> > regions(const Origins& origins, const std::vector<Area>& areas) const;
     std::unique_ptr<TrackingRegion> region(const Origin& origin, const std::vector<Area>& areas) const;
@@ -83,7 +84,7 @@ public:
   private:
     const AreaSeededTrackingRegionsBuilder *m_conf = nullptr;
     const MeasurementTrackerEvent *m_measurementTracker = nullptr;
-    const TrackingSeedCandidates::Objects candidates;
+    const TrackingSeedCandidates::Objects *candidates;
   };
 
   AreaSeededTrackingRegionsBuilder(const edm::ParameterSet& regPSet, edm::ConsumesCollector&& iC): AreaSeededTrackingRegionsBuilder(regPSet, iC) {}
