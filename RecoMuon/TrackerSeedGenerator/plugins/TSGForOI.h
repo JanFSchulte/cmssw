@@ -30,6 +30,7 @@
 #include "TrackingTools/TrajectoryState/interface/TrajectoryStateOnSurface.h"
 #include "TrackingTools/GeomPropagators/interface/StateOnTrackerBound.h"
 
+#include "DataFormats/Math/interface/deltaPhi.h" 
 class TSGForOI : public edm::global::EDProducer<> {
 public:
 	explicit TSGForOI(const edm::ParameterSet & iConfig);
@@ -120,9 +121,11 @@ private:
 				const MeasurementTrackerEvent &measurementTracker,
 				edm::ESHandle<Chi2MeasurementEstimatorBase>& estimator_,
 				unsigned int& numSeedsMade,
-				const double errorSF) const;
-
-
+				const double errorSF,
+				const double l2Eta) const;
+	//Find compatability between two TSOSs
+	double match_Chi2(const TrajectoryStateOnSurface& tsos1,
+        	          const TrajectoryStateOnSurface& tsos2) const;
 };
 
 #endif
