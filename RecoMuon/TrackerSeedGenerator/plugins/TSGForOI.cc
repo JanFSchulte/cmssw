@@ -147,13 +147,16 @@ void TSGForOI::produce(edm::StreamID sid, edm::Event& iEvent, const edm::EventSe
 	LogTrace("TSGForOI") << "TSGForOI::produce: looping in TOB layer " << layerCount << endl; 
 	findSeedsOnLayer(tTopo, **it, tsosAtIP,  *(propagatorAlong.get()), *(propagatorOpposite.get()), l2, 
 			 estimatorH, measurementTrackerH, numSeedsMade, numOfMaxSeeds, layerCount, foundHitlessSeed, analysedL2, out);
-	if (useBoth){
+      }
+      if (useBoth){
 	      numSeedsMade=0;
 	      foundHitlessSeed=false;
-	      findSeedsOnLayer(tTopo, **it, tsosAtMuonSystem,  *(propagatorOpposite.get()), *(propagatorOpposite.get()), l2, 
+	      for (auto it=tob.rbegin(); it!=tob.rend(); ++it) {	//This goes from outermost to innermost layer
+			LogTrace("TSGForOI") << "TSGForOI::produce: looping in TOB layer " << layerCount << endl; 
+			findSeedsOnLayer(tTopo, **it, tsosAtMuonSystem,  *(propagatorOpposite.get()), *(propagatorOpposite.get()), l2, 
 			 estimatorH, measurementTrackerH, numSeedsMade, numOfMaxSeeds, layerCount, foundHitlessSeed, analysedL2, out);
+      		}
 	}
-      }
     }
 
 
@@ -171,15 +174,16 @@ void TSGForOI::produce(edm::StreamID sid, edm::Event& iEvent, const edm::EventSe
 	LogTrace("TSGForOI") << "TSGForOI::produce: looping in TEC+ layer " << layerCount << endl; 
 	findSeedsOnLayer(tTopo, **it, tsosAtIP, *(propagatorAlong.get()), *(propagatorOpposite.get()), l2, 
 			 estimatorH, measurementTrackerH, numSeedsMade, numOfMaxSeeds, layerCount, foundHitlessSeed, analysedL2, out);
-
+	}
 	if (useBoth){
 		numSeedsMade=0;
        		foundHitlessSeed = false; 
-
-		findSeedsOnLayer(tTopo, **it, tsosAtMuonSystem,  *(propagatorOpposite.get()), *(propagatorOpposite.get()), l2, 
+      		for (auto it=tecPositive.rbegin(); it!=tecPositive.rend(); ++it) {
+			LogTrace("TSGForOI") << "TSGForOI::produce: looping in TEC+ layer " << layerCount << endl; 
+			findSeedsOnLayer(tTopo, **it, tsosAtMuonSystem,  *(propagatorOpposite.get()), *(propagatorOpposite.get()), l2, 
 			 estimatorH, measurementTrackerH, numSeedsMade, numOfMaxSeeds, layerCount, foundHitlessSeed, analysedL2, out);
-	}
-      }
+		}
+     	}
     }
 
     //		ENDCAP-
@@ -189,14 +193,16 @@ void TSGForOI::produce(edm::StreamID sid, edm::Event& iEvent, const edm::EventSe
 	LogTrace("TSGForOI") << "TSGForOI::produce: looping in TEC- layer " << layerCount << endl; 
 	findSeedsOnLayer(tTopo, **it, tsosAtIP,  *(propagatorAlong.get()), *(propagatorOpposite.get()), l2, 
 			 estimatorH, measurementTrackerH, numSeedsMade, numOfMaxSeeds, layerCount, foundHitlessSeed, analysedL2, out);
+	}
 	if (useBoth){
 		numSeedsMade=0;
     		foundHitlessSeed = false; 
-
-		findSeedsOnLayer(tTopo, **it, tsosAtMuonSystem,  *(propagatorOpposite.get()), *(propagatorOpposite.get()), l2, 
+	      	for (auto it=tecNegative.rbegin(); it!=tecNegative.rend(); ++it) {
+			LogTrace("TSGForOI") << "TSGForOI::produce: looping in TEC- layer " << layerCount << endl; 
+			findSeedsOnLayer(tTopo, **it, tsosAtMuonSystem,  *(propagatorOpposite.get()), *(propagatorOpposite.get()), l2, 
 			 estimatorH, measurementTrackerH, numSeedsMade, numOfMaxSeeds, layerCount, foundHitlessSeed, analysedL2, out);
-	}
-      }
+		}
+      	}
     }
     
 
