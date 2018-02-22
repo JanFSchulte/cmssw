@@ -7,6 +7,8 @@
 #include "FWCore/Framework/interface/ConsumesCollector.h"
 #include "DataFormats/Candidate/interface/Candidate.h"
 #include "DataFormats/Common/interface/Handle.h"
+#include "DataFormats/TrackReco/interface/Track.h"
+#include "DataFormats/TrackReco/interface/TrackFwd.h"
 
 #include <vector>
 #include <utility>
@@ -14,9 +16,9 @@
 class TrackingSeedCandidates {
 public:
 
-  enum class SeedingMode {CANDIDATE_SEEDED, GLOBAL};
-  //using Objects = std::pair< edm::Handle< reco::CandidateView > , std::pair < float, float > > ; // (origin, half-length in z)
-  using Objects = std::pair< const reco::CandidateView* , std::pair < float, float > > ; // (origin, half-length in z)
+  enum class SeedingMode {MUON_SEEDED,CANDIDATE_SEEDED, GLOBAL};
+  using Objects = std::pair< const reco::CandidateView* , std::pair < float, float > > ; 
+  using MuonObjects = std::pair< const reco::TrackCollection* , std::pair < float, float > > ; 
   TrackingSeedCandidates(const edm::ParameterSet& regPSet, edm::ConsumesCollector&& iC): TrackingSeedCandidates(regPSet, iC) {}
   TrackingSeedCandidates(const edm::ParameterSet& regPSet, edm::ConsumesCollector& iC);
   ~TrackingSeedCandidates() = default;
@@ -24,6 +26,7 @@ public:
   static void fillDescriptions(edm::ParameterSetDescription& desc);
 
   Objects objects(const edm::Event& iEvent) const;
+  MuonObjects muonObjects(const edm::Event& iEvent) const;
 
 private:
   SeedingMode m_seedingMode;
@@ -31,6 +34,7 @@ private:
   float m_deltaPhi_Cand;
  
   edm::EDGetTokenT<reco::CandidateView> m_token_input;
+  edm::EDGetTokenT<reco::TrackCollection> m_muon_token_input;
 
 };
 

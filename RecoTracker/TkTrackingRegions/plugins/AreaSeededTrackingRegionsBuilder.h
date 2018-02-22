@@ -80,6 +80,7 @@ public:
 
     void setMeasurementTracker(const MeasurementTrackerEvent *mte) { m_measurementTracker = mte; }
     void setCandidates(const TrackingSeedCandidates::Objects cands) { candidates = cands; }
+    void setMuonCandidates(const TrackingSeedCandidates::MuonObjects cands) { muonCandidates = cands; }
 
     std::vector<std::unique_ptr<TrackingRegion> > regions(const Origins& origins, const std::vector<Area>& areas) const;
     std::unique_ptr<TrackingRegion> region(const Origin& origin, const std::vector<Area>& areas) const;
@@ -92,6 +93,7 @@ public:
     const AreaSeededTrackingRegionsBuilder *m_conf = nullptr;
     const MeasurementTrackerEvent *m_measurementTracker = nullptr;
     TrackingSeedCandidates::Objects candidates;
+    TrackingSeedCandidates::MuonObjects muonCandidates;
   };
 
   AreaSeededTrackingRegionsBuilder(const edm::ParameterSet& regPSet, edm::ConsumesCollector&& iC): AreaSeededTrackingRegionsBuilder(regPSet, iC) {}

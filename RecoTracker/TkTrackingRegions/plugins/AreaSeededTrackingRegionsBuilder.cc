@@ -56,6 +56,7 @@ AreaSeededTrackingRegionsBuilder::Builder AreaSeededTrackingRegionsBuilder::begi
     builder.setMeasurementTracker(hmte.product());
   }
   builder.setCandidates( ( candidates_.objects(e)));
+  builder.setMuonCandidates( ( candidates_.muonObjects(e)));
   return builder;
 }
 
@@ -236,11 +237,13 @@ std::unique_ptr<TrackingRegion> AreaSeededTrackingRegionsBuilder::Builder::regio
   const auto dEta = maxEta-meanEta + m_conf->m_extraEta;
   const auto dPhi = maxPhi-meanPhi + m_conf->m_extraPhi;
 
-  int n_objects = 0;
-  if (candidates.first) n_objects = candidates.first->size();
+  auto useCandidates = false;
+  if (candidates.first) useCandidates = true;
+  auto useL2Muons = false;
+  if (muonCandidates.first) useL2Muons = true;
 
-  if (n_objects > 0){
-	// If we have objected used for seeding, loop over objects and find overlap with the found region. Return overlaps as tracking regions to use
+  if (useCandidates){
+	// If we have objects used for seeding, loop over objects and find overlap with the found region. Return overlaps as tracking regions to use
 	for(const auto& object : *candidates.first) {
 		float dEta_Cand = candidates.second.first;
 		float dPhi_Cand = candidates.second.second;
@@ -298,6 +301,66 @@ std::unique_ptr<TrackingRegion> AreaSeededTrackingRegionsBuilder::Builder::regio
 	return nullptr;
 
   }
+  else if (useL2Muons){
+	// If we have objects used for seeding, loop over objects and find overlap with the found region. Return overlaps as tracking regions to use
+	for(const auto& object : *muonCandidates.first) {
+		float dEta_Cand = muonCandidates.second.first;
+		float dPhi_Cand = muonCandidates.second.second;
+	       	float eta_Cand = object.eta();
+		float phi_Cand = object.phi();
+          	float dEta_Cand_Point = std::abs(eta_Cand-meanEta);
+          	float dPhi_Cand_Point = std::abs(deltaPhi(phi_Cand,meanPhi));
+
+		if(dEta_Cand_Point > (dEta_Cand + dEta) || dPhi_Cand_Point > (dPhi_Cand + dPhi)) continue;
+
+		float  etaMin_RoI = std::max(eta_Cand-dEta_Cand,meanEta-dEta);
+		float  etaMax_RoI = std::min(eta_Cand+dEta_Cand,meanEta+dEta);
+
+		float  phi_Cand_minus  = normalizedPhi(phi_Cand-dPhi_Cand);
+		float  phi_Point_minus = normalizedPhi(meanPhi-dPhi);
+		float  phi_Cand_plus  = normalizedPhi(phi_Cand+dPhi_Cand);
+		float  phi_Point_plus = normalizedPhi(meanPhi+dPhi);
+
+		float phiMin_RoI = deltaPhi(phi_Cand_minus,phi_Point_minus)>0. ? phi_Cand_minus : phi_Point_minus ;	
+		float phiMax_RoI = deltaPhi(phi_Cand_plus,phi_Point_plus)<0. ? phi_Cand_plus : phi_Point_plus;
+
+
+		const auto meanEtaTemp = (etaMin_RoI+etaMax_RoI)/2.f;
+		auto meanPhiTemp = (phiMin_RoI+phiMax_RoI)/2.f;
+		if( phiMax_RoI < phiMin_RoI ) meanPhiTemp-=M_PI;
+	        meanPhiTemp = normalizedPhi(meanPhiTemp);
+	        
+		const auto dPhiTemp = deltaPhi(phiMax_RoI,meanPhiTemp);
+		const auto dEtaTemp = etaMax_RoI-meanEtaTemp;
+
+		const auto x = std::cos(meanPhiTemp);
+  	  	const auto y = std::sin(meanPhiTemp);
+  	  	const auto z = 1./std::tan(2.f*std::atan(std::exp(-meanEtaTemp)));
+
+  		LogTrace("AreaSeededTrackingRegionsBuilder") << "Direction x,y,z " << x << "," << y << "," << z
+                                               << " eta,phi " << meanEtaTemp << "," << meanPhiTemp
+                                               << " window eta " << (meanEtaTemp-dEtaTemp) << "," << (meanEtaTemp+dEtaTemp)
+                                               << " phi " << (meanPhiTemp-dPhiTemp) << "," << (meanPhiTemp+dPhiTemp);
+
+  		return std::make_unique<RectangularEtaPhiTrackingRegion>(
+      			GlobalVector(x,y,z),
+      			origin.first, // GlobalPoint
+      			m_conf->m_ptMin,
+      			m_conf->m_originRadius,
+      			origin.second,
+      			dEtaTemp,
+      			dPhiTemp,
+      			m_conf->m_whereToUseMeasurementTracker,
+      			m_conf->m_precise,
+      			m_measurementTracker,
+      			m_conf->m_searchOpt
+  		);  
+	}
+	// Have to retun nullptr here to ensure that we always return something
+	return nullptr;
+
+  }
+
   else{
   	const auto x = std::cos(meanPhi);
   	const auto y = std::sin(meanPhi);

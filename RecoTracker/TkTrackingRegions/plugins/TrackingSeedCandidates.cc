@@ -5,7 +5,8 @@ TrackingSeedCandidates::TrackingSeedCandidates(const edm::ParameterSet& regPSet,
   //
     std::string seedingModeString = regPSet.getParameter<std::string>("seedingMode");
     if      (seedingModeString == "Candidate")      m_seedingMode = SeedingMode::CANDIDATE_SEEDED;
-    else if (seedingModeString == "Global")          m_seedingMode = SeedingMode::GLOBAL;
+    else if (seedingModeString == "Global")         m_seedingMode = SeedingMode::GLOBAL;
+    else if (seedingModeString == "L2Muon")           m_seedingMode = SeedingMode::MUON_SEEDED;
     else throw edm::Exception(edm::errors::Configuration) << "Unknown seeding mode string: "<<seedingModeString;
 
     m_deltaEta_Cand = regPSet.getParameter<double>("deltaEta_Cand"); 
@@ -16,6 +17,10 @@ TrackingSeedCandidates::TrackingSeedCandidates(const edm::ParameterSet& regPSet,
       m_token_input        = iC.consumes<reco::CandidateView>(regPSet.getParameter<edm::InputTag>("input"));
       if (m_deltaEta_Cand<0 || m_deltaPhi_Cand<0) throw edm::Exception(edm::errors::Configuration) << "Delta eta and phi parameters must be set for candidates in candidate seeding mode"; 
     }
+    else if(m_seedingMode == SeedingMode::MUON_SEEDED){
+      m_muon_token_input        = iC.consumes<reco::TrackCollection>(regPSet.getParameter<edm::InputTag>("input"));
+      if (m_deltaEta_Cand<0 || m_deltaPhi_Cand<0) throw edm::Exception(edm::errors::Configuration) << "Delta eta and phi parameters must be set for candidates in muon seeding mode"; 
+    }
 }
 
 void TrackingSeedCandidates::fillDescriptions(edm::ParameterSetDescription& desc) {
@@ -24,7 +29,6 @@ void TrackingSeedCandidates::fillDescriptions(edm::ParameterSetDescription& desc
   desc.add<double>("deltaEta_Cand", -1.);
   desc.add<double>("deltaPhi_Cand", -1.);
 }
-
 TrackingSeedCandidates::Objects TrackingSeedCandidates::objects(const edm::Event& iEvent) const {
  
  Objects result;
@@ -34,6 +38,19 @@ TrackingSeedCandidates::Objects TrackingSeedCandidates::objects(const edm::Event
  if(m_seedingMode == SeedingMode::CANDIDATE_SEEDED){
       iEvent.getByToken( m_token_input, objects ); 
       result = std::make_pair(objects.product(),dimensions); 
+  }
+  else result = std::make_pair(nullptr,dimensions); 
+  return result;
+}
+TrackingSeedCandidates::MuonObjects TrackingSeedCandidates::muonObjects(const edm::Event& iEvent) const {
+ 
+ MuonObjects result;
+ std::pair <float,float> dimensions = std::make_pair(m_deltaEta_Cand,m_deltaPhi_Cand);
+ edm::Handle< reco::TrackCollection > muonObjects;
+  
+ if(m_seedingMode == SeedingMode::MUON_SEEDED){
+      iEvent.getByToken( m_muon_token_input, muonObjects ); 
+      result = std::make_pair(muonObjects.product(),dimensions); 
   }
   else result = std::make_pair(nullptr,dimensions); 
   return result;
