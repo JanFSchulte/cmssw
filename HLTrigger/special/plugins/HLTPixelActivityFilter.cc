@@ -77,29 +77,6 @@ HLTPixelActivityFilter::fillDescriptions(edm::ConfigurationDescriptions& descrip
 //
 // member functions
 //
-/*
-int HLTPixelActivityFilter::countLayersWithClusters(edm::Handle<edmNew::DetSetVector<SiPixelCluster> > & clusterCol,const TrackerTopology& tTopo)
-{
-
-
-   int layerCount = 0;
-   const edmNew::DetSetVector<SiPixelCluster>& clusters = *clusterCol;
-    
-   edmNew::DetSetVector<SiPixelCluster>::const_iterator DSViter=clusters.begin();
-    
-   for ( ; DSViter != clusters.end() ; DSViter++) {
-      	unsigned int detid = DSViter->detId();
-	DetId detIdObject( detid );
-
-      	edmNew::DetSet<SiPixelCluster>::const_iterator clustIt = DSViter->begin(), clustEnd = DSViter->end();
-      	std::cout << detid << std::endl;
-	//for ( ; clustIt != clustEnd; clustIt++) {	
-	//}
-   }
-   return layerCount;
-
-}
-*/
 // ------------ method called to produce the data  ------------
 bool HLTPixelActivityFilter::hltFilter(edm::Event& event, const edm::EventSetup& iSetup, trigger::TriggerFilterObjectWithRefs & filterproduct) const
 {
