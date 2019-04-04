@@ -461,16 +461,19 @@ trackingPhase2PU140.toModify(pixelLessStepSelector,
 
 trackingPhase2PU140.toModify(pixelLessStepSelector.trackSelectors[2], name = 'pixelLessStep')
 
-PixelLessStepTask = cms.Task(pixelLessStepClusters,
+from RecoLocalTracker.SiPhase2VectorHitBuilder.SiPhase2VectorHitBuilder_cfi import *
+PixelLessStepTask = cms.Task(siPhase2VectorHits,
+			     pixelLessStepClusters,
                              pixelLessStepSeedLayers,
                              pixelLessStepTrackingRegions,
                              pixelLessStepHitDoublets,
-                             pixelLessStepHitTriplets,
+#                             pixelLessStepHitTriplets,
                              pixelLessStepSeeds,
                              pixelLessStepTrackCandidates,
                              pixelLessStepTracks,
-                             pixelLessStepClassifier1,pixelLessStepClassifier2,
-                             pixelLessStep)
+ #                            pixelLessStepClassifier1,pixelLessStepClassifier2,
+      			     pixelLessStepSelector)
+                             #pixelLessStep)
 PixelLessStep = cms.Sequence(PixelLessStepTask)
 
 _PixelLessStepTask_LowPU = PixelLessStepTask.copyAndExclude([pixelLessStepHitTriplets, pixelLessStepClassifier1, pixelLessStepClassifier2])
@@ -492,8 +495,12 @@ fastSim.toReplaceWith(PixelLessStepTask,
 _PixelLessStep_LowPU = PixelLessStep.copyAndExclude([pixelLessStepHitTriplets, pixelLessStepClassifier1, pixelLessStepClassifier2])
 _PixelLessStep_LowPU.replace(pixelLessStep, pixelLessStepSelector)
 trackingLowPU.toReplaceWith(PixelLessStep, _PixelLessStep_LowPU)
-from RecoLocalTracker.SiPhase2VectorHitBuilder.SiPhase2VectorHitBuilder_cfi import *
-_PixelLessStep_Phase2PU140 = PixelLessStep.copyAndExclude([pixelLessStepHitTriplets, pixelLessStepClassifier1, pixelLessStepClassifier2])
-_PixelLessStep_Phase2PU140.replace(pixelLessStepClusters,siPhase2VectorHits*pixelLessStepClusters)
-_PixelLessStep_Phase2PU140.replace(pixelLessStep, pixelLessStepSelector)
-trackingPhase2PU140.toReplaceWith(PixelLessStep, _PixelLessStep_Phase2PU140)
+
+
+#_PixelLessStep_Phase2PU140 = PixelLessStep.copyAndExclude([pixelLessStepHitTriplets, pixelLessStepClassifier1, pixelLessStepClassifier2])
+#_PixelLessStep_Phase2PU140 = cms.Sequence(PixelLessStepTask_Phase2PU140)
+
+#_PixelLessStep_Phase2PU140.replace(pixelLessStepClusters,siPhase2VectorHits*pixelLessStepClusters)
+#_PixelLessStep_Phase2PU140.insert(0,siPhase2VectorHits)
+#_PixelLessStep_Phase2PU140.replace(pixelLessStep, pixelLessStepSelector)
+#trackingPhase2PU140.toReplaceWith(PixelLessStep, _PixelLessStep_Phase2PU140)
