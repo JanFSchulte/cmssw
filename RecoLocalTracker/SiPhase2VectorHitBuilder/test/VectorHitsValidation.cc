@@ -67,8 +67,6 @@ void VectorHitsBuilderValidation::beginJob() {
 
   //drawing VHs arrows
   TFileDirectory tdArr = td.mkdir("Directions");
-  VHRZ_ = tdArr.make< TCanvas >(); VHRZ_ -> SetName("RVsZ_Mixed");
-  VHXY_ = tdArr.make< TCanvas >(); VHXY_ -> SetName("YVsX_Mixed");
 
   //VHXY_[0] = tdArr.make< TCanvas >(); VHXY_[0] -> SetName("YVsX_Mixed");
   //VHXY_[1] = tdArr.make< TCanvas >(); VHXY_[1] -> SetName("YVsX_Pixel");
@@ -998,15 +996,17 @@ void VectorHitsBuilderValidation::CreateVHsXYGraph(const std::vector<Global3DPoi
   }
 
   // opening canvas and drawing XY TGraph
-  VHXY_->cd();
-  trackerLayoutXY_[0]->Draw("AP");
+  
+  //TCanvas * VHXY_ = new TCanvas("RVsY_Mixed","RVsY_Mixed",800,600);
+  //VHXY_->cd();
+  //trackerLayoutXY_[0]->Draw("AP");
 
-  float finalposX, finalposY;
+//  float finalposX, finalposY;
 
   for(unsigned int nVH = 0; nVH < glVHs.size(); nVH++){
 
-    finalposX = glVHs.at(nVH).x() + dirVHs.at(nVH).x();
-    finalposY = glVHs.at(nVH).y() + dirVHs.at(nVH).y();
+//    finalposX = glVHs.at(nVH).x() + dirVHs.at(nVH).x();
+//    finalposY = glVHs.at(nVH).y() + dirVHs.at(nVH).y();
     //std::cout << glVHs.at(nVH) << " " << " \tr: " << glVHs.at(nVH).perp() << std::endl;
     //std::cout << dirVHs.at(nVH).x() << "," << dirVHs.at(nVH).y() << std::endl;
 
@@ -1018,8 +1018,8 @@ void VectorHitsBuilderValidation::CreateVHsXYGraph(const std::vector<Global3DPoi
 
     } else {
 
-      TArrow* vh_arrow = new TArrow(glVHs.at(nVH).x(), glVHs.at(nVH).y(), finalposX, finalposY, 0.05, ">");
-      vh_arrow->Draw("same");
+  //    TArrow* vh_arrow = new TArrow(glVHs.at(nVH).x(), glVHs.at(nVH).y(), finalposX, finalposY, 0.05, ">");
+  //    vh_arrow->Draw("same");
 
     }
 
@@ -1037,27 +1037,29 @@ void VectorHitsBuilderValidation::CreateVHsRZGraph(const std::vector<Global3DPoi
   }
 
   // opening canvas and drawing RZ TGraph
-  VHRZ_->cd();
-  trackerLayoutRZ_[0]->Draw("AP");
+  //
+  //TCanvas* VHRZ_ = new TCanvas("RVsZ_Mixed","RVsZ_Mixed",800,600); 
+  //VHRZ_->cd();
+  //trackerLayoutRZ_[0]->Draw("AP");
 
-  float finalposX, finalposY, finalposR, finalposZ;
+//  float finalposX, finalposY, finalposR, finalposZ;
 
-  for(unsigned int nVH = 0; nVH < glVHs.size(); nVH++){
+//  for(unsigned int nVH = 0; nVH < glVHs.size(); nVH++){
 
-    finalposX = glVHs.at(nVH).x() + dirVHs.at(nVH).x();
-    finalposY = glVHs.at(nVH).y() + dirVHs.at(nVH).y();
-    finalposR = sqrt( pow(finalposX,2) + pow(finalposY,2) );
-    finalposZ = glVHs.at(nVH).z() + dirVHs.at(nVH).z();
+//    finalposX = glVHs.at(nVH).x() + dirVHs.at(nVH).x();
+//    finalposY = glVHs.at(nVH).y() + dirVHs.at(nVH).y();
+//    finalposR = sqrt( pow(finalposX,2) + pow(finalposY,2) );
+//    finalposZ = glVHs.at(nVH).z() + dirVHs.at(nVH).z();
 
     //std::cout << dirVHs.at(nVH) " " << " \tr: " << dirVHs.at(nVH).perp() << std::endl;
     //std::cout << finalposX << ", " << finalposY << " " << " \tr: " << finalposR << std::endl;
     //std::cout << std::endl;
 
-    TArrow* vh_arrow = new TArrow(glVHs.at(nVH).z(), glVHs.at(nVH).perp(), finalposZ, finalposR, 0.05, "|>");
-    vh_arrow->SetLineWidth(2);
-    vh_arrow->Draw("same");
+//    TArrow* vh_arrow = new TArrow(glVHs.at(nVH).z(), glVHs.at(nVH).perp(), finalposZ, finalposR, 0.05, "|>");
+//    vh_arrow->SetLineWidth(2);
+//    vh_arrow->Draw("same");
 
-  }
+//  }
 
   return;
 }

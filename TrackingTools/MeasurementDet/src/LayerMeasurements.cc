@@ -56,7 +56,7 @@ namespace {
     for ( auto const & ds : compatDets) {
       MeasurementDetWithData mdet = theDetSystem->idToDet(ds.first->geographicalId(), *theData);
       LogDebug("LayerMeasurements") << "get >> detId of compatible Det:" << ds.first->geographicalId() ;
-      if unlikely(mdet.isNull()) {
+      if UNLIKELY(mdet.isNull()) {
 	throw MeasurementDetException( "MeasurementDet not found");
       }
       

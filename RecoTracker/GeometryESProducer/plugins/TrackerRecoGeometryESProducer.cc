@@ -47,8 +47,7 @@ TrackerRecoGeometryESProducer::produce(const TrackerRecoGeometryRecord & iRecord
   const TrackerTopology *tTopo=tTopoHand.product();
 
   GeometricSearchTrackerBuilder builder;
-  _tracker  = std::shared_ptr<GeometricSearchTracker>(builder.build( tG->trackerDet(), &(*tG), tTopo, _usePhase2Stacks ));
-  return _tracker;
+  return std::unique_ptr<GeometricSearchTracker>(builder.build( tG->trackerDet(), &(*tG), tTopo, _usePhase2Stacks ));
 }
 
 

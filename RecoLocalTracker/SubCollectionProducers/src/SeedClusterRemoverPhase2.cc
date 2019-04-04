@@ -123,7 +123,7 @@ void SeedClusterRemoverPhase2::process(const TrackingRecHit *hit, float chi2, co
 
     OTs[cluster.key()] = false;
     assert(collectedOuterTrackers_.size() > cluster.key());
-    if (!clusterWasteSolution_) collectedOuterTrackers_[cluster.key()]=true;
+    collectedOuterTrackers_[cluster.key()]=true;
 
   } else if (hitType == typeid(VectorHit)) {
 
@@ -142,7 +142,7 @@ void SeedClusterRemoverPhase2::process(const TrackingRecHit *hit, float chi2, co
 
     OTs[cluster.key()] = false;
     assert(collectedOuterTrackers_.size() > cluster.key());
-    if (!clusterWasteSolution_) collectedOuterTrackers_[cluster.key()]=true;
+    collectedOuterTrackers_[cluster.key()]=true;
 
     // upper cluster 
     cluster = vhit->upperCluster();
@@ -154,7 +154,7 @@ void SeedClusterRemoverPhase2::process(const TrackingRecHit *hit, float chi2, co
 
     OTs[cluster.key()] = false;
     assert(collectedOuterTrackers_.size() > cluster.key());
-    if (!clusterWasteSolution_) collectedOuterTrackers_[cluster.key()]=true;
+    collectedOuterTrackers_[cluster.key()]=true;
   } else throw cms::Exception("NOT IMPLEMENTED") << "I received a hit that was neither SiPixelRecHit nor Phase2TrackerRecHit1D but " << hitType.name() << " on detid " << detid.rawId() << "\n";
 
   

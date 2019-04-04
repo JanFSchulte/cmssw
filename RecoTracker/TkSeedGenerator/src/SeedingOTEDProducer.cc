@@ -250,7 +250,7 @@ TrajectorySeedCollection SeedingOTEDProducer::run( edm::Handle< VectorHitCollect
             std::cout << "\t    updatedTSOS  on L1   : " << updatedTSOSL1.second << std::endl;
 
             TrajectoryStateOnSurface updatedTSOSL1_final = theUpdator->update(updatedTSOSL1.second,*hitL1);
-            if unlikely(!updatedTSOSL1_final.isValid()) continue;
+            if UNLIKELY(!updatedTSOSL1_final.isValid()) continue;
             std::pair<bool, TrajectoryStateOnSurface> updatedTSOSL2_final = propagateAndUpdate(updatedTSOSL1_final, *buildingPropagator, *hitL2);
             std::pair<bool, TrajectoryStateOnSurface> updatedTSOSL3_final = propagateAndUpdate(updatedTSOSL2_final.second, *buildingPropagator, hitL3);
             std::cout << "\t    updatedTSOS final on L3   : " << updatedTSOSL3_final.second << std::endl;
@@ -371,7 +371,7 @@ std::pair<bool, TrajectoryStateOnSurface> SeedingOTEDProducer::propagateAndUpdat
   TrajectoryStateOnSurface propTSOS = prop.propagate( initialTSOS, hit.det()->surface());
   TrajectoryStateOnSurface updatedTSOS = theUpdator->update(propTSOS,hit);
   //std::cout << "updatedTSOS  : " << updatedTSOS << std::endl;
-  if unlikely(!updatedTSOS.isValid()) return std::make_pair( false, updatedTSOS);
+  if UNLIKELY(!updatedTSOS.isValid()) return std::make_pair( false, updatedTSOS);
   return std::make_pair( true, updatedTSOS);
 }
 
