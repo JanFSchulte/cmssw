@@ -122,10 +122,10 @@ class VectorHit GCC11_FINAL : public BaseTrackerRecHit {
 
  private:
   // double dispatch
-  virtual VectorHit * clone(TkCloner const& cloner, TrajectoryStateOnSurface const& tsos) const {
+  virtual VectorHit * clone_(TkCloner const& cloner, TrajectoryStateOnSurface const& tsos) const {
     return cloner(*this,tsos).release();
   }
-  virtual  RecHitPointer cloneSH(TkCloner const& cloner, TrajectoryStateOnSurface const& tsos) const {
+  virtual  RecHitPointer cloneSH_(TkCloner const& cloner, TrajectoryStateOnSurface const& tsos) const {
     return cloner.makeShared(*this,tsos);
   }
 
