@@ -64,6 +64,8 @@ std::string PrintoutHelper::dumpCandidate(const Candidate& traj, bool showErrors
       buffer<< "measurement : " << hit.recHit()->geographicalId().rawId() << std::endl;
     }
   }
+  else{
+      buffer<<" no measurement. \n";}
   return buffer.str();
 }
 

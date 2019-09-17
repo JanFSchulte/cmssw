@@ -162,7 +162,7 @@ GlobalError VectorHit::phase2clusterGlobalPosErr(const PixelGeomDetUnit* geomDet
   const PixelTopology * topo = &geomDet->specificTopology();
   float pitchX = topo->pitch().first;
   float pitchY = topo->pitch().second;
-  LocalError le( pow(pitchX, 2) / 12, 0, pow(pitchY, 2) / 12);               // e2_xx, e2_xy, e2_yy
+  LocalError le( pow(pitchX, 2) / 12., 0, pow(pitchY, 2) / 12.);               // e2_xx, e2_xy, e2_yy
   GlobalError ge( ErrorFrameTransformer().transform( le, geomDet->surface() ));
   return ge;
 }
@@ -296,7 +296,7 @@ std::pair<double,double> VectorHit::curvatureORphi(std::string curvORphi) const 
     }
 
     // bring phi in the same quadrant as phi1
-    if (abs(phi-phi1) > M_PI/2){
+    if (abs(phi-phi1) > M_PI/2.){
       phi = phi+M_PI;
       if (phi>M_PI)
         phi=phi-2.*M_PI;
@@ -347,6 +347,7 @@ float VectorHit::transverseMomentum(const MagneticField* magField){
   GlobalPoint center(0.0, 0.0, 0.0);
   float magnT = magField->inTesla(center).mag();
   double rho = 1./curvatureORphi("curvature").first;
+  //0.003 is because the curvature (rho) is in cm and not in m
   return (0.003*magnT*rho);
 
 }

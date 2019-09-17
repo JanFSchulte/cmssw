@@ -248,39 +248,6 @@ std::vector<std::pair<VectorHit,bool>> VectorHitBuilderAlgorithm::buildVectorHit
     }
   }
 
-
-
-
-
-/*
-  for ( const_iterator cil = theLowerDetSet.begin(); cil != theLowerDetSet.end(); ++ cil ) {
-    //possibility to introducing the skipping of the clusters
-    //if(phase2OTClustersToSkip.empty() or (not phase2OTClustersToSkip[cil]) ) {
-
-    Phase2TrackerCluster1DRef clusterLower = edmNew::makeRefTo( clusters, cil );
-
-    for ( const_iterator ciu = theUpperDetSet.begin(); ciu != theUpperDetSet.end(); ++ ciu ) {
-
-      LogTrace("VectorHitBuilderAlgorithm")<<" in the loop for upper clusters with index " << ciu << " on detId " << stack->geographicalId().rawId();
-
-      Phase2TrackerCluster1DRef clusterUpper = edmNew::makeRefTo( clusters, ciu );
-      VectorHit vh = buildVectorHit( stack, clusterLower, clusterUpper);
-      LogTrace("VectorHitBuilderAlgorithm") << "-> Vectorhit " << vh ;
-      LogTrace("VectorHitBuilderAlgorithm") << std::endl;
-      //protection: the VH can also be empty!!
-
-      if (vh.isValid()){
-        result.push_back(vh);
-      }
-
-    }
-  }
-*/
-
-  //if( result.size() > nMaxVHforeachStack ){
-  //  result.erase(result.begin()+nMaxVHforeachStack, result.end());
-  //}
-
   return result;
 
 }
