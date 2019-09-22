@@ -39,3 +39,4 @@ class CkfComponentsRecord
                                                                                SiStripLorentzAngleDepRcd> > {};
 
 #endif
+
