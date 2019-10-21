@@ -62,6 +62,8 @@ double VectorHitBuilderAlgorithmBase::computeParallaxCorrection(const PixelGeomD
 }
 
 void VectorHitBuilderAlgorithmBase::printClusters(const edmNew::DetSetVector<Phase2TrackerCluster1D>& clusters) {
+
+#ifdef EDM_ML_DEBUG
   int nCluster = 0;
   int numberOfDSV = 0;
   edmNew::DetSetVector<Phase2TrackerCluster1D>::const_iterator DSViter;
@@ -82,11 +84,13 @@ void VectorHitBuilderAlgorithmBase::printClusters(const edmNew::DetSetVector<Pha
     }
   }
   LogDebug("VectorHitBuilder") << " Number of input clusters: " << nCluster << std::endl;
+#endif // EDM_ML_DEBUG
 }
 
 void VectorHitBuilderAlgorithmBase::printCluster(const GeomDet* geomDetUnit, const Phase2TrackerCluster1D* clustIt) {
   if (!geomDetUnit)
     return;
+#ifdef EDM_ML_DEBUG
   const PixelGeomDetUnit* pixelGeomDetUnit = dynamic_cast<const PixelGeomDetUnit*>(geomDetUnit);
   const PixelTopology& topol = pixelGeomDetUnit->specificTopology();
   if (!pixelGeomDetUnit)
@@ -113,7 +117,7 @@ void VectorHitBuilderAlgorithmBase::printCluster(const GeomDet* geomDetUnit, con
   LogTrace("VectorHitBuilder") << "\t global pos " << gparams << std::endl;
   LogTrace("VectorHitBuilder") << "\t local  pos " << lparams.first << "with err " << lparams.second << std::endl;
   LogTrace("VectorHitBuilder") << std::endl;
-
+#endif // EDM_ML_DEBUG
   return;
 }
 
