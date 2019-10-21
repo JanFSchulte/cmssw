@@ -39,6 +39,3 @@ DEFINE_FWK_MODULE(SeedCreatorFromRegionConsecutiveHitsEDProducer);
 using SeedCreatorFromRegionConsecutiveHitsTripletOnlyEDProducer =
     SeedCreatorFromRegionHitsEDProducerT<SeedFromConsecutiveHitsTripletOnlyCreator>;
 DEFINE_FWK_MODULE(SeedCreatorFromRegionConsecutiveHitsTripletOnlyEDProducer);
-
-#include "RecoTracker/TkSeedGenerator/interface/SeedingOTProducer.h"
-DEFINE_FWK_MODULE(SeedingOTProducer);
