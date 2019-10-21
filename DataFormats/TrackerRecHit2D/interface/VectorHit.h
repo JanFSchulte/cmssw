@@ -1,15 +1,6 @@
 #ifndef TrackerRecHit2D_VectorHit_h
 #define TrackerRecHit2D_VectorHit_h
 
-/** \class VectorHit
- *
- * 4-parameter RecHits for Phase2 Tracker (x,y, dx/dz, dy/dz)
- *
- * $Date: 2015/03/30 $
- * \author Erica Brondolin
- *
- */
-
 #include "DataFormats/TrackerRecHit2D/interface/BaseTrackerRecHit.h"
 #include "DataFormats/TrackerRecHit2D/interface/VectorHit2D.h"
 #include "DataFormats/TrackerRecHit2D/interface/OmniClusterRef.h"
@@ -61,10 +52,7 @@ public:
   // Parameters of the segment, for the track fit
   // For a 4D segment: (dx/dz,dy/dz,x,y)
   bool hasPositionAndError() const GCC11_FINAL {
-    //bool hasPositionAndError() const {
     return true;
-    //      return (err_.xx() != 0) || (err_.yy() != 0) || (err_.xy() != 0) ||
-    //             (pos_.x()  != 0) || (pos_.y()  != 0) || (pos_.z()  != 0);
   };
 
   AlgebraicVector parameters() const override;
@@ -148,11 +136,7 @@ private:
 };
 
 inline bool operator<(const VectorHit& one, const VectorHit& other) {
-  if (one.chi2() < other.chi2()) {
-    return true;
-  }
-
-  return false;
+  return one.chi2() < other.chi2();
 }
 
 std::ostream& operator<<(std::ostream& os, const VectorHit& vh);

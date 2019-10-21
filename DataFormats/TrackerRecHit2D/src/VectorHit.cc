@@ -80,27 +80,28 @@ bool VectorHit::sharesClusters(VectorHit const& h1, VectorHit const& h2, SharedI
 }
 
 void VectorHit::getKfComponents4D(KfComponentsHolder& holder) const {
-  AlgebraicVector4& pars = holder.params<4>();
+  const int nDims = 4;
+  AlgebraicVector4& pars = holder.params<nDims>();
   pars[0] = theDirection.x();
   pars[1] = theDirection.y();
   pars[2] = thePosition.x();
   pars[3] = thePosition.y();
 
-  AlgebraicSymMatrix44& errs = holder.errors<4>();
-  for (int i = 0; i < 4; i++) {
-    for (int j = 0; j < 4; j++) {
+  AlgebraicSymMatrix44& errs = holder.errors<nDims>();
+  for (int i = 0; i < nDims; i++) {
+    for (int j = 0; j < nDims; j++) {
       errs(i, j) = theCovMatrix[i][j];
     }
   }
 
-  ProjectMatrix<double, 5, 4>& pf = holder.projFunc<4>();
+  ProjectMatrix<double, 5, nDims>& pf = holder.projFunc<nDims>();
   pf.index[0] = 1;
   pf.index[1] = 2;
   pf.index[2] = 3;
   pf.index[3] = 4;
 
-  holder.measuredParams<4>() = AlgebraicVector4(&holder.tsosLocalParameters().At(1), 4);
-  holder.measuredErrors<4>() = holder.tsosLocalErrors().Sub<AlgebraicSymMatrix44>(1, 1);
+  holder.measuredParams<nDims>() = AlgebraicVector4(&holder.tsosLocalParameters().At(1), nDims);
+  holder.measuredErrors<nDims>() = holder.tsosLocalErrors().Sub<AlgebraicSymMatrix44>(1, 1);
 }
 
 VectorHit::~VectorHit() {}
@@ -117,14 +118,12 @@ AlgebraicVector VectorHit::parameters() const {
 }
 
 Global3DPoint VectorHit::lowerGlobalPos() const {
-  const StackGeomDet* stackDet = dynamic_cast<const StackGeomDet*>(det());
-  const PixelGeomDetUnit* geomDetLower = dynamic_cast<const PixelGeomDetUnit*>(stackDet->lowerDet());
+  const PixelGeomDetUnit* geomDetLower = dynamic_cast<const PixelGeomDetUnit*>(dynamic_cast<const StackGeomDet*>(det())->lowerDet());
   return phase2clusterGlobalPos(geomDetLower, lowerCluster());
 }
 
 Global3DPoint VectorHit::upperGlobalPos() const {
-  const StackGeomDet* stackDet = dynamic_cast<const StackGeomDet*>(det());
-  const PixelGeomDetUnit* geomDetUpper = dynamic_cast<const PixelGeomDetUnit*>(stackDet->upperDet());
+  const PixelGeomDetUnit* geomDetUpper = dynamic_cast<const PixelGeomDetUnit*>(dynamic_cast<const StackGeomDet*>(det())->upperDet());
   return phase2clusterGlobalPos(geomDetUpper, upperCluster());
 }
 
@@ -138,14 +137,12 @@ Global3DPoint VectorHit::phase2clusterGlobalPos(const PixelGeomDetUnit* geomDet,
 }
 
 GlobalError VectorHit::lowerGlobalPosErr() const {
-  const StackGeomDet* stackDet = dynamic_cast<const StackGeomDet*>(det());
-  const PixelGeomDetUnit* geomDetLower = dynamic_cast<const PixelGeomDetUnit*>(stackDet->lowerDet());
+  const PixelGeomDetUnit* geomDetLower = dynamic_cast<const PixelGeomDetUnit*>(dynamic_cast<const StackGeomDet*>(det())->lowerDet());
   return phase2clusterGlobalPosErr(geomDetLower);
 }
 
 GlobalError VectorHit::upperGlobalPosErr() const {
-  const StackGeomDet* stackDet = dynamic_cast<const StackGeomDet*>(det());
-  const PixelGeomDetUnit* geomDetUpper = dynamic_cast<const PixelGeomDetUnit*>(stackDet->upperDet());
+  const PixelGeomDetUnit* geomDetUpper = dynamic_cast<const PixelGeomDetUnit*>(dynamic_cast<const StackGeomDet*>(det())->upperDet());
   return phase2clusterGlobalPosErr(geomDetUpper);
 }
 
@@ -238,22 +235,14 @@ std::pair<double, double> VectorHit::curvatureORphi(std::string curvORphi) const
     double denom2 = 1. / (pow(r12 * r22 * h3, 1.5));
     jacobian[0][0] = 1.0;  // dx1/dx1 dx1/dy1 dx2/dx1 dy2/dx1
     jacobian[1][1] = 1.0;  //dy1/dx1 dy1/dy1 dy2/dx1 dy2/dx1
-    jacobian[2][0] =
-        (h1 * (2. * gPositionLower.x() * r22 * h3 + (2. * gPositionLower.x() - 2. * gPositionUpper.x()) * r12 * r22)) *
-            denom2 -
-        (2. * gPositionUpper.y()) * denom1;  // dkappa/dx1
-    jacobian[2][1] =
-        (2. * gPositionUpper.x()) * denom1 +
-        (h1 * (2. * gPositionLower.y() * r22 * h3 + r12 * r22 * (2. * gPositionLower.y() - 2. * gPositionUpper.y()))) *
-            denom2;  // dkappa/dy1
-    jacobian[2][2] =
-        (2. * gPositionLower.y()) * denom1 +
-        (h1 * (2. * gPositionUpper.x() * r12 * h3 - 2. * (gPositionLower.x() - gPositionUpper.x()) * r12 * r22)) *
-            denom2;  // dkappa/dx2
-    jacobian[2][3] =
-        (h1 * (2. * gPositionUpper.y() * r12 * h3 - r12 * r22 * 2. * (gPositionLower.y() - gPositionUpper.y()))) *
-            denom2 -
-        (2. * gPositionLower.x()) * denom1;  // dkappa/dy2
+    // dkappa/dx1
+    jacobian[2][0] = (h1 * (2. * gPositionLower.x() * r22 * h3 + (2. * gPositionLower.x() - 2. * gPositionUpper.x()) * r12 * r22)) * denom2 - (2. * gPositionUpper.y()) * denom1;
+    // dkappa/dy1
+    jacobian[2][1] = (2. * gPositionUpper.x()) * denom1 + (h1 * (2. * gPositionLower.y() * r22 * h3 + r12 * r22 * (2. * gPositionLower.y() - 2. * gPositionUpper.y()))) * denom2;
+    // dkappa/dx2
+    jacobian[2][2] = (2. * gPositionLower.y()) * denom1 + (h1 * (2. * gPositionUpper.x() * r12 * h3 - 2. * (gPositionLower.x() - gPositionUpper.x()) * r12 * r22)) * denom2;
+    // dkappa/dy2
+    jacobian[2][3] = (h1 * (2. * gPositionUpper.y() * r12 * h3 - r12 * r22 * 2. * (gPositionLower.y() - gPositionUpper.y()))) * denom2 - (2. * gPositionLower.x()) * denom1;
 
     for (int i = 0; i < 4; i++) {
       jacobian[2][i] = -jacobian[2][i];
@@ -266,26 +255,22 @@ std::pair<double, double> VectorHit::curvatureORphi(std::string curvORphi) const
     //to compute phi at the origin
 
     AlgebraicROOTObject<2, 4>::Matrix K;
-    K[0][0] =
-        (2. * gPositionLower.x() * gPositionUpper.y()) / h2 - (2. * gPositionUpper.y() * h5) / pow(h2, 2);  // dxm/dx1
-    K[0][1] = (2. * gPositionUpper.x() * h5) / pow(h2, 2) -
-              (pow(gPositionUpper.x(), 2) + pow(gPositionUpper.y(), 2) - 2. * gPositionLower.y() * gPositionUpper.y()) /
-                  h2;  // dxm/dy1
-    K[0][2] =
-        (2. * gPositionLower.y() * h5) / pow(h2, 2) - (2. * gPositionUpper.x() * gPositionLower.y()) / h2;  // dxm/dx2
-    K[0][3] =
-        (pow(gPositionLower.x(), 2) + pow(gPositionLower.y(), 2) - 2. * gPositionUpper.y() * gPositionLower.y()) / h2 -
-        (2. * gPositionLower.x() * h5) / pow(h2, 2);  // dxm/dy2
-    K[1][0] =
-        (pow(gPositionUpper.x(), 2) - 2. * gPositionLower.x() * gPositionUpper.x() + pow(gPositionUpper.y(), 2)) / h2 -
-        (2. * gPositionUpper.y() * h4) / pow(h2, 2);  // dym/dx1
-    K[1][1] =
-        (2. * gPositionUpper.x() * h4) / pow(h2, 2) - (2. * gPositionUpper.x() * gPositionLower.y()) / h2;  // dym/dy1
-    K[1][2] = (2. * gPositionLower.y() * h4) / pow(h2, 2) -
-              (pow(gPositionLower.x(), 2) - 2. * gPositionUpper.x() * gPositionLower.x() + pow(gPositionLower.y(), 2)) /
-                  h2;  // dym/dx2
-    K[1][3] =
-        (2. * gPositionLower.x() * gPositionUpper.y()) / h2 - (2. * gPositionLower.x() * h4) / pow(h2, 2);  // dym/dy2
+    // dxm/dx1
+    K[0][0] = (2. * gPositionLower.x() * gPositionUpper.y()) / h2 - (2. * gPositionUpper.y() * h5) / pow(h2, 2);
+    // dxm/dy1
+    K[0][1] = (2. * gPositionUpper.x() * h5) / pow(h2, 2) - (pow(gPositionUpper.x(), 2) + pow(gPositionUpper.y(), 2) - 2. * gPositionLower.y() * gPositionUpper.y()) / h2;
+    // dxm/dx2
+    K[0][2] =  (2. * gPositionLower.y() * h5) / pow(h2, 2) - (2. * gPositionUpper.x() * gPositionLower.y()) / h2;
+    // dxm/dy2
+    K[0][3] = (pow(gPositionLower.x(), 2) + pow(gPositionLower.y(), 2) - 2. * gPositionUpper.y() * gPositionLower.y()) / h2 - (2. * gPositionLower.x() * h5) / pow(h2, 2);
+    // dym/dx1
+    K[1][0] = (pow(gPositionUpper.x(), 2) - 2. * gPositionLower.x() * gPositionUpper.x() + pow(gPositionUpper.y(), 2)) / h2 - (2. * gPositionUpper.y() * h4) / pow(h2, 2);
+    // dym/dy1
+    K[1][1] = (2. * gPositionUpper.x() * h4) / pow(h2, 2) - (2. * gPositionUpper.x() * gPositionLower.y()) / h2;
+    // dym/dx2
+    K[1][2] = (2. * gPositionLower.y() * h4) / pow(h2, 2) - (pow(gPositionLower.x(), 2) - 2. * gPositionUpper.x() * gPositionLower.x() + pow(gPositionLower.y(), 2)) / h2;
+    // dym/dy2
+    K[1][3] = (2. * gPositionLower.x() * gPositionUpper.y()) / h2 - (2. * gPositionLower.x() * h4) / pow(h2, 2);
 
     AlgebraicVector4 N = M * K;
     jacobian[3][0] = N[0];  // dphi/(dx1,dy1,dx2,dy2)
@@ -389,12 +374,7 @@ std::ostream& operator<<(std::ostream& os, const VectorHit& vh) {
      << " Vectorhit local position      : " << vh.localPosition() << "\n"
      << " Vectorhit local direction     : " << vh.localDirection() << "\n"
      << " Vectorhit global direction    : " << vh.globalDirection() << "\n"
-     <<
-      //" Vectorhit theta               : " << vh.theta() << "\n" <<
-      //" Cov: " << vh.parametersError() << "\n" <<
-      //" Dim: " << vh.dimension() << "\n" <<
-      //" chi2: " << vh.chi2()  << "\n" <<
-      " Lower cluster global position : " << vh.lowerGlobalPos() << "\n"
+     << " Lower cluster global position : " << vh.lowerGlobalPos() << "\n"
      << " Upper cluster global position : " << vh.upperGlobalPos();
 
   return os;

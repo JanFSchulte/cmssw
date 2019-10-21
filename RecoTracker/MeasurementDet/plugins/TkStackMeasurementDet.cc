@@ -23,10 +23,7 @@ void TkStackMeasurementDet::init(const MeasurementDet* lowerDet, const Measureme
 TkStackMeasurementDet::RecHitContainer TkStackMeasurementDet::recHits(const TrajectoryStateOnSurface& ts,
                                                                       const MeasurementTrackerEvent& data) const {
   RecHitContainer result;
-  /*
-  HitCollectorForRecHits collector( &fastGeomDet(), theMatcher, theCPE, result );
-  collectRecHits(ts, collector);
-*/
+
   if (isEmpty(data.phase2OTData()))
     return result;
   LogTrace("MeasurementTracker") << " is not empty";
@@ -40,7 +37,6 @@ TkStackMeasurementDet::RecHitContainer TkStackMeasurementDet::recHits(const Traj
   }
 
   VectorHitBuilderAlgorithmBase* algo = theMatcher->algo();
-  //VectorHitBuilderAlgorithm* vhalgo = dynamic_cast<VectorHitBuilderAlgorithm *>(algobase);
   LogTrace("MeasurementTracker") << "TkStackMeasurementDet::recHits algo has been set" << std::endl;
 
   const detset& lowerDetSet = data.phase2OTData().detSet(lowerDet()->index());
@@ -71,7 +67,6 @@ TkStackMeasurementDet::RecHitContainer TkStackMeasurementDet::recHits(const Traj
           ((not data.phase2OTClustersToSkip()[indexl]) and (not data.phase2OTClustersToSkip()[indexu]))) {
         Phase2TrackerCluster1DRef clusterLower = edmNew::makeRefTo(data.phase2OTData().handle(), cil);
         Phase2TrackerCluster1DRef clusterUpper = edmNew::makeRefTo(data.phase2OTData().handle(), ciu);
-        //ERICA:I would have prefer to keep buildVectorHits ...
         VectorHit vh = algo->buildVectorHit(&specificGeomDet(), clusterLower, clusterUpper);
         LogTrace("MeasurementTracker") << "TkStackMeasurementDet::rechits adding VectorHits!" << std::endl;
         LogTrace("MeasurementTracker") << vh << std::endl;
@@ -101,7 +96,6 @@ bool TkStackMeasurementDet::measurements(const TrajectoryStateOnSurface& stateOn
 
   for (auto&& hit : allHits) {
     std::pair<bool, double> diffEst = est.estimate(stateOnThisDet, *hit);
-    //LogTrace("MeasurementTracker")<< "State on this Det: " << stateOnThisDet ;
     LogDebug("MeasurementTracker") << "New vh added with chi2: " << diffEst.second;
     if (diffEst.first)
       result.add(std::move(hit), diffEst.second);

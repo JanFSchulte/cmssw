@@ -68,10 +68,6 @@ void VectorHitsBuilderValidation::beginJob() {
   //drawing VHs arrows
   TFileDirectory tdArr = td.mkdir("Directions");
 
-  //VHXY_[0] = tdArr.make< TCanvas >(); VHXY_[0] -> SetName("YVsX_Mixed");
-  //VHXY_[1] = tdArr.make< TCanvas >(); VHXY_[1] -> SetName("YVsX_Pixel");
-  //VHXY_[2] = tdArr.make< TCanvas >(); VHXY_[2] -> SetName("YVsX_Strip");
-
   TFileDirectory tdWid = td.mkdir("CombinatorialStudies");
   ParallaxCorrectionRZ_ =
       tdWid.make<TH2D>("ParallaxCorrectionRZ", "ParallaxCorrectionRZ", 100, 0., 300., 100., 0., 120.);
@@ -257,7 +253,7 @@ void VectorHitsBuilderValidation::analyze(const edm::Event& event, const edm::Ev
   SimTracksMap simTracks;
   for (edm::SimTrackContainer::const_iterator simTrackIt(simTracksRaw->begin()); simTrackIt != simTracksRaw->end();
        ++simTrackIt)
-    simTracks.insert(std::pair<unsigned int, SimTrack>(simTrackIt->trackId(), *simTrackIt));
+    simTracks.emplace(std::pair<unsigned int, SimTrack>(simTrackIt->trackId(), *simTrackIt));
 
   // Rearrange the simHits by detUnit for ease of use
   SimHitsMap simHitsDetUnit;

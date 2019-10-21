@@ -60,10 +60,6 @@ public:
                            Phase2TrackerCluster1DRef lower,
                            Phase2TrackerCluster1DRef upper) override;
 
-  // Full I/O in DetSet
-  //void buildDetUnit( const edm::DetSetVector<Phase2TrackerCluster1D> & input,
-  //                   output_t& output);
-
   void fit2Dzx(const Local3DPoint lpCI,
                const Local3DPoint lpCO,
                const LocalError leCI,
@@ -88,9 +84,6 @@ public:
            Local3DVector& dir,
            AlgebraicSymMatrix22& covMatrix,
            double& chi2);
-
-  //  void build( const edm::DetSet<Phase2TrackerCluster1D> & input,
-  //                     output_t::FastFiller& output);
 
 private:
   LinearFit* theFitter;

@@ -135,7 +135,7 @@ std::vector<std::pair<VectorHit, bool>> VectorHitBuilderAlgorithm::buildVectorHi
     const std::vector<bool>& phase2OTClustersToSkip) {
   std::vector<std::pair<VectorHit, bool>> result;
   if (checkClustersCompatibilityBeforeBuilding(clusters, theLowerDetSet, theUpperDetSet)) {
-    LogDebug("VectorHitBuilderAlgorithm") << "  compatible -> continue ... " << std::endl;
+    LogDebug("VectorHitBuilderAlgorithm") << "  compatible -> continue ... ";
   } else {
     LogTrace("VectorHitBuilderAlgorithm") << "  not compatible, going to the next cluster";
   }
@@ -251,8 +251,6 @@ VectorHit VectorHitBuilderAlgorithm::buildVectorHit(const StackGeomDet* stack,
                                                     Phase2TrackerCluster1DRef lower,
                                                     Phase2TrackerCluster1DRef upper) {
   LogTrace("VectorHitBuilderAlgorithm") << "Build VH with: ";
-  //printCluster(stack->lowerDet(),&*lower);
-  //printCluster(stack->upperDet(),&*upper);
 
   const PixelGeomDetUnit* geomDetLower = dynamic_cast<const PixelGeomDetUnit*>(stack->lowerDet());
   const PixelGeomDetUnit* geomDetUpper = dynamic_cast<const PixelGeomDetUnit*>(stack->upperDet());

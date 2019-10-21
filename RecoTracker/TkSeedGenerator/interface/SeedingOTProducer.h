@@ -1,11 +1,11 @@
 //---------------------------------------------------------------------------
-// class SeedingOTEDProducer
+// class SeedingOTProducer
 // author: ebrondol
 // date: July, 2016
 //---------------------------------------------------------------------------
 
-#ifndef RecoTracker_TkSeedGenerator_SeedingOTEDProducer_h
-#define RecoTracker_TkSeedGenerator_SeedingOTEDProducer_h
+#ifndef RecoTracker_TkSeedGenerator_SeedingOTProducer_h
+#define RecoTracker_TkSeedGenerator_SeedingOTProducer_h
 
 #include "FWCore/Framework/interface/stream/EDProducer.h"
 #include "FWCore/ParameterSet/interface/ParameterSet.h"
@@ -20,13 +20,15 @@
 #include "FWCore/Framework/interface/Frameworkfwd.h"
 #include "FWCore/Framework/interface/MakerMacros.h"
 #include "FWCore/Framework/interface/EventSetup.h"
+//#include <ostream>
+//#include <iostream>
 
 class TrajectoryStateUpdator;
 
-class SeedingOTEDProducer : public edm::stream::EDProducer<> {
+class SeedingOTProducer : public edm::stream::EDProducer<> {
 public:
-  explicit SeedingOTEDProducer(const edm::ParameterSet&);
-  ~SeedingOTEDProducer() override;
+  explicit SeedingOTProducer(const edm::ParameterSet&);
+  ~SeedingOTProducer() override;
   void produce(edm::Event&, const edm::EventSetup&) override;
 
   static void fillDescriptions(edm::ConfigurationDescriptions&);
@@ -34,7 +36,7 @@ public:
   TrajectorySeedCollection run(edm::Handle<VectorHitCollectionNew>);
   unsigned int checkLayer(unsigned int iidd);
   std::vector<VectorHit> collectVHsOnLayer(edm::Handle<VectorHitCollectionNew>, unsigned int);
-  void printVHsOnLayer(edm::Handle<VectorHitCollectionNew>, unsigned int);
+  void printVHsOnLayer(edm::Handle<VectorHitCollectionNew>, unsigned int, std::ostream & stream);
   const TrajectoryStateOnSurface buildInitialTSOS(VectorHit&);
   AlgebraicSymMatrix assign44To55(AlgebraicSymMatrix);
   std::pair<bool, TrajectoryStateOnSurface> propagateAndUpdate(const TrajectoryStateOnSurface initialTSOS,
@@ -59,18 +61,18 @@ public:
   };
 
 private:
-  edm::EDGetTokenT<VectorHitCollectionNew> vhProducerToken;
-  const TrackerTopology* tkTopo;
-  const MeasurementTracker* measurementTracker;
-  const LayerMeasurements* layerMeasurements;
-  const MeasurementEstimator* estimator;
-  const Propagator* propagator;
-  const MagneticField* magField;
-  const TrajectoryStateUpdator* theUpdator;
-  const edm::EDGetTokenT<MeasurementTrackerEvent> tkMeasEventToken;
-  edm::EDGetTokenT<reco::BeamSpot> beamSpotToken;
-  const reco::BeamSpot* beamSpot;
-  std::string updatorName;
+  edm::EDGetTokenT<VectorHitCollectionNew> vhProducerToken_;
+  const TrackerTopology* tkTopo_;
+  const MeasurementTracker* measurementTracker_;
+  std::unique_ptr<LayerMeasurements> layerMeasurements_;
+  const MeasurementEstimator* estimator_;
+  const Propagator* propagator_;
+  const MagneticField* magField_;
+  const TrajectoryStateUpdator* theUpdator_;
+  const edm::EDGetTokenT<MeasurementTrackerEvent> tkMeasEventToken_;
+  edm::EDGetTokenT<reco::BeamSpot> beamSpotToken_;
+  const reco::BeamSpot* beamSpot_;
+  std::string updatorName_;
 };
 
 #endif

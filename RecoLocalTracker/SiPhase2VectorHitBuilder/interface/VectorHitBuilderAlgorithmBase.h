@@ -75,7 +75,6 @@ public:
 private:
   edm::ESInputTag cpeTag_;
 
-  //  typedef SiStripRecHit2DCollection::FastFiller Collector;
 };
 
 #endif

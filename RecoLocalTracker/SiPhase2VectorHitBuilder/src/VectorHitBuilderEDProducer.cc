@@ -1,5 +1,4 @@
 #include "RecoLocalTracker/SiPhase2VectorHitBuilder/interface/VectorHitBuilderEDProducer.h"
-#include "RecoLocalTracker/SiPhase2VectorHitBuilder/interface/VectorHitBuilderAlgorithm.h"
 #include "FWCore/Framework/interface/Event.h"
 #include "FWCore/MessageLogger/interface/MessageLogger.h"
 
@@ -7,7 +6,6 @@ VectorHitBuilderEDProducer::VectorHitBuilderEDProducer(edm::ParameterSet const& 
     : offlinestubsTag_(conf.getParameter<std::string>("offlinestubs")),
       maxOfflinestubs_(conf.getParameter<int>("maxVectorHits")),
       algoTag_(conf.getParameter<std::string>("Algorithm")),
-      //_clusterProducer(conf.getParameter<edm::InputTag>("Clusters")),
       readytobuild_(false) {
   clusterProducer_ =
       consumes<edmNew::DetSetVector<Phase2TrackerCluster1D>>(edm::InputTag(conf.getParameter<std::string>("Clusters")));
@@ -19,7 +17,7 @@ VectorHitBuilderEDProducer::VectorHitBuilderEDProducer(edm::ParameterSet const& 
   setupAlgorithm(conf);
 }
 
-VectorHitBuilderEDProducer::~VectorHitBuilderEDProducer() { delete stubsBuilder_; }
+VectorHitBuilderEDProducer::~VectorHitBuilderEDProducer() { delete stubsBuilder_.get(); }
 
 void VectorHitBuilderEDProducer::produce(edm::Event& event, const edm::EventSetup& es) {
   LogDebug("VectorHitBuilderEDProducer") << "VectorHitBuilderEDProducer::produce() begin";
@@ -29,12 +27,12 @@ void VectorHitBuilderEDProducer::produce(edm::Event& event, const edm::EventSetu
   event.getByToken(clusterProducer_, clustersHandle);
 
   // create the final output collection
-  std::unique_ptr<edmNew::DetSetVector<Phase2TrackerCluster1D>> outputClustersAccepted(
-      new edmNew::DetSetVector<Phase2TrackerCluster1D>);
-  std::unique_ptr<edmNew::DetSetVector<Phase2TrackerCluster1D>> outputClustersRejected(
-      new edmNew::DetSetVector<Phase2TrackerCluster1D>);
-  std::unique_ptr<VectorHitCollectionNew> outputVHAccepted(new VectorHitCollectionNew());
-  std::unique_ptr<VectorHitCollectionNew> outputVHRejected(new VectorHitCollectionNew());
+  std::unique_ptr<edmNew::DetSetVector<Phase2TrackerCluster1D>> outputClustersAccepted =
+      std::make_unique<edmNew::DetSetVector<Phase2TrackerCluster1D>>();
+  std::unique_ptr<edmNew::DetSetVector<Phase2TrackerCluster1D>> outputClustersRejected =
+      std::make_unique<edmNew::DetSetVector<Phase2TrackerCluster1D>>();
+  std::unique_ptr<VectorHitCollectionNew> outputVHAccepted = std::make_unique<VectorHitCollectionNew>();
+  std::unique_ptr<VectorHitCollectionNew> outputVHRejected = std::make_unique<VectorHitCollectionNew>();
 
   if (readytobuild_)
     stubsBuilder_->initialize(es);
@@ -48,6 +46,7 @@ void VectorHitBuilderEDProducer::produce(edm::Event& event, const edm::EventSetu
   //ERICA::output should be moved in the different algo classes?
   run(clustersHandle, *outputClustersAccepted, *outputClustersRejected, *outputVHAccepted, *outputVHRejected);
 
+#ifdef EDM_ML_DEBUG
   unsigned int numberOfVectorHits = 0;
   edmNew::DetSetVector<VectorHit>::const_iterator DSViter;
   for (DSViter = (*outputVHAccepted).begin(); DSViter != (*outputVHAccepted).end(); DSViter++) {
@@ -57,26 +56,19 @@ void VectorHitBuilderEDProducer::produce(edm::Event& event, const edm::EventSetu
       LogDebug("VectorHitBuilderEDProducer") << "\t vectorhit in output " << *vh << std::endl;
     }
   }
-  /*
-  if(numberOfVectorHits > _maxOfflinestubs) {
-    edm::LogError("VectorHitBuilderEDProducer") <<  "Limit on the number of stubs exceeded. An empty output collection will be produced instead.\n";
-    VectorHitCollectionNew empty;
-    empty.swap(outputAcc);
-  }
-*/
+  LogDebug("VectorHitBuilderEDProducer") << "found\n" << numberOfVectorHits << " .\n";
+#endif
   // write output to file
   event.put(std::move(outputClustersAccepted), "ClustersAccepted");
   event.put(std::move(outputClustersRejected), "ClustersRejected");
   event.put(std::move(outputVHAccepted), offlinestubsTag_ + "Accepted");
   event.put(std::move(outputVHRejected), offlinestubsTag_ + "Rejected");
 
-  //  LogDebug("VectorHitBuilderEDProducer") << " Executing " << _algoTag << " resulted in " << numberOfVectorHits << ".";
-  LogDebug("VectorHitBuilderEDProducer") << "found\n" << numberOfVectorHits << " .\n";
 }
 
 void VectorHitBuilderEDProducer::setupAlgorithm(edm::ParameterSet const& conf) {
   if (algoTag_ == "VectorHitBuilderAlgorithm") {
-    stubsBuilder_ = new VectorHitBuilderAlgorithm(conf);
+    stubsBuilder_ = std::make_unique<VectorHitBuilderAlgorithm>(conf);
     readytobuild_ = true;
   } else {
     edm::LogError("VectorHitBuilderEDProducer") << " Choice " << algoTag_ << " is invalid.\n";

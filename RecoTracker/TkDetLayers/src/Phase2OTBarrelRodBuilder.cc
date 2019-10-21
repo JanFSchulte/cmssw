@@ -8,7 +8,6 @@ Phase2OTBarrelRod* Phase2OTBarrelRodBuilder::build(const GeometricDet* thePhase2
                                                    const TrackerGeometry* theGeomDetGeometry,
                                                    const bool useBrothers) {
   vector<const GeometricDet*> allGeometricDets = thePhase2OTBarrelRod->components();
-  //  vector<const GeometricDet*> compGeometricDets;
   LogDebug("TkDetLayers") << "Phase2OTBarrelRodBuilder with #Modules: " << allGeometricDets.size() << std::endl;
   LogDebug("TkDetLayers") << "                           useBrothers: " << useBrothers << std::endl;
 
@@ -23,7 +22,6 @@ Phase2OTBarrelRod* Phase2OTBarrelRodBuilder::build(const GeometricDet* thePhase2
     for (vector<const GeometricDet*>::const_iterator compGeometricDets = allGeometricDets.begin();
          compGeometricDets != allGeometricDets.end();
          compGeometricDets++) {
-      //LogTrace("TkDetLayers") << " compGeometricDets.positionBounds().perp() " << (*compGeometricDets)->positionBounds().perp() << std::endl;
       meanR = meanR + (*compGeometricDets)->positionBounds().perp();
     }
     meanR = meanR / allGeometricDets.size();
@@ -59,8 +57,6 @@ Phase2OTBarrelRod* Phase2OTBarrelRodBuilder::build(const GeometricDet* thePhase2
       if (compGeometricDets.size() != 2) {
         LogDebug("TkDetLayers") << " Stack not with two components but with " << compGeometricDets.size() << std::endl;
       } else {
-        //LogTrace("TkDetLayers") << " compGeometricDets[0]->positionBounds().perp() " << compGeometricDets[0]->positionBounds().perp() << std::endl;
-        //LogTrace("TkDetLayers") << " compGeometricDets[1]->positionBounds().perp() " << compGeometricDets[1]->positionBounds().perp() << std::endl;
         meanR = meanR + compGeometricDets[0]->positionBounds().perp();
         meanRBrothers = meanRBrothers + compGeometricDets[1]->positionBounds().perp();
       }

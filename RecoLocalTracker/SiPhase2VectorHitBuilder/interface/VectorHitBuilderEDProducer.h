@@ -1,15 +1,10 @@
-//---------------------------------------------------------------------------
-// class VectorHitBuilderEDProducer
-// author: ebrondol,nathera
-// date: May, 2015
-//---------------------------------------------------------------------------
-
 #ifndef RecoLocalTracker_SiPhase2VectorHitBuilder_VectorHitBuilderEDProducer_h
 #define RecoLocalTracker_SiPhase2VectorHitBuilder_VectorHitBuilderEDProducer_h
 
 #include "FWCore/Framework/interface/stream/EDProducer.h"
 #include "FWCore/ParameterSet/interface/ParameterSet.h"
 #include "RecoLocalTracker/SiPhase2VectorHitBuilder/interface/VectorHitBuilderAlgorithmBase.h"
+#include "RecoLocalTracker/SiPhase2VectorHitBuilder/interface/VectorHitBuilderAlgorithm.h"
 #include "DataFormats/Phase2TrackerCluster/interface/Phase2TrackerCluster1D.h"
 #include "DataFormats/TrackerRecHit2D/interface/VectorHit.h"
 
@@ -28,10 +23,10 @@ public:
            VectorHitCollectionNew& outputAcc,
            VectorHitCollectionNew& outputRej);
   static void fillDescriptions(edm::ConfigurationDescriptions& descriptions);
-  VectorHitBuilderAlgorithmBase* algo() const { return stubsBuilder_; };
+  VectorHitBuilderAlgorithmBase* algo() const { return stubsBuilder_.get(); };
 
 private:
-  VectorHitBuilderAlgorithmBase* stubsBuilder_;
+  std::unique_ptr<VectorHitBuilderAlgorithm> stubsBuilder_;
   std::string offlinestubsTag_;
   unsigned int maxOfflinestubs_;
   std::string algoTag_;

@@ -318,64 +318,6 @@ void Phase2TrackerClusterizerValidationTGraph::analyze(const edm::Event& event, 
         clusterSimTrackIds.push_back(simTrackId);
       }
 
-      /*
-             // SimHits related variables
-
-
-
-            unsigned int primarySimHits(0);
-            unsigned int otherSimHits(0);
-
-            for (edm::PSimHitContainer::const_iterator hitIt(simHitsRaw->begin()); hitIt != simHitsRaw->end(); ++hitIt) {
-                if (rawid == hitIt->detUnitId() and std::find(clusterSimTrackIds.begin(), clusterSimTrackIds.end(), hitIt->trackId()) != clusterSimTrackIds.end()) {
-                    Local3DPoint localPosHit(hitIt->localPosition());
-
-                    histogramLayer->second.deltaXClusterSimHits[0]->Fill(localPosClu.x() - localPosHit.x());
-                    histogramLayer->second.deltaYClusterSimHits[0]->Fill(localPosClu.y() - localPosHit.y());
-
-                    // Pixel module
-                    if (topol.ncolumns() == 32) {
-                        histogramLayer->second.deltaXClusterSimHits[1]->Fill(localPosClu.x() - localPosHit.x());
-                        histogramLayer->second.deltaYClusterSimHits[1]->Fill(localPosClu.y() - localPosHit.y());
-                    }
-                    // Strip module
-                    else if (topol.ncolumns() == 2) {
-                        histogramLayer->second.deltaXClusterSimHits[2]->Fill(localPosClu.x() - localPosHit.x());
-                        histogramLayer->second.deltaYClusterSimHits[2]->Fill(localPosClu.y() - localPosHit.y());
-                    }
-
-                    ++otherSimHits;
-
-                    std::map< unsigned int, SimTrack >::const_iterator simTrackIt(simTracks.find(hitIt->trackId()));
-                    if (simTrackIt == simTracks.end()) continue;
-
-                    // Primary particles only
-                    unsigned int processType(hitIt->processType());
-                    if (simTrackIt->second.vertIndex() == 0 and (processType == 2 || processType == 7 || processType == 9 || processType == 11 || processType == 13 || processType == 15)) {
-                        histogramLayer->second.deltaXClusterSimHits_P[0]->Fill(localPosClu.x() - localPosHit.x());
-                        histogramLayer->second.deltaYClusterSimHits_P[0]->Fill(localPosClu.y() - localPosHit.y());
-
-                        // Pixel module
-                        if (topol.ncolumns() == 32) {
-                            histogramLayer->second.deltaXClusterSimHits_P[1]->Fill(localPosClu.x() - localPosHit.x());
-                            histogramLayer->second.deltaYClusterSimHits_P[1]->Fill(localPosClu.y() - localPosHit.y());
-                        }
-                        // Strip module
-                        else if (topol.ncolumns() == 2) {
-                            histogramLayer->second.deltaXClusterSimHits_P[2]->Fill(localPosClu.x() - localPosHit.x());
-                            histogramLayer->second.deltaYClusterSimHits_P[2]->Fill(localPosClu.y() - localPosHit.y());
-                        }
-
-                        ++primarySimHits;
-                    }
-                }
-            }
-
-            otherSimHits -= primarySimHits;
-
-            histogramLayer->second.primarySimHits->Fill(primarySimHits);
-            histogramLayer->second.otherSimHits->Fill(otherSimHits);
-*/
     }
 
     if (nClustersPixel)
