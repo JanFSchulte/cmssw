@@ -13,9 +13,9 @@ public:
       : thePosition(pos), theDirection(dir), theCovMatrix(covMatrix), theChi2(Chi2), theDimension(2){};
   virtual ~VectorHit2D(){};
 
-  LocalPoint localPosition() const { return thePosition; }
-  LocalVector localDirection() const { return theDirection; }
-  LocalError localDirectionError() const {
+  const LocalPoint& localPosition() const { return thePosition; }
+  const LocalVector& localDirection() const { return theDirection; }
+  const LocalError localDirectionError() const {
     return LocalError(theCovMatrix[0][0], theCovMatrix[0][1], theCovMatrix[1][1]);
   }
   AlgebraicSymMatrix22 covMatrix() const { return theCovMatrix; }

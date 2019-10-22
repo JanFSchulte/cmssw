@@ -619,8 +619,8 @@ void VectorHitsBuilderValidation::analyze(const edm::Event& event, const edm::Ev
         }
 
         //curvature
-        curvature = vh.curvatureORphi("curvature").first;
-        phi = vh.curvatureORphi("phi").first;
+        curvature = vh.curvatureORphi(VectorHit::CURV).first;
+        phi = vh.curvatureORphi(VectorHit::PHI).first;
         QOverPT = vh.transverseMomentum(magField);
         QOverP = vh.momentum(magField);
         histogramLayer->second.curvature->Fill(curvature);

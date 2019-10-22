@@ -64,10 +64,6 @@ bool VectorHit::sharesInput(const TrackingRecHit* other, SharedInputType what) c
     return sharesClusters(*this, *otherVh, what);
   }
 
-  if (what == all)
-    return false;
-
-  // what about multi???
   auto const& otherClus = reinterpret_cast<const BaseTrackerRecHit*>(other)->firstClusterRef();
   return (otherClus == lowerClusterRef()) || (otherClus == upperClusterRef());
 }
@@ -80,28 +76,28 @@ bool VectorHit::sharesClusters(VectorHit const& h1, VectorHit const& h2, SharedI
 }
 
 void VectorHit::getKfComponents4D(KfComponentsHolder& holder) const {
-  const int nDims = 4;
-  AlgebraicVector4& pars = holder.params<nDims>();
+  
+  AlgebraicVector4& pars = holder.params<4>();
   pars[0] = theDirection.x();
   pars[1] = theDirection.y();
   pars[2] = thePosition.x();
   pars[3] = thePosition.y();
 
-  AlgebraicSymMatrix44& errs = holder.errors<nDims>();
-  for (int i = 0; i < nDims; i++) {
-    for (int j = 0; j < nDims; j++) {
+  AlgebraicSymMatrix44& errs = holder.errors<4>();
+  for (int i = 0; i < 4; i++) {
+    for (int j = 0; j < 4; j++) {
       errs(i, j) = theCovMatrix[i][j];
     }
   }
 
-  ProjectMatrix<double, 5, nDims>& pf = holder.projFunc<nDims>();
+  ProjectMatrix<double, 5, 4>& pf = holder.projFunc<4>();
   pf.index[0] = 1;
   pf.index[1] = 2;
   pf.index[2] = 3;
   pf.index[3] = 4;
 
-  holder.measuredParams<nDims>() = AlgebraicVector4(&holder.tsosLocalParameters().At(1), nDims);
-  holder.measuredErrors<nDims>() = holder.tsosLocalErrors().Sub<AlgebraicSymMatrix44>(1, 1);
+  holder.measuredParams<4>() = AlgebraicVector4(&holder.tsosLocalParameters().At(1), 4);
+  holder.measuredErrors<4>() = holder.tsosLocalErrors().Sub<AlgebraicSymMatrix44>(1, 1);
 }
 
 VectorHit::~VectorHit() {}
@@ -164,7 +160,7 @@ Global3DVector VectorHit::globalDelta() const {
 
 Global3DVector VectorHit::globalDirection() const { return (det()->surface().toGlobal(localDirection())); }
 
-std::pair<double, double> VectorHit::curvatureORphi(std::string curvORphi) const {
+std::pair<double, double> VectorHit::curvatureORphi(curvPhiSwitch  curvORphi) const {
   double curvature = -999.;
   double errorCurvature = -999.;
   double phi = -999.;
@@ -184,31 +180,34 @@ std::pair<double, double> VectorHit::curvatureORphi(std::string curvORphi) const
     gErrorUpper = lowerGlobalPosErr();
   }
 
-  double h1 = gPositionLower.x() * gPositionUpper.y() - gPositionUpper.x() * gPositionLower.y();
+  double lowerX = gPositionLower.x();
+  double lowerY = gPositionLower.y();
+  double upperX = gPositionUpper.x();
+  double upperY = gPositionUpper.y();
+
+  double h1 = lowerX * upperY - upperX * lowerY;
 
   //determine sign of curvature
   AlgebraicVector2 n1;
-  n1[0] = -gPositionLower.y();
-  n1[1] = gPositionLower.x();
+  n1[0] = -lowerY;
+  n1[1] = lowerX;
   AlgebraicVector2 n2;
-  n2[0] = gPositionUpper.x() - gPositionLower.x();
-  n2[1] = gPositionUpper.y() - gPositionLower.y();
+  n2[0] = upperX - lowerX;
+  n2[1] = upperY - lowerY;
 
   double n3 = n1[0] * n2[0] + n1[1] * n2[1];
   double signCurv = -copysign(1.0, n3);
-  double phi1 = atan2(gPositionUpper.y() - gPositionLower.y(), gPositionUpper.x() - gPositionLower.x());
+  double phi1 = atan2(upperY - lowerY, upperX - lowerX);
 
   if (h1 != 0) {
     double h2 = 2 * h1;
-    double r12 = pow(gPositionLower.x(), 2) + pow(gPositionLower.y(), 2);
-    double r22 = pow(gPositionUpper.x(), 2) + pow(gPositionUpper.y(), 2);
-    double h3 =
-        (pow(gPositionLower.x(), 2) - 2. * gPositionLower.x() * gPositionUpper.x() + pow(gPositionUpper.x(), 2) +
-         pow(gPositionLower.y(), 2) - 2. * gPositionLower.y() * gPositionUpper.y() + pow(gPositionUpper.y(), 2));
-    double h4 = -pow(gPositionLower.x(), 2) * gPositionUpper.x() + gPositionLower.x() * pow(gPositionUpper.x(), 2) +
-                gPositionLower.x() * pow(gPositionUpper.y(), 2) - gPositionUpper.x() * pow(gPositionLower.y(), 2);
-    double h5 = pow(gPositionLower.x(), 2) * gPositionUpper.y() - pow(gPositionUpper.x(), 2) * gPositionLower.y() +
-                pow(gPositionLower.y(), 2) * gPositionUpper.y() - gPositionLower.y() * pow(gPositionUpper.y(), 2);
+    double r12 = pow(lowerX, 2) + pow(lowerY, 2);
+    double r22 = pow(upperX, 2) + pow(upperY, 2);
+    double h3 = pow(lowerX - upperX, 2) + pow(lowerY - upperY, 2);
+    double h4 = -pow(lowerX, 2) * upperX + lowerX * pow(upperX, 2) +
+                lowerX * pow(upperY, 2) - upperX * pow(lowerY, 2);
+    double h5 = pow(lowerX, 2) * upperY - pow(upperX, 2) * lowerY +
+                pow(lowerY, 2) * upperY - lowerY * pow(upperY, 2);
 
     //radius of circle
     double invRho2 = (4. * h1 * h1) / (r12 * r22 * h3);
@@ -219,8 +218,8 @@ std::pair<double, double> VectorHit::curvatureORphi(std::string curvORphi) const
     double ycentre = h4 / h2;
 
     //to compute phi at the cluster points
-    double xtg = gPositionLower.y() - ycentre;
-    double ytg = -(gPositionLower.x() - xcentre);
+    double xtg = lowerY - ycentre;
+    double ytg = -(lowerX - xcentre);
 
     //to compute phi at the origin
     phi = atan2(ytg, xtg);
@@ -236,47 +235,47 @@ std::pair<double, double> VectorHit::curvatureORphi(std::string curvORphi) const
     jacobian[0][0] = 1.0;  // dx1/dx1 dx1/dy1 dx2/dx1 dy2/dx1
     jacobian[1][1] = 1.0;  //dy1/dx1 dy1/dy1 dy2/dx1 dy2/dx1
     // dkappa/dx1
-    jacobian[2][0] = (h1 * (2. * gPositionLower.x() * r22 * h3 + (2. * gPositionLower.x() - 2. * gPositionUpper.x()) * r12 * r22)) * denom2 - (2. * gPositionUpper.y()) * denom1;
+    jacobian[2][0] = (h1 * (2. * lowerX * r22 * h3 + (2. * lowerX - 2. * upperX) * r12 * r22)) * denom2 - (2. * upperY) * denom1;
     // dkappa/dy1
-    jacobian[2][1] = (2. * gPositionUpper.x()) * denom1 + (h1 * (2. * gPositionLower.y() * r22 * h3 + r12 * r22 * (2. * gPositionLower.y() - 2. * gPositionUpper.y()))) * denom2;
+    jacobian[2][1] = (2. * upperX) * denom1 + (h1 * (2. * lowerY * r22 * h3 + r12 * r22 * (2. * lowerY - 2. * upperY))) * denom2;
     // dkappa/dx2
-    jacobian[2][2] = (2. * gPositionLower.y()) * denom1 + (h1 * (2. * gPositionUpper.x() * r12 * h3 - 2. * (gPositionLower.x() - gPositionUpper.x()) * r12 * r22)) * denom2;
+    jacobian[2][2] = (2. * lowerY) * denom1 + (h1 * (2. * upperX * r12 * h3 - 2. * (lowerX - upperX) * r12 * r22)) * denom2;
     // dkappa/dy2
-    jacobian[2][3] = (h1 * (2. * gPositionUpper.y() * r12 * h3 - r12 * r22 * 2. * (gPositionLower.y() - gPositionUpper.y()))) * denom2 - (2. * gPositionLower.x()) * denom1;
+    jacobian[2][3] = (h1 * (2. * upperY * r12 * h3 - r12 * r22 * 2. * (lowerY - upperY))) * denom2 - (2. * lowerX) * denom1;
 
     for (int i = 0; i < 4; i++) {
       jacobian[2][i] = -jacobian[2][i];
     }
 
-    AlgebraicVector2 M;
+    AlgebraicVector2 vecM;
     //to compute phi at the cluster points
-    M[0] = (gPositionLower.y() - ycentre) * invRho2;   // dphi/dxcentre
-    M[1] = -(gPositionLower.x() - xcentre) * invRho2;  // dphi/dycentre
+    vecM[0] = (lowerY - ycentre) * invRho2;   // dphi/dxcentre
+    vecM[1] = -(lowerX - xcentre) * invRho2;  // dphi/dycentre
     //to compute phi at the origin
 
-    AlgebraicROOTObject<2, 4>::Matrix K;
+    AlgebraicROOTObject<2, 4>::Matrix matrixK;
     // dxm/dx1
-    K[0][0] = (2. * gPositionLower.x() * gPositionUpper.y()) / h2 - (2. * gPositionUpper.y() * h5) / pow(h2, 2);
+    matrixK[0][0] = (2. * lowerX * upperY) / h2 - (2. * upperY * h5) / pow(h2, 2);
     // dxm/dy1
-    K[0][1] = (2. * gPositionUpper.x() * h5) / pow(h2, 2) - (pow(gPositionUpper.x(), 2) + pow(gPositionUpper.y(), 2) - 2. * gPositionLower.y() * gPositionUpper.y()) / h2;
+    matrixK[0][1] = (2. * upperX * h5) / pow(h2, 2) - (pow(upperX, 2) + pow(upperY, 2) - 2. * lowerY * upperY) / h2;
     // dxm/dx2
-    K[0][2] =  (2. * gPositionLower.y() * h5) / pow(h2, 2) - (2. * gPositionUpper.x() * gPositionLower.y()) / h2;
+    matrixK[0][2] =  (2. * lowerY * h5) / pow(h2, 2) - (2. * upperX * lowerY) / h2;
     // dxm/dy2
-    K[0][3] = (pow(gPositionLower.x(), 2) + pow(gPositionLower.y(), 2) - 2. * gPositionUpper.y() * gPositionLower.y()) / h2 - (2. * gPositionLower.x() * h5) / pow(h2, 2);
+    matrixK[0][3] = (pow(lowerX, 2) + pow(lowerY, 2) - 2. * upperY * lowerY) / h2 - (2. * lowerX * h5) / pow(h2, 2);
     // dym/dx1
-    K[1][0] = (pow(gPositionUpper.x(), 2) - 2. * gPositionLower.x() * gPositionUpper.x() + pow(gPositionUpper.y(), 2)) / h2 - (2. * gPositionUpper.y() * h4) / pow(h2, 2);
+    matrixK[1][0] = (pow(upperX, 2) - 2. * lowerX * upperX + pow(upperY, 2)) / h2 - (2. * upperY * h4) / pow(h2, 2);
     // dym/dy1
-    K[1][1] = (2. * gPositionUpper.x() * h4) / pow(h2, 2) - (2. * gPositionUpper.x() * gPositionLower.y()) / h2;
+    matrixK[1][1] = (2. * upperX * h4) / pow(h2, 2) - (2. * upperX * lowerY) / h2;
     // dym/dx2
-    K[1][2] = (2. * gPositionLower.y() * h4) / pow(h2, 2) - (pow(gPositionLower.x(), 2) - 2. * gPositionUpper.x() * gPositionLower.x() + pow(gPositionLower.y(), 2)) / h2;
+    matrixK[1][2] = (2. * lowerY * h4) / pow(h2, 2) - (pow(lowerX, 2) - 2. * upperX * lowerX + pow(lowerY, 2)) / h2;
     // dym/dy2
-    K[1][3] = (2. * gPositionLower.x() * gPositionUpper.y()) / h2 - (2. * gPositionLower.x() * h4) / pow(h2, 2);
+    matrixK[1][3] = (2. * lowerX * upperY) / h2 - (2. * lowerX * h4) / pow(h2, 2);
 
-    AlgebraicVector4 N = M * K;
-    jacobian[3][0] = N[0];  // dphi/(dx1,dy1,dx2,dy2)
-    jacobian[3][1] = N[1];  // dphi/(dx1,dy1,dx2,dy2)
-    jacobian[3][2] = N[2];  // dphi/(dx1,dy1,dx2,dy2)
-    jacobian[3][3] = N[3];  // dphi/(dx1,dy1,dx2,dy2)
+    AlgebraicVector4 vecN = vecM * matrixK;
+    jacobian[3][0] = vecN[0];  // dphi/(dx1,dy1,dx2,dy2)
+    jacobian[3][1] = vecN[1];  // dphi/(dx1,dy1,dx2,dy2)
+    jacobian[3][2] = vecN[2];  // dphi/(dx1,dy1,dx2,dy2)
+    jacobian[3][3] = vecN[3];  // dphi/(dx1,dy1,dx2,dy2)
 
     //assign correct sign to the curvature errors
     if ((signCurv < 0 && curvature > 0) || (signCurv > 0 && curvature < 0)) {
@@ -324,23 +323,23 @@ std::pair<double, double> VectorHit::curvatureORphi(std::string curvORphi) const
     return std::make_pair(0.0, 0.0);
   }
 
-  if (curvORphi == "curvature")
+  if (curvORphi == CURV)
     return std::make_pair(curvature, errorCurvature);
-  else if (curvORphi == "phi")
+  else if (curvORphi == PHI)
     return std::make_pair(phi, 0.0);
   else
     return std::make_pair(0.0, 0.0);
 }
 
-float VectorHit::transverseMomentum(const MagneticField* magField) {
+const float VectorHit::transverseMomentum(const MagneticField* magField){
   GlobalPoint center(0.0, 0.0, 0.0);
   float magnT = magField->inTesla(center).mag();
-  double rho = 1. / curvatureORphi("curvature").first;
+  double rho = 1. / curvatureORphi(CURV).first;
   //0.003 is because the curvature (rho) is in cm and not in m
   return (0.003 * magnT * rho);
 }
 
-float VectorHit::momentum(const MagneticField* magField) { return transverseMomentum(magField) / (1. * sin(theta())); }
+const float VectorHit::momentum(const MagneticField* magField){ return transverseMomentum(magField) / (1. * sin(theta())); }
 
 float VectorHit::theta() { return globalDirection().theta(); }
 

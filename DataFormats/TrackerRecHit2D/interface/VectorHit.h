@@ -17,7 +17,7 @@
 
 #include "TkCloner.h"
 
-class VectorHit GCC11_FINAL : public BaseTrackerRecHit {
+class VectorHit final : public BaseTrackerRecHit {
 public:
   typedef OmniClusterRef::Phase2Cluster1DRef ClusterRef;
 
@@ -41,17 +41,17 @@ public:
 
   ~VectorHit() override;
 
+   enum curvPhiSwitch { CURV = 0, PHI = 1}; 
+
   VectorHit* clone() const override { return new VectorHit(*this); }
-#ifndef __GCCXML__
   RecHitPointer cloneSH() const override { return std::make_shared<VectorHit>(*this); }
-#endif
 
   bool sharesInput(const TrackingRecHit* other, SharedInputType what) const override;
   bool sharesClusters(VectorHit const& h1, VectorHit const& h2, SharedInputType what) const;
 
   // Parameters of the segment, for the track fit
   // For a 4D segment: (dx/dz,dy/dz,x,y)
-  bool hasPositionAndError() const GCC11_FINAL {
+  bool hasPositionAndError() const override {
     return true;
   };
 
@@ -60,19 +60,19 @@ public:
   void getKfComponents4D(KfComponentsHolder& holder) const;
 
   // returning methods
-  LocalPoint localPosition() const GCC11_FINAL { return thePosition; }
+  LocalPoint localPosition() const override { return thePosition; }
   virtual LocalVector localDirection() const { return theDirection; }
   AlgebraicSymMatrix parametersError() const override;
-  LocalError localPositionError() const GCC11_FINAL;
+  LocalError localPositionError() const override;
   virtual LocalError localDirectionError() const;
   Global3DVector globalDirection() const;
 
   virtual double chi2() const { return theChi2; }
   int dimension() const override { return theDimension; }
 
-  std::pair<double, double> curvatureORphi(std::string curvORphi = "curvature") const;
-  float transverseMomentum(const MagneticField* magField);
-  float momentum(const MagneticField* magField);
+  std::pair<double, double> curvatureORphi(curvPhiSwitch curvORPhi ) const;
+  const float transverseMomentum(const MagneticField* magField);
+  const float momentum(const MagneticField* magField);
 
   ClusterRef lowerCluster() const { return theLowerCluster.cluster_phase2OT(); }
   ClusterRef upperCluster() const { return theUpperCluster.cluster_phase2OT(); }
@@ -90,7 +90,7 @@ public:
   bool isPhase2() const override { return true; }
 
   //FIXME: I have always two clusters in a VH
-  OmniClusterRef const& firstClusterRef() const GCC11_FINAL { return theLowerCluster; }
+  OmniClusterRef const& firstClusterRef() const final { return theLowerCluster; }
   ClusterRef cluster() const { return theLowerCluster.cluster_phase2OT(); }
 
   //This method returns the delta in global coordinates
@@ -103,11 +103,6 @@ public:
   // Access to component RecHits (if any)
   std::vector<const TrackingRecHit*> recHits() const override;
   std::vector<TrackingRecHit*> recHits() override;
-
-  // setting methods
-  void setPosition(LocalPoint pos) { thePosition = pos; }
-  void setDirection(LocalVector dir) { theDirection = dir; }
-  void setCovMatrix(AlgebraicSymMatrix mat) { theCovMatrix = mat; }
 
 private:
   // double dispatch

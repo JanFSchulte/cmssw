@@ -52,12 +52,12 @@ public:
 
   bool hasPositionAndError() const override;
 
-  LocalPoint localPosition() const override {
+  LocalPoint localPosition() const override{
     check();
     return pos_;
   }
 
-  LocalError localPositionError() const override {
+  LocalError localPositionError() const override{
     check();
     return err_;
   }
