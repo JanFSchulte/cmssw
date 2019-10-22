@@ -21,7 +21,7 @@ class VectorHit final : public BaseTrackerRecHit {
 public:
   typedef OmniClusterRef::Phase2Cluster1DRef ClusterRef;
 
-  VectorHit() : thePosition(), theDirection(), theCovMatrix(), theDimension(0) { setType(bad); }
+  VectorHit() : thePosition(), theDirection(), theCovMatrix() { setType(bad); }
 
   VectorHit(const VectorHit& vh);
 
@@ -125,7 +125,7 @@ private:
   // mat[1][3]=cov(dy/dz,y)
   AlgebraicSymMatrix theCovMatrix;
   double theChi2;
-  int theDimension;
+  static constexpr int theDimension = 4;
   OmniClusterRef theLowerCluster;
   OmniClusterRef theUpperCluster;
 };

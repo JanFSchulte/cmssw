@@ -7,7 +7,6 @@ VectorHit::VectorHit(const VectorHit& vh)
       theDirection(vh.localDirection()),
       theCovMatrix(vh.parametersError()),
       theChi2(vh.chi2()),
-      theDimension(vh.dimension()),
       theLowerCluster(vh.lowerClusterRef()),
       theUpperCluster(vh.upperClusterRef()) {}
 
@@ -23,7 +22,6 @@ VectorHit::VectorHit(const GeomDet& idet,
       theDirection(dir),
       theCovMatrix(covMatrix),
       theChi2(Chi2),
-      theDimension(4),
       theLowerCluster(lower),
       theUpperCluster(upper) {}
 
@@ -32,7 +30,7 @@ VectorHit::VectorHit(const GeomDet& idet,
                      const VectorHit2D& vh2Dzy,
                      OmniClusterRef const& lower,
                      OmniClusterRef const& upper)
-    : BaseTrackerRecHit(idet, trackerHitRTTI::vector), theDimension(4), theLowerCluster(lower), theUpperCluster(upper) {
+    : BaseTrackerRecHit(idet, trackerHitRTTI::vector), theLowerCluster(lower), theUpperCluster(upper) {
   thePosition = LocalPoint(vh2Dzx.localPosition().x(), vh2Dzy.localPosition().x(), 0.);
 
   theDirection = LocalVector(vh2Dzx.localDirection().x(), vh2Dzy.localDirection().x(), 1.);
@@ -41,7 +39,7 @@ VectorHit::VectorHit(const GeomDet& idet,
   AlgebraicSymMatrix22 covMatZX = vh2Dzx.covMatrix();
   AlgebraicSymMatrix22 covMatZY = vh2Dzy.covMatrix();
 
-  theCovMatrix = AlgebraicSymMatrix(4);
+  theCovMatrix = AlgebraicSymMatrix(theDimension);
   theCovMatrix[0][0] = covMatZX[0][0];  // var(dx/dz)
   theCovMatrix[1][1] = covMatZY[0][0];  // var(dy/dz)
   theCovMatrix[2][2] = covMatZX[1][1];  // var(x)
@@ -77,34 +75,34 @@ bool VectorHit::sharesClusters(VectorHit const& h1, VectorHit const& h2, SharedI
 
 void VectorHit::getKfComponents4D(KfComponentsHolder& holder) const {
   
-  AlgebraicVector4& pars = holder.params<4>();
+  AlgebraicVector4& pars = holder.params<theDimension>();
   pars[0] = theDirection.x();
   pars[1] = theDirection.y();
   pars[2] = thePosition.x();
   pars[3] = thePosition.y();
 
-  AlgebraicSymMatrix44& errs = holder.errors<4>();
-  for (int i = 0; i < 4; i++) {
-    for (int j = 0; j < 4; j++) {
+  AlgebraicSymMatrix44& errs = holder.errors<theDimension>();
+  for (int i = 0; i < theDimension; i++) {
+    for (int j = 0; j < theDimension; j++) {
       errs(i, j) = theCovMatrix[i][j];
     }
   }
 
-  ProjectMatrix<double, 5, 4>& pf = holder.projFunc<4>();
+  ProjectMatrix<double, 5, theDimension>& pf = holder.projFunc<theDimension>();
   pf.index[0] = 1;
   pf.index[1] = 2;
   pf.index[2] = 3;
   pf.index[3] = 4;
 
-  holder.measuredParams<4>() = AlgebraicVector4(&holder.tsosLocalParameters().At(1), 4);
-  holder.measuredErrors<4>() = holder.tsosLocalErrors().Sub<AlgebraicSymMatrix44>(1, 1);
+  holder.measuredParams<theDimension>() = AlgebraicVector4(&holder.tsosLocalParameters().At(1), 4);
+  holder.measuredErrors<theDimension>() = holder.tsosLocalErrors().Sub<AlgebraicSymMatrix44>(1, 1);
 }
 
 VectorHit::~VectorHit() {}
 
 AlgebraicVector VectorHit::parameters() const {
   // (dx/dz,dy/dz,x,y)
-  AlgebraicVector result(4);
+  AlgebraicVector result(theDimension);
 
   result[0] = theDirection.x();
   result[1] = theDirection.y();
@@ -224,9 +222,9 @@ std::pair<double, double> VectorHit::curvatureORphi(curvPhiSwitch  curvORphi) co
     //to compute phi at the origin
     phi = atan2(ytg, xtg);
 
-    AlgebraicROOTObject<4, 4>::Matrix jacobian;
-    for (int i = 0; i < 4; i++) {
-      for (int j = 0; j < 4; j++) {
+    AlgebraicROOTObject<theDimension, theDimension>::Matrix jacobian;
+    for (int i = 0; i < theDimension; i++) {
+      for (int j = 0; j < theDimension; j++) {
         jacobian[i][j] = 0.0;
       }
     }
@@ -243,7 +241,7 @@ std::pair<double, double> VectorHit::curvatureORphi(curvPhiSwitch  curvORphi) co
     // dkappa/dy2
     jacobian[2][3] = (h1 * (2. * upperY * r12 * h3 - r12 * r22 * 2. * (lowerY - upperY))) * denom2 - (2. * lowerX) * denom1;
 
-    for (int i = 0; i < 4; i++) {
+    for (int i = 0; i < theDimension; i++) {
       jacobian[2][i] = -jacobian[2][i];
     }
 
@@ -253,7 +251,7 @@ std::pair<double, double> VectorHit::curvatureORphi(curvPhiSwitch  curvORphi) co
     vecM[1] = -(lowerX - xcentre) * invRho2;  // dphi/dycentre
     //to compute phi at the origin
 
-    AlgebraicROOTObject<2, 4>::Matrix matrixK;
+    AlgebraicROOTObject<2, theDimension>::Matrix matrixK;
     // dxm/dx1
     matrixK[0][0] = (2. * lowerX * upperY) / h2 - (2. * upperY * h5) / pow(h2, 2);
     // dxm/dy1
@@ -280,7 +278,7 @@ std::pair<double, double> VectorHit::curvatureORphi(curvPhiSwitch  curvORphi) co
     //assign correct sign to the curvature errors
     if ((signCurv < 0 && curvature > 0) || (signCurv > 0 && curvature < 0)) {
       curvature = -curvature;
-      for (int i = 0; i < 4; i++) {
+      for (int i = 0; i < theDimension; i++) {
         jacobian[2][i] = -jacobian[2][i];
       }
     }
@@ -294,13 +292,13 @@ std::pair<double, double> VectorHit::curvatureORphi(curvPhiSwitch  curvORphi) co
 
     //computing the curvature error
     AlgebraicVector4 curvatureJacobian;
-    for (int i = 0; i < 4; i++) {
+    for (int i = 0; i < theDimension; i++) {
       curvatureJacobian[i] = jacobian[2][i];
     }
 
-    AlgebraicROOTObject<4, 4>::Matrix gErrors;
-    for (int i = 0; i < 4; i++) {
-      for (int j = 0; j < 4; j++) {
+    AlgebraicROOTObject<theDimension, theDimension>::Matrix gErrors;
+    for (int i = 0; i < theDimension; i++) {
+      for (int j = 0; j < theDimension; j++) {
         gErrors[i][j] = 0.0;
       }
     }
@@ -334,9 +332,9 @@ std::pair<double, double> VectorHit::curvatureORphi(curvPhiSwitch  curvORphi) co
 const float VectorHit::transverseMomentum(const MagneticField* magField){
   GlobalPoint center(0.0, 0.0, 0.0);
   float magnT = magField->inTesla(center).mag();
-  double rho = 1. / curvatureORphi(CURV).first;
+  double rho = 1.f / curvatureORphi(CURV).first;
   //0.003 is because the curvature (rho) is in cm and not in m
-  return (0.003 * magnT * rho);
+  return (0.003f * magnT * rho);
 }
 
 const float VectorHit::momentum(const MagneticField* magField){ return transverseMomentum(magField) / (1. * sin(theta())); }
@@ -345,7 +343,7 @@ float VectorHit::theta() { return globalDirection().theta(); }
 
 AlgebraicMatrix VectorHit::projectionMatrix() const {
   // obsolete (for what tracker is concerned...) interface
-  static const AlgebraicMatrix the4DProjectionMatrix(4, 5, 0);
+  static const AlgebraicMatrix the4DProjectionMatrix(theDimension, 5, 0);
   return the4DProjectionMatrix;
 }
 

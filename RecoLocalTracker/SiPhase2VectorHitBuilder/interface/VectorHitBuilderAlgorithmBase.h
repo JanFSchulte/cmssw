@@ -36,7 +36,6 @@ public:
   void initTkTopo(edm::ESHandle<TrackerTopology> tkTopoHandle);
   void initCpe(const ClusterParameterEstimator<Phase2TrackerCluster1D>* cpeProd);
 
-  //FIXME::ERICA::this should be template, return different collection for different algo used!!
   virtual void run(edm::Handle<edmNew::DetSetVector<Phase2TrackerCluster1D>> clusters,
                    VectorHitCollectionNew& vhAcc,
                    VectorHitCollectionNew& vhRej,
