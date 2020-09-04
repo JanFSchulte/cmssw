@@ -161,8 +161,8 @@ MeasurementTrackerESProducer::MeasurementTrackerESProducer(const edm::ParameterS
   auto phase2Matcher = p.getParameter<std::string>("Phase2HitMatcher");
   if (not phase2.empty()) {
     usePhase2_ = true;
-    c.setConsumes(phase2TrackerCPEToken_, edm::ESInputTag("", phase2));
-    c.setConsumes(phase2matcherToken_, edm::ESInputTag("", phase2Matcher));
+    phase2TrackerCPEToken_ = c.consumes(edm::ESInputTag("", phase2));
+    phase2matcherToken_ = c.consumes(edm::ESInputTag("", phase2Matcher));
   }
 }
 
