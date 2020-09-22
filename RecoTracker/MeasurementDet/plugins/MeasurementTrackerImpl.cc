@@ -25,6 +25,7 @@
 #include "RecoLocalTracker/Records/interface/TrackerCPERecord.h"
 #include "RecoLocalTracker/SiStripRecHitConverter/interface/SiStripRecHitMatcher.h"
 #include "RecoLocalTracker/SiStripRecHitConverter/interface/StripCPE.h"
+#include "RecoLocalTracker/SiPhase2VectorHitBuilder/interface/VectorHitBuilderAlgorithm.h"
 
 #include "RecoTracker/TkDetLayers/interface/GeometricSearchTracker.h"
 #include "RecoTracker/Record/interface/TrackerRecoGeometryRecord.h"
@@ -77,6 +78,7 @@ MeasurementTrackerImpl::MeasurementTrackerImpl(const BadStripCutsDet& badStripCu
                                                const PixelClusterParameterEstimator* pixelCPE,
                                                const StripClusterParameterEstimator* stripCPE,
                                                const SiStripRecHitMatcher* hitMatcher,
+                                               const VectorHitBuilderAlgorithm* ph2hitMatcher,
                                                const TrackerTopology* trackerTopology,
                                                const TrackerGeometry* trackerGeom,
                                                const GeometricSearchTracker* geometricSearchTracker,
@@ -91,7 +93,7 @@ MeasurementTrackerImpl::MeasurementTrackerImpl(const BadStripCutsDet& badStripCu
     : MeasurementTracker(trackerGeom, geometricSearchTracker),
       theStDetConditions(hitMatcher, stripCPE),
       thePxDetConditions(pixelCPE),
-      thePhase2DetConditions(phase2OTCPE) {
+      thePhase2DetConditions(ph2hitMatcher, phase2OTCPE) {
   this->initialize(trackerTopology);
   this->initializeStripStatus(badStripCuts, stripQuality, stripQualityFlags, stripQualityDebugFlags);
   this->initializePixelStatus(pixelQuality, pixelCabling, pixelQualityFlags, pixelQualityDebugFlags);
@@ -284,7 +286,7 @@ void MeasurementTrackerImpl::addGluedDet(const GluedGeomDet* gd) {
 void MeasurementTrackerImpl::addStackDet(const StackGeomDet* gd) {
   //since the Stack will be composed by PS or 2S,
   //both cluster parameter estimators are needed? - right now just the thePixelCPE is used.
-  theStackDets.push_back(TkStackMeasurementDet(gd, thePxDetConditions.pixelCPE()));
+  theStackDets.push_back(TkStackMeasurementDet(gd, thePhase2DetConditions.matcher(), thePxDetConditions.pixelCPE()));
 }
 
 void MeasurementTrackerImpl::initGluedDet(TkGluedMeasurementDet& det, const TrackerTopology* trackerTopology) {
