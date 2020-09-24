@@ -5,6 +5,7 @@
 #include "DataFormats/DetId/interface/DetId.h"
 
 #include "Geometry/TrackerGeometryBuilder/interface/TrackerGeometry.h"
+#include "DataFormats/TrackerRecHit2D/interface/VectorHit.h"
 #include "RecoTracker/TkDetLayers/interface/GeometricSearchTracker.h"
 
 #include "FWCore/Framework/interface/Event.h"
