@@ -19,17 +19,19 @@ MeasurementTrackerEvent::MeasurementTrackerEvent(MeasurementTrackerEvent &&other
   thePixelData = std::move(other.thePixelData);
   thePhase2OTData = std::move(other.thePhase2OTData);
   thePhase2OTVectorHits = std::move(other.thePhase2OTVectorHits);
+  thePhase2OTVectorHitsRej = std::move(other.thePhase2OTVectorHitsRej);
   theOwner = other.theOwner;
   other.theOwner = false;  // make sure to fully transfer the ownership
   theStripClustersToSkip = std::move(other.theStripClustersToSkip);
   thePixelClustersToSkip = std::move(other.thePixelClustersToSkip);
 }
 MeasurementTrackerEvent &MeasurementTrackerEvent::operator=(MeasurementTrackerEvent &&other) {
-  theTracker = other.theTracker;
-  theStripData = other.theStripData;
-  thePixelData = other.thePixelData;
-  thePhase2OTData = other.thePhase2OTData;
+  theTracker = std::move(other.theTracker);
+  theStripData = std::move(other.theStripData);
+  thePixelData = std::move(other.thePixelData);
+  thePhase2OTData = std::move(other.thePhase2OTData);
   thePhase2OTVectorHits = std::move(other.thePhase2OTVectorHits);
+  thePhase2OTVectorHitsRej = std::move(other.thePhase2OTVectorHitsRej);
   theOwner = other.theOwner;
   other.theOwner = false;  // make sure to fully transfer the ownership
   theStripClustersToSkip = std::move(other.theStripClustersToSkip);
@@ -46,6 +48,7 @@ MeasurementTrackerEvent::MeasurementTrackerEvent(
       thePixelData(trackerEvent.thePixelData),
       thePhase2OTData(nullptr),
       thePhase2OTVectorHits(nullptr),
+      thePhase2OTVectorHitsRej(nullptr),
       theOwner(false) {
   //std::cout << "Creatign non-owned MT @ " << this << " from @ " << & trackerEvent << " (strip data @ " << trackerEvent.theStripData << ")" << std::endl;
   if (stripClustersToSkip.refProd().id() != theStripData->handle().id()) {
@@ -81,6 +84,7 @@ MeasurementTrackerEvent::MeasurementTrackerEvent(
       thePixelData(trackerEvent.thePixelData),
       thePhase2OTData(trackerEvent.thePhase2OTData),
       thePhase2OTVectorHits(trackerEvent.thePhase2OTVectorHits),
+      thePhase2OTVectorHitsRej(trackerEvent.thePhase2OTVectorHitsRej),
       theOwner(false) {
   if (pixelClustersToSkip.refProd().id() != thePixelData->handle().id()) {
     edm::LogError("ProductIdMismatch") << "The pixel masking does not point to the proper collection of clusters: "
