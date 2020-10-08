@@ -30,7 +30,7 @@ Phase2OTBarrelRod* Phase2OTBarrelRodBuilder::build(const GeometricDet* thePhase2
     for (vector<const GeometricDet*>::const_iterator compGeometricDets = allGeometricDets.begin();
          compGeometricDets != allGeometricDets.end();
          compGeometricDets++) {
-      const GeomDet* theGeomDet = theGeomDetGeometry->idToDet((*compGeometricDets)->geographicalID());
+      const GeomDet* theGeomDet = theGeomDetGeometry->idToDet((*compGeometricDets)->geographicalId());
 
       if ((*compGeometricDets)->positionBounds().perp() < meanR)
         innerGeomDets.push_back(theGeomDet);
@@ -67,8 +67,8 @@ Phase2OTBarrelRod* Phase2OTBarrelRodBuilder::build(const GeometricDet* thePhase2
 
     for (auto& it : allGeometricDets) {
       compGeometricDets = it->components();
-      const GeomDet* theGeomDet = theGeomDetGeometry->idToDet(compGeometricDets[0]->geographicalID());
-      LogTrace("TkDetLayers") << " inserting " << compGeometricDets[0]->geographicalID().rawId() << std::endl;
+      const GeomDet* theGeomDet = theGeomDetGeometry->idToDet(compGeometricDets[0]->geographicalId());
+      LogTrace("TkDetLayers") << " inserting " << compGeometricDets[0]->geographicalId().rawId() << std::endl;
 
       if (compGeometricDets[0]->positionBounds().perp() < meanR)
         innerGeomDets.push_back(theGeomDet);
@@ -76,8 +76,8 @@ Phase2OTBarrelRod* Phase2OTBarrelRodBuilder::build(const GeometricDet* thePhase2
       if (compGeometricDets[0]->positionBounds().perp() > meanR)
         outerGeomDets.push_back(theGeomDet);
 
-      const GeomDet* theGeomDetBrother = theGeomDetGeometry->idToDet(compGeometricDets[1]->geographicalID());
-      LogTrace("TkDetLayers") << " inserting " << compGeometricDets[1]->geographicalID().rawId() << std::endl;
+      const GeomDet* theGeomDetBrother = theGeomDetGeometry->idToDet(compGeometricDets[1]->geographicalId());
+      LogTrace("TkDetLayers") << " inserting " << compGeometricDets[1]->geographicalId().rawId() << std::endl;
       if (compGeometricDets[1]->positionBounds().perp() < meanRBrothers)
         innerGeomDetBrothers.push_back(theGeomDetBrother);
 
