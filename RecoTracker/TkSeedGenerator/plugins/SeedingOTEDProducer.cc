@@ -93,14 +93,7 @@ private:
 };
 
 SeedingOTEDProducer::SeedingOTEDProducer(edm::ParameterSet const& conf)
-    : tkMeasEventToken_(consumes<MeasurementTrackerEvent>(conf.getParameter<edm::InputTag>("trackerEvent"))),
-      topoToken_(esConsumes()),
-      propagatorToken_(esConsumes(edm::ESInputTag("", "PropagatorWithMaterial"))),
-      magFieldToken_(esConsumes()),
-      updatorToken_(esConsumes(edm::ESInputTag("", "KFUpdator"))),
-      measurementTrackerToken_(esConsumes()),
-      estToken_(esConsumes(edm::ESInputTag("", "Chi2"))) {
-  vhProducerToken_ = consumes<VectorHitCollection>(edm::InputTag(conf.getParameter<edm::InputTag>("src")));
+    : vhProducerToken_ = consumes<VectorHitCollection>(edm::InputTag(conf.getParameter<edm::InputTag>("src")));
   beamSpotToken_ = consumes<reco::BeamSpot>(conf.getParameter<edm::InputTag>("beamSpotLabel"));
   updatorName_ = conf.getParameter<std::string>("updator");
   putToken_ = produces<TrajectorySeedCollection>();
