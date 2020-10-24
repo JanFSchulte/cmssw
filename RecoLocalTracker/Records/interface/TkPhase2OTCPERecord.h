@@ -7,12 +7,11 @@
 #include "Geometry/Records/interface/IdealGeometryRecord.h"
 #include "MagneticField/Records/interface/IdealMagneticFieldRecord.h"
 #include "CondFormats/DataRecord/interface/SiPhase2OuterTrackerCondDataRecords.h"
-#include "FWCore/Utilities/interface/mplVector.h"
 
 class TkPhase2OTCPERecord
     : public edm::eventsetup::DependentRecordImplementation<
           TkPhase2OTCPERecord,
-          edm::mpl::Vector<TrackerDigiGeometryRecord, IdealMagneticFieldRecord, SiPhase2OuterTrackerLorentzAngleRcd> > {
+          boost::mpl::vector<TrackerDigiGeometryRecord, IdealMagneticFieldRecord, SiPhase2OuterTrackerLorentzAngleRcd> > {
 };
 
 #endif

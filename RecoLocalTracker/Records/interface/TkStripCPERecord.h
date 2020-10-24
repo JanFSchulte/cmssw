@@ -12,7 +12,7 @@
 
 class TkStripCPERecord
     : public edm::eventsetup::DependentRecordImplementation<TkStripCPERecord,
-                                                            edm::mpl::Vector<TrackerDigiGeometryRecord,
+                                                            boost::mpl::vector<TrackerDigiGeometryRecord,
                                                                              IdealMagneticFieldRecord,
                                                                              SiStripLorentzAngleDepRcd,
                                                                              SiStripBackPlaneCorrectionDepRcd,
