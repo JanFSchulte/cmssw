@@ -3,6 +3,9 @@
 #include "FWCore/Framework/interface/MakerMacros.h"
 #include "FWCore/Framework/interface/stream/EDProducer.h"
 #include "FWCore/ParameterSet/interface/ParameterSet.h"
+#include "FWCore/Framework/interface/EventSetup.h"
+#include "FWCore/Framework/interface/ESHandle.h"
+#include "FWCore/Framework/interface/ModuleFactory.h"
 
 #include "RecoLocalTracker/SiPhase2VectorHitBuilder/interface/VectorHitBuilderAlgorithmBase.h"
 #include "DataFormats/Phase2TrackerCluster/interface/Phase2TrackerCluster1D.h"
@@ -36,9 +39,11 @@ private:
 
 VectorHitBuilderEDProducer::VectorHitBuilderEDProducer(edm::ParameterSet const& conf)
     : offlinestubsTag_(conf.getParameter<std::string>("offlinestubs")),
-      maxOfflinestubs_(conf.getParameter<int>("maxVectorHits")) {
+      maxOfflinestubs_(conf.getParameter<int>("maxVectorHits")),
+      stubsBuilderToken_(esConsumes<VectorHitBuilderAlgorithm, TkPhase2OTCPERecord>(conf.getParameter<edm::ESInputTag>("Algorithm"))) {
   clusterProducer_ =
       consumes<edmNew::DetSetVector<Phase2TrackerCluster1D>>(edm::InputTag(conf.getParameter<std::string>("Clusters")));
+
 
   produces<edmNew::DetSetVector<Phase2TrackerCluster1D>>("accepted");
   produces<edmNew::DetSetVector<Phase2TrackerCluster1D>>("rejected");
