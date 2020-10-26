@@ -36,7 +36,7 @@ private:
 
 VectorHitBuilderEDProducer::VectorHitBuilderEDProducer(edm::ParameterSet const& conf)
     : offlinestubsTag_(conf.getParameter<std::string>("offlinestubs")),
-      maxOfflinestubs_(conf.getParameter<int>("maxVectorHits")){
+      maxOfflinestubs_(conf.getParameter<int>("maxVectorHits")) {
   clusterProducer_ =
       consumes<edmNew::DetSetVector<Phase2TrackerCluster1D>>(edm::InputTag(conf.getParameter<std::string>("Clusters")));
 

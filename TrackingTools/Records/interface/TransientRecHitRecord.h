@@ -13,9 +13,9 @@
 class TransientRecHitRecord
     : public edm::eventsetup::DependentRecordImplementation<TransientRecHitRecord,
                                                             boost::mpl::vector<CaloGeometryRecord,
-                                                                             TrackerDigiGeometryRecord,
-                                                                             TkStripCPERecord,
-                                                                             TkPixelCPERecord,
-                                                                             TkPhase2OTCPERecord,
-                                                                             GlobalTrackingGeometryRecord> > {};
+                                                                               TrackerDigiGeometryRecord,
+                                                                               TkStripCPERecord,
+                                                                               TkPixelCPERecord,
+                                                                               TkPhase2OTCPERecord,
+                                                                               GlobalTrackingGeometryRecord> > {};
 #endif

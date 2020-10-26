@@ -35,8 +35,8 @@ SiPhase2RecHitMatcherESProducer::SiPhase2RecHitMatcherESProducer(const edm::Para
   pset_ = p;
   auto cc = setWhatProduced(this, name_);
 
-  geometryToken_ = cc.consumesFrom<TrackerGeometry,TrackerDigiGeometryRecord>();
-  trackerTopoToken_ = cc.consumesFrom<TrackerTopology,TrackerTopologyRcd>();
+  geometryToken_ = cc.consumesFrom<TrackerGeometry, TrackerDigiGeometryRecord>();
+  trackerTopoToken_ = cc.consumesFrom<TrackerTopology, TrackerTopologyRcd>();
   auto const P2otname = p.getParameter<edm::ESInputTag>("CPE");
   cpeToken_ = cc.consumesFrom<ClusterParameterEstimator<Phase2TrackerCluster1D>, TkPhase2OTCPERecord>(P2otname);
 }
