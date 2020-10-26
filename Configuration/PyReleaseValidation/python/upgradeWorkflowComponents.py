@@ -296,11 +296,9 @@ class UpgradeWorkflow_vectorHits(UpgradeWorkflow):
         return fragment=="TTbar_14TeV" and '2026' in key
 upgradeWFs['vectorHits'] = UpgradeWorkflow_vectorHits(
     steps = [
-        'RecoGlobal',
+        'RecoFullGlobal',
     ],
-    PU = [
-        'RecoGlobal',
-    ],
+    PU = [],
     suffix = '_vectorHits',
     offset = 0.9,
 )

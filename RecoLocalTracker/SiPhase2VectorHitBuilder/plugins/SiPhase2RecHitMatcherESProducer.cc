@@ -34,9 +34,11 @@ SiPhase2RecHitMatcherESProducer::SiPhase2RecHitMatcherESProducer(const edm::Para
   }
   pset_ = p;
   auto cc = setWhatProduced(this, name_);
-  geometryToken_ = cc.consumes();
-  trackerTopoToken_ = cc.consumes();
-  cpeToken_ = cc.consumes(p.getParameter<edm::ESInputTag>("CPE"));
+
+  geometryToken_ = cc.consumesFrom<TrackerGeometry,TrackerDigiGeometryRecord>();
+  trackerTopoToken_ = cc.consumesFrom<TrackerTopology,TrackerTopologyRcd>();
+  auto const P2otname = p.getParameter<edm::ESInputTag>("CPE");
+  cpeToken_ = cc.consumesFrom<ClusterParameterEstimator<Phase2TrackerCluster1D>, TkPhase2OTCPERecord>(P2otname);
 }
 
 std::unique_ptr<VectorHitBuilderAlgorithm> SiPhase2RecHitMatcherESProducer::produce(const TkPhase2OTCPERecord& iRecord) {

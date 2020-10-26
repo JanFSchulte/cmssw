@@ -92,8 +92,10 @@ private:
   edm::EDPutTokenT<TrajectorySeedCollection> putToken_;
 };
 
-SeedingOTEDProducer::SeedingOTEDProducer(edm::ParameterSet const& conf)
-    : vhProducerToken_ = consumes<VectorHitCollection>(edm::InputTag(conf.getParameter<edm::InputTag>("src")));
+SeedingOTEDProducer::SeedingOTEDProducer(edm::ParameterSet const& conf):
+  tkMeasEventToken_( consumes<MeasurementTrackerEvent>(conf.getParameter<edm::InputTag>("trackerEvent")) )
+{
+  vhProducerToken_ = consumes<VectorHitCollection>(edm::InputTag(conf.getParameter<edm::InputTag>("src")));
   beamSpotToken_ = consumes<reco::BeamSpot>(conf.getParameter<edm::InputTag>("beamSpotLabel"));
   updatorName_ = conf.getParameter<std::string>("updator");
   putToken_ = produces<TrajectorySeedCollection>();
@@ -111,25 +113,41 @@ void SeedingOTEDProducer::fillDescriptions(edm::ConfigurationDescriptions& descr
 }
 
 void SeedingOTEDProducer::produce(edm::Event& event, const edm::EventSetup& es) {
-  tkTopo_ = &es.getData(topoToken_);
 
-  edm::ESHandle<MeasurementTracker> measurementTrackerHandle = es.getHandle(measurementTrackerToken_);
+  edm::ESHandle<TrackerTopology> tTopoHandle;
+  es.get<TrackerTopologyRcd>().get(tTopoHandle);
+  tkTopo_ = tTopoHandle.product();
+
+  edm::ESHandle<MeasurementTracker> measurementTrackerHandle;
+  es.get<CkfComponentsRecord>().get(measurementTrackerHandle);
   measurementTracker_ = measurementTrackerHandle.product();
+  edm::Handle<MeasurementTrackerEvent> measurementTrackerEvent;
+  event.getByToken(tkMeasEventToken_,measurementTrackerEvent);
 
-  auto const& measurementTrackerEvent = event.get(tkMeasEventToken_);
+  layerMeasurements_ = std::make_unique<LayerMeasurements>(*measurementTrackerHandle, *measurementTrackerEvent);
 
-  layerMeasurements_ = std::make_unique<LayerMeasurements>(*measurementTrackerHandle, measurementTrackerEvent);
+  edm::ESHandle<Chi2MeasurementEstimatorBase> est;
+  es.get<TrackingComponentsRecord>().get("Chi2",est);
+  estimator_ = est.product();
 
-  estimator_ = &es.getData(estToken_);
+  edm::ESHandle<Propagator> prop;
+  es.get<TrackingComponentsRecord>().get("PropagatorWithMaterial",prop);
+  propagator_ = prop.product();
 
-  propagator_ = &es.getData(propagatorToken_);
+  edm::ESHandle<MagneticField> magFieldHandle;
+  es.get<IdealMagneticFieldRecord>().get(magFieldHandle);
+  magField_ = magFieldHandle.product();
 
-  magField_ = &es.getData(magFieldToken_);
+  edm::ESHandle<TrajectoryStateUpdator> updatorHandle;
+  es.get<TrackingComponentsRecord>().get(updatorName_, updatorHandle);
+  updator_ = updatorHandle.product();
 
-  updator_ = &es.getData(updatorToken_);
-
-  beamSpot_ = &event.get(beamSpotToken_);
-
+  edm::Handle<reco::BeamSpot> beamSpotH;
+  event.getByToken(beamSpotToken_, beamSpotH);
+  if (beamSpotH.isValid()) {
+    std::cout << "BeamSpot Position: " << *(beamSpotH.product());
+    beamSpot_ = beamSpotH.product();
+  }
   // Get the vector hits
   auto vhs = event.getHandle(vhProducerToken_);
 
