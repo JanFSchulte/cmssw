@@ -32,6 +32,18 @@ private:
   edm::EDGetTokenT<std::vector<pat::Muon> > muon_token_;
 
   TFile* file_prefiringparams_;
+  TF1* parametrization0p0To0p2_;
+  TF1* parametrization0p2To0p3_;
+  TF1* parametrization0p3To0p55_;
+  TF1* parametrization0p55To0p83_;
+  TF1* parametrization0p83To1p24_;
+  TF1* parametrization1p24To1p4_;
+  TF1* parametrization1p4To1p6_;
+  TF1* parametrization1p6To1p8_;
+  TF1* parametrization1p8To2p1_;
+  TF1* parametrization2p1To2p25_;
+  TF1* parametrization2p25To2p4_;
+
   std::string dataera_;
   double prefiringRateSystUnc_;
   bool skipwarnings_;
@@ -50,6 +62,30 @@ L1MuonPrefiringWeightProducer::L1MuonPrefiringWeightProducer(const edm::Paramete
   if (file_prefiringparams_ == nullptr && !skipwarnings_)
     std::cout << "File with maps not found. All prefiring weights set to 0." << std::endl;
 
+  TString paramName = "L1prefiring_muonparam_0.0To0.2_" + dataera_;
+  parametrization0p0To0p2_ = (TF1*)file_prefiringparams_->Get(paramName);
+  paramName = "L1prefiring_muonparam_0.2To0.3_" + dataera_;
+  parametrization0p2To0p3_ = (TF1*)file_prefiringparams_->Get(paramName);
+  paramName = "L1prefiring_muonparam_0.3To0.55_" + dataera_;
+  parametrization0p3To0p55_ = (TF1*)file_prefiringparams_->Get(paramName);
+  paramName = "L1prefiring_muonparam_0.55To0.83_" + dataera_;
+  parametrization0p55To0p83_ = (TF1*)file_prefiringparams_->Get(paramName);
+  paramName = "L1prefiring_muonparam_0.83To1.24_" + dataera_;
+  parametrization0p83To1p24_ = (TF1*)file_prefiringparams_->Get(paramName);
+  paramName = "L1prefiring_muonparam_1.24To1.4_" + dataera_;
+  parametrization1p24To1p4_ = (TF1*)file_prefiringparams_->Get(paramName);
+  paramName = "L1prefiring_muonparam_1.4To1.6_" + dataera_;
+  parametrization1p4To1p6_ = (TF1*)file_prefiringparams_->Get(paramName);
+  paramName = "L1prefiring_muonparam_1.6To1.8_" + dataera_;
+  parametrization1p6To1p8_ = (TF1*)file_prefiringparams_->Get(paramName);
+  paramName = "L1prefiring_muonparam_1.8To2.1_" + dataera_;
+  parametrization1p8To2p1_ = (TF1*)file_prefiringparams_->Get(paramName);
+  paramName = "L1prefiring_muonparam_2.1To2.25_" + dataera_;
+  parametrization2p1To2p25_ = (TF1*)file_prefiringparams_->Get(paramName);
+  paramName = "L1prefiring_muonparam_2.25To2.4_" + dataera_;
+  parametrization2p25To2p4_ = (TF1*)file_prefiringparams_->Get(paramName);
+
+
   produces<double>("nonPrefiringProbMuon").setBranchAlias("nonPrefiringProbMuon");
   produces<double>("nonPrefiringProbMuonUp").setBranchAlias("nonPrefiringProbMuonUp");
   produces<double>("nonPrefiringProbMuonDown").setBranchAlias("nonPrefiringProbMuonDown");
@@ -57,6 +93,17 @@ L1MuonPrefiringWeightProducer::L1MuonPrefiringWeightProducer(const edm::Paramete
 
 L1MuonPrefiringWeightProducer::~L1MuonPrefiringWeightProducer() {
   delete file_prefiringparams_;
+  delete parametrization0p0To0p2_;
+  delete parametrization0p2To0p3_;
+  delete parametrization0p3To0p55_;
+  delete parametrization0p55To0p83_;
+  delete parametrization0p83To1p24_;
+  delete parametrization1p24To1p4_;
+  delete parametrization1p4To1p6_;
+  delete parametrization1p6To1p8_;
+  delete parametrization1p8To2p1_;
+  delete parametrization2p1To2p25_;
+  delete parametrization2p25To2p4_;
 }
 
 void L1MuonPrefiringWeightProducer::produce(edm::StreamID, edm::Event& iEvent, const edm::EventSetup& iSetup) const {
@@ -95,68 +142,114 @@ double L1MuonPrefiringWeightProducer::getPrefiringRate(double eta,
                                                        fluctuations fluctuation) const {
 
 
-  
-  TF1* parametrization;
+  double prefrate;
+  double statuncty;
+ 
   if (std::abs(eta) < 0.2){ 
-	TString paramName = "L1prefiring_muonparam_0.0To0.2_" + dataera_;
-        parametrization = (TF1*)file_prefiringparams_->Get(paramName);
+	if (parametrization0p0To0p2_ == nullptr && !skipwarnings_)
+    		std::cout << "Prefiring parametrization not found, setting prefiring rate to 0 " << eta << " " << std::endl;
+  	if (parametrization0p0To0p2_ == nullptr)
+    		return 0.;
+  	prefrate = parametrization0p0To0p2_->Eval(pt);
+  	statuncty = parametrization0p0To0p2_->GetParError(2);
   }
   else if (std::abs(eta) < 0.3){ 
-	TString paramName = "L1prefiring_muonparam_0.2To0.3_" + dataera_;
-        parametrization = (TF1*)file_prefiringparams_->Get(paramName);
+	if (parametrization0p2To0p3_ == nullptr && !skipwarnings_)
+    		std::cout << "Prefiring parametrization not found, setting prefiring rate to 0 " << eta << " " << std::endl;
+  	if (parametrization0p2To0p3_ == nullptr)
+    		return 0.;
+
+        prefrate = parametrization0p2To0p3_->Eval(pt);
+        statuncty = parametrization0p2To0p3_->GetParError(2);
   }
   else if (std::abs(eta) < 0.55){ 
-	TString paramName = "L1prefiring_muonparam_0.3To0.55_" + dataera_;
-        parametrization = (TF1*)file_prefiringparams_->Get(paramName);
+	if (parametrization0p3To0p55_ == nullptr && !skipwarnings_)
+    		std::cout << "Prefiring parametrization not found, setting prefiring rate to 0 " << eta << " " << std::endl;
+  	if (parametrization0p3To0p55_ == nullptr)
+    		return 0.;
+
+        prefrate = parametrization0p3To0p55_->Eval(pt);
+        statuncty = parametrization0p3To0p55_->GetParError(2);
   }
   else if (std::abs(eta) < 0.83){ 
-	TString paramName = "L1prefiring_muonparam_0.55To0.83_" + dataera_;
-        parametrization = (TF1*)file_prefiringparams_->Get(paramName);
+	if (parametrization0p55To0p83_ == nullptr && !skipwarnings_)
+    		std::cout << "Prefiring parametrization not found, setting prefiring rate to 0 " << eta << " " << std::endl;
+  	if (parametrization0p55To0p83_ == nullptr)
+    		return 0.;
+
+        prefrate = parametrization0p55To0p83_->Eval(pt);
+        statuncty = parametrization0p55To0p83_->GetParError(2);
   }
   else if (std::abs(eta) < 1.24){ 
-	TString paramName = "L1prefiring_muonparam_0.83To1.24_" + dataera_;
-        parametrization = (TF1*)file_prefiringparams_->Get(paramName);
+	if (parametrization0p83To1p24_ == nullptr && !skipwarnings_)
+    		std::cout << "Prefiring parametrization not found, setting prefiring rate to 0 " << eta << " " << std::endl;
+  	if (parametrization0p83To1p24_ == nullptr)
+    		return 0.;
+
+        prefrate = parametrization0p83To1p24_->Eval(pt);
+        statuncty = parametrization0p83To1p24_->GetParError(2);
   }
   else if (std::abs(eta) < 1.4){ 
-	TString paramName = "L1prefiring_muonparam_1.24To1.4_" + dataera_;
-        parametrization = (TF1*)file_prefiringparams_->Get(paramName);
+	if (parametrization1p24To1p4_ == nullptr && !skipwarnings_)
+    		std::cout << "Prefiring parametrization not found, setting prefiring rate to 0 " << eta << " " << std::endl;
+  	if (parametrization1p24To1p4_ == nullptr)
+    		return 0.;
+
+        prefrate = parametrization1p24To1p4_->Eval(pt);
+        statuncty = parametrization1p24To1p4_->GetParError(2);
   }
   else if (std::abs(eta) < 1.6){ 
-	TString paramName = "L1prefiring_muonparam_1.4To1.6_" + dataera_;
-        parametrization = (TF1*)file_prefiringparams_->Get(paramName);
+	if (parametrization1p4To1p6_ == nullptr && !skipwarnings_)
+    		std::cout << "Prefiring parametrization not found, setting prefiring rate to 0 " << eta << " " << std::endl;
+  	if (parametrization1p4To1p6_ == nullptr)
+    		return 0.;
+
+        prefrate = parametrization1p4To1p6_->Eval(pt);
+        statuncty = parametrization1p4To1p6_->GetParError(2);
   }
-  else if (std::abs(eta) < 1.8){ 
-	TString paramName = "L1prefiring_muonparam_1.6To1.8_" + dataera_;
-        parametrization = (TF1*)file_prefiringparams_->Get(paramName);
+  else if (std::abs(eta) < 1.8){
+	if (parametrization1p6To1p8_ == nullptr && !skipwarnings_)
+    		std::cout << "Prefiring parametrization not found, setting prefiring rate to 0 " << eta << " " << std::endl;
+  	if (parametrization1p6To1p8_ == nullptr)
+    		return 0.;
+ 
+        prefrate = parametrization1p6To1p8_->Eval(pt);
+        statuncty = parametrization1p6To1p8_->GetParError(2);
   }
-  else if (std::abs(eta) < 2.1){ 
-	TString paramName = "L1prefiring_muonparam_1.8To2.1_" + dataera_;
-        parametrization = (TF1*)file_prefiringparams_->Get(paramName);
+  else if (std::abs(eta) < 2.1){
+	if (parametrization1p8To2p1_ == nullptr && !skipwarnings_)
+    		std::cout << "Prefiring parametrization not found, setting prefiring rate to 0 " << eta << " " << std::endl;
+  	if (parametrization1p8To2p1_ == nullptr)
+    		return 0.;
+
+        prefrate = parametrization1p8To2p1_->Eval(pt);
+        statuncty = parametrization1p8To2p1_->GetParError(2);
   }
-  else if (std::abs(eta) < 2.25){ 
-	TString paramName = "L1prefiring_muonparam_2.1To2.25_" + dataera_;
-        parametrization = (TF1*)file_prefiringparams_->Get(paramName);
+  else if (std::abs(eta) < 2.25){
+	if (parametrization2p1To2p25_ == nullptr && !skipwarnings_)
+    		std::cout << "Prefiring parametrization not found, setting prefiring rate to 0 " << eta << " " << std::endl;
+  	if (parametrization2p1To2p25_ == nullptr)
+    		return 0.;
+
+        prefrate = parametrization2p1To2p25_->Eval(pt);
+        statuncty = parametrization2p1To2p25_->GetParError(2);
   }
-  else if (std::abs(eta) < 2.4){ 
-	TString paramName = "L1prefiring_muonparam_2.25To2.4_" + dataera_;
-        parametrization = (TF1*)file_prefiringparams_->Get(paramName);
+  else if (std::abs(eta) < 2.4){
+	if (parametrization2p25To2p4_ == nullptr && !skipwarnings_)
+    		std::cout << "Prefiring parametrization not found, setting prefiring rate to 0 " << eta << " " << std::endl;
+  	if (parametrization2p25To2p4_ == nullptr)
+    		return 0.;
+
+        prefrate = parametrization2p25To2p4_->Eval(pt);
+        statuncty = parametrization2p25To2p4_->GetParError(2);
   }
   else
     return 0.;
 
-  if (parametrization == nullptr && !skipwarnings_)
-    std::cout << "Prefiring parametrization not found, setting prefiring rate to 0 " << eta << " " << std::endl;
-  if (parametrization == nullptr)
-    return 0.;
 
-
-  double prefrate = parametrization->Eval(pt);
-  double statuncty = parametrization->GetParError(2);
   double systuncty = prefiringRateSystUnc_ * prefrate;
 
 
-  if (fluctuation == up)
-    prefrate = std::min(1., prefrate + sqrt(pow(statuncty, 2) + pow(systuncty, 2)));
   if (fluctuation == down)
     prefrate = std::max(0., prefrate - sqrt(pow(statuncty, 2) + pow(systuncty, 2)));
   return prefrate;
