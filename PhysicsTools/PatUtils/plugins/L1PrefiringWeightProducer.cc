@@ -143,7 +143,6 @@ L1PrefiringWeightProducer::L1PrefiringWeightProducer(const edm::ParameterSet& iC
   parametrizationHotSpot_ = (TF1*)file_prefiringparams_->Get(paramName);
 
 
-
   produces<double>("nonPrefiringProb").setBranchAlias("nonPrefiringProb");
   produces<double>("nonPrefiringProbUp").setBranchAlias("nonPrefiringProbUp");
   produces<double>("nonPrefiringProbDown").setBranchAlias("nonPrefiringProbDown");
