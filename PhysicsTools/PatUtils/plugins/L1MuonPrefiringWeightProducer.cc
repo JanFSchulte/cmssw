@@ -249,7 +249,8 @@ double L1MuonPrefiringWeightProducer::getPrefiringRate(double eta,
 
   double systuncty = prefiringRateSystUnc_ * prefrate;
 
-
+  if (fluctuation == up)
+    prefrate = std::max(0., prefrate + sqrt(pow(statuncty, 2) + pow(systuncty, 2)));
   if (fluctuation == down)
     prefrate = std::max(0., prefrate - sqrt(pow(statuncty, 2) + pow(systuncty, 2)));
   return prefrate;
