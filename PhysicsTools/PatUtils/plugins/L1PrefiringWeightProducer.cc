@@ -67,6 +67,7 @@ private:
   TF1* parametrization1p8To2p1_;
   TF1* parametrization2p1To2p25_;
   TF1* parametrization2p25To2p4_;
+  TF1* parametrizationHotSpot_;
 
   TH2F* h_prefmap_photon;
   TH2F* h_prefmap_jet;
@@ -138,6 +139,9 @@ L1PrefiringWeightProducer::L1PrefiringWeightProducer(const edm::ParameterSet& iC
   parametrization2p1To2p25_ = (TF1*)file_prefiringparams_->Get(paramName);
   paramName = "L1prefiring_muonparam_2.25To2.4_" + dataeraMuon_;
   parametrization2p25To2p4_ = (TF1*)file_prefiringparams_->Get(paramName);
+  paramName = "L1prefiring_muonparam_HotSpot_" + dataeraMuon_;
+  parametrizationHotSpot_ = (TF1*)file_prefiringparams_->Get(paramName);
+
 
 
   produces<double>("nonPrefiringProb").setBranchAlias("nonPrefiringProb");
@@ -171,6 +175,7 @@ L1PrefiringWeightProducer::~L1PrefiringWeightProducer() {
   delete parametrization1p8To2p1_;
   delete parametrization2p1To2p25_;
   delete parametrization2p25To2p4_;
+  delete parametrizationHotSpot_;
 
 }
 
@@ -267,7 +272,8 @@ void L1PrefiringWeightProducer::produce(edm::StreamID, edm::Event& iEvent, const
       double pt = muon.pt();
       double phi = muon.eta();
       double eta = muon.eta();
-
+      // Remove crappy tracker muons which would not have prefired the L1 trigger
+      if (pt < 5 && !muon.isStandAloneMuon()) continue;
       double prefiringprob_mu = getPrefiringRateMuon(eta, phi, pt, fluct);
       nonPrefiringProba[fluct] *= (1. - prefiringprob_mu);
       nonPrefiringProbaMuon[fluct] *= (1. - prefiringprob_mu);
@@ -338,8 +344,15 @@ double L1PrefiringWeightProducer::getPrefiringRateMuon(double eta,
                                                        fluctuations fluctuation) const {
   double prefrate;
   double statuncty;
- 
-  if (std::abs(eta) < 0.2){ 
+   if ( (dataeraMuon_.find("2016") != std::string::npos) && (eta > 1.24 && eta < 1.6) && (phi > 2.44346 && phi < 2.79253)){ 
+	if (parametrizationHotSpot_ == nullptr && !skipwarnings_)
+    		std::cout << "Prefiring parametrization not found, setting prefiring rate to 0 " << eta << " " << phi <<  std::endl;
+  	if (parametrizationHotSpot_ == nullptr)
+    		return 0.;
+  	prefrate = parametrizationHotSpot_->Eval(pt);
+  	statuncty = parametrizationHotSpot_->GetParError(2);
+  }
+  else if (std::abs(eta) < 0.2){ 
 	if (parametrization0p0To0p2_ == nullptr && !skipwarnings_)
     		std::cout << "Prefiring parametrization not found, setting prefiring rate to 0 " << eta << " " << std::endl;
   	if (parametrization0p0To0p2_ == nullptr)
