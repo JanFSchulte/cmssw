@@ -222,7 +222,7 @@ run2_jme_2016.toModify( prefiringweight, DataEra = cms.string("2016BtoH"),  Data
 #Next line is for UL2017 maps 
 run2_jme_2017.toModify( prefiringweight, DataEra = cms.string("UL2017BtoF"), DataEraMuon = cms.string("20172018"))
 #Next line is for UL2018 maps 
-run2_jme_2018.toModify( prefiringweight, DataEra = cms.string("None"), DataEraMuon = cms.string("20172018"))
+run2_muon_2018.toModify( prefiringweight, DataEra = cms.string("None"), DataEraMuon = cms.string("20172018"))
 
 #For pre-UL 2017 reprocessing, one should use the original maps and no muon jet protection  
 for modifier in run2_nanoAOD_94XMiniAODv1, run2_nanoAOD_94XMiniAODv2:
