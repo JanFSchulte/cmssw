@@ -1,0 +1,16 @@
+<use name="FWCore/Framework"/>
+<use name="FWCore/PluginManager"/>
+<use name="FWCore/ParameterSet"/>
+<use name="clhep"/>
+<use name="rootgraphics"/>
+<use name="DataFormats/MuonReco"/>
+<use name="DataFormats/L1TMuon"/>
+<use name="PhysicsTools/UtilAlgos"/>
+<use name="FWCore/ServiceRegistry"/>
+<use name="TrackingTools/Records"/>
+<use name="TrackingTools/TransientTrack"/>
+<use name="RecoVertex/KalmanVertexFit"/>
+<use name="HLTrigger/HLTcore"/>
+<use name="L1Trigger/L1TMuon"/>
+<use name="PhysicsTools/Utilities"/>
+<flags EDM_PLUGIN="1"/>
