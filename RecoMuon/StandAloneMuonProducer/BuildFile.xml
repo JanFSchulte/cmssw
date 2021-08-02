@@ -9,11 +9,14 @@
 <use name="RecoMuon/TrackingTools"/>
 <use name="TrackingTools/PatternTools"/>
 <use name="HeterogeneousCore/CUDACore"/> 
+<use name="CUDADataFormats/Track"/>
+<use name="CUDADataFormats/CSCRecHit"/>
+<use name="CUDADataFormats/DTRecHit"/>
+<use name="RecoTracker/TkMSParametrization"/>
 <iftool name="cuda"> 
   <use name="cuda"/> 
   <use name="eigen"/> 
   <use name="FWCore/Utilities"/> 
-  <use name="FWCore/MessageLogger"/> 
   <export> 
     <lib name="1"/> 
   </export> 

@@ -18,11 +18,11 @@
 #include "HeterogeneousCore/CUDACore/interface/ScopedContext.h"
 
 
-#include "CUDADataFormats/Track/interface/PixelTrackHeterogeneous.h"
+#include "CUDADataFormats/Track/interface/L2MuonTrackHeterogeneous.h"
 #include "CUDADataFormats/CSCRecHit/interface/CSCSegmentCUDA.h"
 #include "CUDADataFormats/DTRecHit/interface/DTRecSegment4DCUDA.h"
 #include "DataFormats/CSCRecHit/interface/CSCSegmentContainerCUDA.h"
-
+#include "RecoMuon/L2MuonProducer/src/L2MuonGeneratorOnGPU.h"
 class L2MuonProducerGPU : public edm::global::EDProducer<> {
 public:
   explicit L2MuonProducerGPU(const edm::ParameterSet& iConfig);
@@ -35,17 +35,19 @@ private:
 
   edm::EDGetTokenT<cms::cuda::Product<CSCSegmentCUDA>> tokenCSCSegmentsGPU_;
   edm::EDGetTokenT<cms::cuda::Product<DTRecSegment4DCUDA>>  tokenDTSegmentsGPU_;
-  edm::EDPutTokenT<cms::cuda::Product<PixelTrackHeterogeneous>> tokenTrackGPU_;
+  edm::EDPutTokenT<cms::cuda::Product<L2MuonTrackHeterogeneous>> tokenTrackGPU_;
 
-  //CAHitNtupletGeneratorOnGPU gpuAlgo_;
+  L2MuonGeneratorOnGPU gpuAlgo_;
+
 };
 
-L2MuonProducerGPU::L2MuonProducerGPU(const edm::ParameterSet& iConfig) {
+L2MuonProducerGPU::L2MuonProducerGPU(const edm::ParameterSet& iConfig):
+    gpuAlgo_(iConfig, consumesCollector()) {
     tokenCSCSegmentsGPU_ =
         consumes<cms::cuda::Product<CSCSegmentCUDA>>(iConfig.getParameter<edm::InputTag>("cscSegmentsSource"));
     tokenDTSegmentsGPU_ =
         consumes<cms::cuda::Product<DTRecSegment4DCUDA>>(iConfig.getParameter<edm::InputTag>("dtSegmentsSource"));
-    tokenTrackGPU_ = produces<cms::cuda::Product<PixelTrackHeterogeneous>>();
+    tokenTrackGPU_ = produces<cms::cuda::Product<L2MuonTrackHeterogeneous>>();
 }
 
 void L2MuonProducerGPU::fillDescriptions(edm::ConfigurationDescriptions& descriptions) {
@@ -54,20 +56,27 @@ void L2MuonProducerGPU::fillDescriptions(edm::ConfigurationDescriptions& descrip
   desc.add<edm::InputTag>("cscSegmentsSource", edm::InputTag("hltCSCSegmentsToCUDA"));
   desc.add<edm::InputTag>("dtSegmentsSource", edm::InputTag("hltDTSegmentsToCUDA"));
 
-  //CAHitNtupletGeneratorOnGPU::fillDescriptions(desc);
+  L2MuonGeneratorOnGPU::fillDescriptions(desc);
+
   descriptions.add("L2MuonProducerGPU", desc);
 }
 
 void L2MuonProducerGPU::produce(edm::StreamID streamID, edm::Event& iEvent, const edm::EventSetup& es) const {
 
+    edm::Handle<cms::cuda::Product<DTRecSegment4DCUDA>> dtSegments;
+    iEvent.getByToken(tokenDTSegmentsGPU_, dtSegments);
+
+    cms::cuda::ScopedContextProduce ctx{*dtSegments};
+    auto const& dtSegments_h = ctx.get(*dtSegments);
+
     edm::Handle<cms::cuda::Product<CSCSegmentCUDA>> cscSegments;
     iEvent.getByToken(tokenCSCSegmentsGPU_, cscSegments);
 
-    cms::cuda::ScopedContextProduce ctx{*cscSegments};
-    auto const& segments = ctx.get(*cscSegments);
+    auto const& cscSegments_h = ctx.get(*cscSegments);
 
-    int nSegments = segments.data()->nSegments;
-    std::cout << nSegments << std::endl;
+    ctx.emplace(iEvent, tokenTrackGPU_, gpuAlgo_.makeTuplesAsync(dtSegments_h, cscSegments_h, ctx.stream()));
+
 }
 
 DEFINE_FWK_MODULE(L2MuonProducerGPU);   
+
