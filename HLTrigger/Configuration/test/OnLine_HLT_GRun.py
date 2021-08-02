@@ -93243,9 +93243,7 @@ process.HLTriggerFirstPath = cms.Path( process.hltGetConditions + process.hltGet
 #process.HLT_IsoMu24_v13 = cms.Path( process.HLTBeginSequence + process.hltL1sSingleMu22 + process.hltPreIsoMu24 + process.hltL1fL1sMu22L1Filtered0 + process.HLTL2muonrecoSequence + cms.ignore(process.hltL2fL1sSingleMu22L1f0L2Filtered10Q) + process.HLTL3muonrecoSequence + cms.ignore(process.hltL1fForIterL3L1fL1sMu22L1Filtered0) + process.hltL3fL1sSingleMu22L1f0L2f10QL3Filtered24Q + process.HLTMu24IsolationSequence + process.hltL3crIsoL1sSingleMu22L1f0L2f10QL3f24QL3trkIsoFiltered0p07 + process.HLTEndSequence )
 
 process.load("HeterogeneousCore.CUDAServices.CUDAService_cfi")
-#process.CUDAService.enabled = cudaIsEnabled()
 
-process.load("HeterogeneousCore.CUDAServices.NVProfilerService_cfi")
 
 
 from RecoLocalMuon.CSCSegment.CSCSegmentsToCUDA_cfi import CSCSegmentsToCUDA as _CSCSegmentsToCUDA
@@ -93263,7 +93261,7 @@ process.hltL2MuonProducerGPU = _L2MuonProducerGPU.clone(
         cscSegmentsSource = "hltCSCSegmentsToCUDA", 
         dtSegmentsSource  = "hltDTSegmentsToCUDA", 
 )
-
+process.hltL2MuonProducerGPU.doStats = cms.bool(False)
 
 process.HLTL2muonrecoNocandSequence = cms.Sequence( process.HLTMuonLocalRecoSequence + process.hltCSCSegmentsToCUDA + process.hltDTSegmentsToCUDA + process.hltL2MuonProducerGPU) 
 process.HLTL2muonrecoSequence = cms.Sequence( process.HLTL2muonrecoNocandSequence )
