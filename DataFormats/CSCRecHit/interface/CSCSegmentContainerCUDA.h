@@ -18,6 +18,10 @@ public:
   float sigmaDXDZ[1000]; 
   float sigmaDYDZ[1000];
 
+  int layer[1000];
+  short int zsign[1000];
+  int stationID[1000];
+
   size_t nSegments; 
 };
 

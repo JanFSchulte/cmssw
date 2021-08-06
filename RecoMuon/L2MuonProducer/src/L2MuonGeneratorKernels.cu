@@ -7,7 +7,8 @@
 #include "RecoMuon/L2MuonProducer/src/L2MuonGeneratorKernels.h"
 #include "RecoMuon/L2MuonProducer/src/L2MuonGeneratorKernelsImpl.h"
 
-void L2MuonGeneratorKernels::buildL2Muons(DTRecSegment4DCUDA const& dtSegments_d,
+template <>
+void L2MuonGeneratorKernelsGPU::buildL2Muons(DTRecSegment4DCUDA const& dtSegments_d,
                                                           CSCSegmentCUDA const& cscSegments_d,
 						          L2MuonTrack::TrackSoA* l2Muons_d,
                                                           cudaStream_t stream) const {

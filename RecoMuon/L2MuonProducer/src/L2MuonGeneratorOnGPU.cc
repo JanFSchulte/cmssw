@@ -65,10 +65,11 @@ L2MuonTrackHeterogeneous L2MuonGeneratorOnGPU::makeTuplesAsync(DTRecSegment4DCUD
 
   auto* soa = tracks.get();
 
-  L2MuonGeneratorKernels kernels(m_params);
+  L2MuonGeneratorKernelsGPU kernels(m_params);
   //kernels.setCounters(m_counters);
-
-  //kernels.allocateOnGPU(stream);
+  int32_t nSegmentsDT = 100;
+  int32_t nSegmentsCSC = 100;
+  kernels.allocateOnGPU(nSegmentsDT,nSegmentsCSC,stream);
 
   //kernels.buildDoublets(hits_d, stream);
   kernels.buildL2Muons(dtSegments_d, cscSegments_d, soa, stream);

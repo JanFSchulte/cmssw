@@ -34,11 +34,17 @@ namespace l2MuonGenerator{
                                                                                                                                                                                                                                              };  // Params
 
 }
+template <typename TTraits>
 class L2MuonGeneratorKernels {
 public:
+  using Traits = TTraits;
 
   using Params = l2MuonGenerator::Params;
   using Counters = l2MuonGenerator::Counters;
+
+  template <typename T>
+  using unique_ptr = typename Traits::template unique_ptr<T>;
+
 
   L2MuonGeneratorKernels(Params const& params)
       : params_(params) {}
@@ -47,7 +53,7 @@ public:
   //void launchKernels(HitsOnCPU const& hh, TkSoA* tuples_d, cudaStream_t cudaStream);
 
   void buildL2Muons(DTRecSegment4DCUDA const& hDT, CSCSegmentCUDA const& hCSC, L2MuonTrack::TrackSoA* l2Muons_d, cudaStream_t stream) const;//
-  //void allocateOnGPU(int32_t nSegments, cudaStream_t stream);
+  void allocateOnGPU(int32_t nSegmentsDT, int32_t nSegmentsCSC, cudaStream_t stream);
   //void cleanup(cudaStream_t cudaStream);
 
   //static void printCounters(Counters const* counters);
@@ -59,11 +65,12 @@ private:
 
   Params const& params_;
   
-///  cms::cuda::AtomicPairCounter* device_segmentTupleDT_apc_ = nullptr;
-//  cms::cuda::AtomicPairCounter* device_segmentTupleCSC_apc_ = nullptr;
+  cms::cuda::AtomicPairCounter* device_segmentTupleDT_apc_ = nullptr;
+  cms::cuda::AtomicPairCounter* device_segmentTupleCSC_apc_ = nullptr;
 
-  //std::unique_ptr<cms::cuda::AtomicPairCounter::c_type[]> device_storage_;
+  unique_ptr<cms::cuda::AtomicPairCounter::c_type[]> device_storage_;
 };
 
+using L2MuonGeneratorKernelsGPU = L2MuonGeneratorKernels<cms::cudacompat::GPUTraits>;
 #endif
 #

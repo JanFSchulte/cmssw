@@ -87,6 +87,7 @@ void DTSegmentsToCUDA::produce(edm::StreamID streamID, edm::Event& iEvent, const
   auto& segmentHost = streamCache(streamID)->ptr();
 
   int index = 0;
+  //std::cout << "-----------------------------------------------" << std::endl;
   for (DTRecSegment4DCollection::const_iterator it = segments.begin(); it != segments.end(); it++) {
 	  segmentHost->x[index] = (*it).parameters()[2];
 	  segmentHost->y[index] = (*it).parameters()[3];
@@ -97,6 +98,12 @@ void DTSegmentsToCUDA::produce(edm::StreamID streamID, edm::Event& iEvent, const
 	  segmentHost->sigmaY[index] = (*it).parametersError()[3][3];
 	  segmentHost->sigmaDXDZ[index] = (*it).parametersError()[0][0];
 	  segmentHost->sigmaDYDZ[index] = (*it).parametersError()[0][0];
+
+	  segmentHost->layer[index] = (*it).chamberId().station();
+	  //std::cout << (*it).chamberId().station() << std::endl;
+	  segmentHost->wheel[index] = (*it).chamberId().wheel();
+	  segmentHost->sector[index] = (*it).chamberId().sector();
+
 	  index++;
   }
   segmentHost->nSegments = index;
