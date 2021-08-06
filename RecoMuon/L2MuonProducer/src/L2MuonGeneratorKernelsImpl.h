@@ -11,7 +11,7 @@
 #include "CUDADataFormats/Track/interface/L2MuonTrackHeterogeneous.h"
 
 
-__global__ void makeL2Muon(L2MuonTrack::TrackSoA* l2Muons_d, DTRecSegment4DCUDA const& dtSegments_d, CSCSegmentCUDA const& cscSegments_d) {
+__global__ void makeL2Muon(L2MuonTrack::TrackSoA* l2Muons_d, const MuonSegmentsCUDAView* muonSegments_d) {
 
 
 

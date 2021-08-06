@@ -59,7 +59,7 @@ void L2MuonGeneratorOnGPU::fillDescriptions(edm::ParameterSetDescription& desc) 
      desc.add<bool>("doStats", true);
 }
 
-L2MuonTrackHeterogeneous L2MuonGeneratorOnGPU::makeTuplesAsync(DTRecSegment4DCUDA const& dtSegments_d, CSCSegmentCUDA const& cscSegments_d,
+L2MuonTrackHeterogeneous L2MuonGeneratorOnGPU::makeTuplesAsync(MuonSegmentsCUDA const& muonSegments_h,
                                                                     cudaStream_t stream) const {
   L2MuonTrackHeterogeneous tracks(cms::cuda::make_device_unique<L2MuonTrack::TrackSoA>(stream));
 
@@ -67,12 +67,11 @@ L2MuonTrackHeterogeneous L2MuonGeneratorOnGPU::makeTuplesAsync(DTRecSegment4DCUD
 
   L2MuonGeneratorKernelsGPU kernels(m_params);
   //kernels.setCounters(m_counters);
-  int32_t nSegmentsDT = 100;
-  int32_t nSegmentsCSC = 100;
-  kernels.allocateOnGPU(nSegmentsDT,nSegmentsCSC,stream);
+  int32_t nSegments = muonSegments_h.nSegments();
+  kernels.allocateOnGPU(nSegments,stream);
 
   //kernels.buildDoublets(hits_d, stream);
-  kernels.buildL2Muons(dtSegments_d, cscSegments_d, soa, stream);
+  kernels.buildL2Muons(muonSegments_h, soa, stream);
   //kernels.fillHitDetIndices(hits_d.view(), soa, stream);  // in principle needed only if Hits not "available"
 
   //HelixFitOnGPU fitter(bfield, m_params.fit5as4_);

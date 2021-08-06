@@ -3,8 +3,7 @@
 
 #include "CUDADataFormats/Track/interface/L2MuonTrackHeterogeneous.h"
 //#include "GPUCACell.h" // That's were the hard part will have to go
-#include "CUDADataFormats/CSCRecHit/interface/CSCSegmentCUDA.h"
-#include "CUDADataFormats/DTRecHit/interface/DTRecSegment4DCUDA.h"
+#include "CUDADataFormats/Muon/interface/MuonSegmentsCUDA.h"
 
 namespace l2MuonGenerator{
 
@@ -52,8 +51,8 @@ public:
 
   //void launchKernels(HitsOnCPU const& hh, TkSoA* tuples_d, cudaStream_t cudaStream);
 
-  void buildL2Muons(DTRecSegment4DCUDA const& hDT, CSCSegmentCUDA const& hCSC, L2MuonTrack::TrackSoA* l2Muons_d, cudaStream_t stream) const;//
-  void allocateOnGPU(int32_t nSegmentsDT, int32_t nSegmentsCSC, cudaStream_t stream);
+  void buildL2Muons(MuonSegmentsCUDA const& hSegments, L2MuonTrack::TrackSoA* l2Muons_d, cudaStream_t stream) const;//
+  void allocateOnGPU(int32_t nSegments, cudaStream_t stream);
   //void cleanup(cudaStream_t cudaStream);
 
   //static void printCounters(Counters const* counters);
@@ -65,8 +64,7 @@ private:
 
   Params const& params_;
   
-  cms::cuda::AtomicPairCounter* device_segmentTupleDT_apc_ = nullptr;
-  cms::cuda::AtomicPairCounter* device_segmentTupleCSC_apc_ = nullptr;
+  cms::cuda::AtomicPairCounter* device_segmentTuple_apc_ = nullptr;
 
   unique_ptr<cms::cuda::AtomicPairCounter::c_type[]> device_storage_;
 };
