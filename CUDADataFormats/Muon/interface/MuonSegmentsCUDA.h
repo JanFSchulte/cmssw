@@ -26,6 +26,7 @@ public:
   void fillViewAndCopy(cudaStream_t stream);
 
   void setNSegents(uint32_t nSegments) { nSegments_ = nSegments; }
+  void fillOffsets(uint32_t i, uint32_t offset) { offsets_[i] = offset; }
   void fillLocalX(int i, float x) { lx_h_[i] = x;}
   void fillLocalY(int i, float y) { ly_h_[i] = y;}
   void fillLocalDXDZ(int i, float dxdz) { ldxdz_h_[i] = dxdz;}
@@ -39,6 +40,7 @@ public:
   void fillLayerID(int i, uint32_t layerID) { layerID_[i] = layerID;}
  
   uint32_t nSegments() const { return nSegments_; }
+  uint32_t getOffset(int i) const { return offsets_[i]; }
 
 
 
@@ -61,6 +63,8 @@ private:
   cms::cuda::host::unique_ptr<float[]> gy_h_;
  
   cms::cuda::host::unique_ptr<uint32_t[]> layerID_;
+
+  cms::cuda::host::unique_ptr<uint32_t[]> offsets_;
 
   cms::cuda::host::unique_ptr<MuonSegmentsCUDAView> view_h_;
   cms::cuda::device::unique_ptr<MuonSegmentsCUDAView> view_d_;
