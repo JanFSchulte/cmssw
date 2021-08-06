@@ -97,6 +97,21 @@ void CSCSegmentsToCUDA::produce(edm::StreamID streamID, edm::Event& iEvent, cons
 	  segmentHost->sigmaY[index] = (*it).parametersError()[3][3];
 	  segmentHost->sigmaDXDZ[index] = (*it).parametersError()[0][0];
 	  segmentHost->sigmaDYDZ[index] = (*it).parametersError()[0][0];
+
+	  segmentHost->layer[index] = (*it).cscDetId().station();
+	  segmentHost->zsign[index] = (*it).cscDetId().zendcap();
+          segmentHost->stationID[index] = 0;
+//will work in 12X
+/*	  if ((*it).cscDetId().isME11()) segmentHost->stationID[index] = 0;
+	  if ((*it).cscDetId().isME12()) segmentHost->stationID[index] = 1;
+	  if ((*it).cscDetId().isME13()) segmentHost->stationID[index] = 2;
+	  if ((*it).cscDetId().isME21()) segmentHost->stationID[index] = 3;
+	  if ((*it).cscDetId().isME22()) segmentHost->stationID[index] = 4;
+	  if ((*it).cscDetId().isME31()) segmentHost->stationID[index] = 5;
+	  if ((*it).cscDetId().isME32()) segmentHost->stationID[index] = 6;
+	  if ((*it).cscDetId().isME41()) segmentHost->stationID[index] = 7;
+	  if ((*it).cscDetId().isME42()) segmentHost->stationID[index] = 8;
+*/
 	  index++;
   }
   segmentHost->nSegments = index;

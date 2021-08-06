@@ -92019,6 +92019,12 @@ process.hltDTSegmentsToCUDA = _DTSegmentsToCUDA.clone(
         src = "hltDt4DSegments"
 )
 
+from RecoLocalMuon.MuonSegmentsCUDA.MuonSegmentsToCUDA_cfi import MuonSegmentsToCUDA as _MuonSegmentsToCUDA
+process.hltMuonSegmentsToCUDA = _MuonSegmentsToCUDA.clone(
+        srcDT = "hltDt4DSegments",
+        srcCSC = "hltCscSegments"
+)
+
 from RecoMuon.L2MuonProducer.L2MuonProducerGPU_cfi import L2MuonProducerGPU as _L2MuonProducerGPU 
 process.hltL2MuonProducerGPU = _L2MuonProducerGPU.clone( 
         cscSegmentsSource = "hltCSCSegmentsToCUDA", 
@@ -92026,7 +92032,7 @@ process.hltL2MuonProducerGPU = _L2MuonProducerGPU.clone(
 )
 process.hltL2MuonProducerGPU.doStats = cms.bool(False)
 
-process.HLTL2muonrecoNocandSequence = cms.Sequence( process.HLTMuonLocalRecoSequence + process.hltCSCSegmentsToCUDA + process.hltDTSegmentsToCUDA + process.hltL2MuonProducerGPU) 
+process.HLTL2muonrecoNocandSequence = cms.Sequence( process.HLTMuonLocalRecoSequence + process.hltCSCSegmentsToCUDA + process.hltDTSegmentsToCUDA + process.hltMuonSegmentsToCUDA + process.hltL2MuonProducerGPU) 
 process.HLTL2muonrecoSequence = cms.Sequence( process.HLTL2muonrecoNocandSequence )
 
 process.HLT_IsoMu24_v13 = cms.Path( process.HLTBeginSequence + process.hltL1sSingleMu22 + process.hltPreIsoMu24 + process.hltL1fL1sMu22L1Filtered0 + process.HLTL2muonrecoSequence +  process.HLTEndSequence )
@@ -92065,7 +92071,7 @@ process.maxEvents = cms.untracked.PSet(
 # enable TrigReport, TimeReport and MultiThreading
 process.options = cms.untracked.PSet(
     wantSummary = cms.untracked.bool( True ),
-    numberOfThreads = cms.untracked.uint32( 4 ),
+    numberOfThreads = cms.untracked.uint32( 1 ),
     numberOfStreams = cms.untracked.uint32( 0 ),
 )
 
