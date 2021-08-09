@@ -4,8 +4,8 @@
 // CMSSW headers
 #include "HeterogeneousCore/CUDAUtilities/interface/cudaCheck.h"
 #include "HeterogeneousCore/CUDAUtilities/interface/device_unique_ptr.h"
-#include "RecoMuon/L2MuonProducer/src/L2MuonGeneratorKernels.h"
-#include "RecoMuon/L2MuonProducer/src/L2MuonGeneratorKernelsImpl.h"
+#include "RecoMuon/L2MuonProducer/plugins/L2MuonGeneratorKernels.h"
+#include "RecoMuon/L2MuonProducer/plugins/L2MuonGeneratorKernelsImpl.h"
 
 template <>
 void L2MuonGeneratorKernelsGPU::buildL2Muons(MuonSegmentsCUDA const& muonSegments_h,

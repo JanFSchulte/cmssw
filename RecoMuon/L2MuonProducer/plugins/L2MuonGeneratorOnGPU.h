@@ -1,5 +1,5 @@
-#ifndef RecoMuon_L2MuonProducer_src_L2MuonGeneratorOnGPU_h
-#define RecoMuon_L2MuonProducer_src_L2MuonGeneratorOnGPU_h
+#ifndef RecoMuon_L2MuonProducer_plugins_L2MuonGeneratorOnGPU_h
+#define RecoMuon_L2MuonProducer_plugins_L2MuonGeneratorOnGPU_h
 
 #include <cuda_runtime.h>
 
@@ -10,7 +10,7 @@
 #include "CUDADataFormats/Muon/interface/MuonSegmentsCUDA.h"
 #include "CUDADataFormats/Track/interface/L2MuonTrackHeterogeneous.h"
 
-#include "RecoMuon/L2MuonProducer/src/L2MuonGeneratorKernels.h"
+#include "RecoMuon/L2MuonProducer/plugins/L2MuonGeneratorKernels.h"
 
 namespace edm {
   class Event;
@@ -53,4 +53,4 @@ private:
   Counters* m_counters = nullptr;
 };
 
-#endif  // RecoMuon_L2MuonProducer_src_L2MuonGeneratorOnGPU_h
+#endif  // RecoMuon_L2MuonProducer_plugins_L2MuonGeneratorOnGPU_h

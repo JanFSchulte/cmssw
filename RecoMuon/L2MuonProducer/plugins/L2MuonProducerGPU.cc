@@ -20,7 +20,7 @@
 
 #include "CUDADataFormats/Track/interface/L2MuonTrackHeterogeneous.h"
 #include "CUDADataFormats/Muon/interface/MuonSegmentsCUDA.h"
-#include "RecoMuon/L2MuonProducer/src/L2MuonGeneratorOnGPU.h"
+#include "RecoMuon/L2MuonProducer/plugins/L2MuonGeneratorOnGPU.h"
 
 class L2MuonProducerGPU : public edm::global::EDProducer<> {
 public:
