@@ -1,5 +1,5 @@
-#ifndef RecoMuon_L2MuonProducer_src_L2MuonGeneratorKernels_h
-#define RecoMuon_L2MuonProducer_src_L2MuonGeneratorKernels_h
+#ifndef RecoMuon_L2MuonProducer_plugins_L2MuonGeneratorKernels_h
+#define RecoMuon_L2MuonProducer_plugins_L2MuonGeneratorKernels_h
 
 #include "CUDADataFormats/Track/interface/L2MuonTrackHeterogeneous.h"
 //#include "GPUCACell.h" // That's were the hard part will have to go

@@ -1,4 +1,4 @@
-<library file="*.cc" name="RecoMuonL2MuonProducer">
+<library file="*.cc,*.cu" name="RecoMuonL2MuonProducer">
   <use name="DataFormats/Common"/>
   <use name="DataFormats/RecoCandidate"/>
   <use name="DataFormats/TrackReco"/>
@@ -9,5 +9,16 @@
   <use name="RecoMuon/StandAloneTrackFinder"/>
   <use name="RecoMuon/TrackingTools"/>
   <use name="TrackingTools/PatternTools"/>
+  <use name="HeterogeneousCore/CUDACore"/> 
+  <use name="CUDADataFormats/Track"/>
+  <use name="CUDADataFormats/Muon"/>
+  <iftool name="cuda"> 
+    <use name="cuda"/> 
+    <use name="eigen"/> 
+    <use name="FWCore/Utilities"/> 
+    <export> 
+     <lib name="1"/> 
+   </export> 
+  </iftool>
   <flags EDM_PLUGIN="1"/>
 </library>
