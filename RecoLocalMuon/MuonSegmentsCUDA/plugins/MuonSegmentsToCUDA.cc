@@ -96,6 +96,9 @@ void MuonSegmentsToCUDA::produce(edm::StreamID streamID, edm::Event& iEvent, con
 
 	segmentsCUDA.fillGlobalX(index,gp.x());
 	segmentsCUDA.fillGlobalY(index,gp.y());
+	segmentsCUDA.fillGlobalZ(index,gp.z());
+	segmentsCUDA.fillGlobalR(index,pow(gp.x()*gp.x() + gp.y()*gp.y(),2));
+
 
 	segmentsCUDA.fillLayerID(index,(*it).chamberId().station());
 	if (offsets[(*it).chamberId().station()-1] == -1) offsets[(*it).chamberId().station()-1] = index;	
@@ -119,6 +122,8 @@ void MuonSegmentsToCUDA::produce(edm::StreamID streamID, edm::Event& iEvent, con
         GlobalPoint gp = cscChamber->toGlobal((*it).localPosition());
 	segmentsCUDA.fillGlobalX(index,gp.x());
 	segmentsCUDA.fillGlobalY(index,gp.y());
+	segmentsCUDA.fillGlobalZ(index,gp.z());
+	segmentsCUDA.fillGlobalR(index,pow(gp.x()*gp.x() + gp.y()*gp.y(),2));
 
 	int layerID = -1;
 	if (id.zendcap() > 0) layerID = id.station() + 3;
