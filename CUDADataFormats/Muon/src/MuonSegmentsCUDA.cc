@@ -14,6 +14,8 @@ MuonSegmentsCUDA::MuonSegmentsCUDA(size_t maxSegments, cudaStream_t stream) {
   lSigmaDYDZ_h_ = cms::cuda::make_host_unique<float[]>(maxSegments, stream);;
   gx_h_ = cms::cuda::make_host_unique<float[]>(maxSegments, stream);;
   gy_h_ = cms::cuda::make_host_unique<float[]>(maxSegments, stream);;
+  gz_h_ = cms::cuda::make_host_unique<float[]>(maxSegments, stream);;
+  gr_h_ = cms::cuda::make_host_unique<float[]>(maxSegments, stream);;
   layerID_ = cms::cuda::make_host_unique<uint32_t[]>(maxSegments, stream);;
   offsets_ = cms::cuda::make_host_unique<uint32_t[]>(12, stream);;
 
@@ -34,6 +36,8 @@ void MuonSegmentsCUDA::fillViewAndCopy(cudaStream_t stream){
   view_h_->lSigmaDYDZ_d_ = lSigmaDYDZ_h_.get();
   view_h_->gx_d_ = gx_h_.get();
   view_h_->gy_d_ = gy_h_.get();
+  view_h_->gz_d_ = gz_h_.get();
+  view_h_->gr_d_ = gr_h_.get();
   view_h_->layerID_d_ = layerID_.get();
 
   view_h_->offsets_d_ = offsets_.get();

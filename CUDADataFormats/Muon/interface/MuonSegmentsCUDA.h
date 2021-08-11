@@ -37,6 +37,8 @@ public:
   void fillLocalSigmaDYDZ(int i, float sigmaDYDZ) { lSigmaDYDZ_h_[i] = sigmaDYDZ;}
   void fillGlobalX(int i, float x) { gx_h_[i] = x;}
   void fillGlobalY(int i, float y) { gy_h_[i] = y;}
+  void fillGlobalZ(int i, float z) { gz_h_[i] = z;}
+  void fillGlobalR(int i, float r) { gr_h_[i] = r;}
   void fillLayerID(int i, uint32_t layerID) { layerID_[i] = layerID;}
  
   uint32_t nSegments() const { return nSegments_; }
@@ -61,6 +63,8 @@ private:
   //global position of the segments
   cms::cuda::host::unique_ptr<float[]> gx_h_; 
   cms::cuda::host::unique_ptr<float[]> gy_h_;
+  cms::cuda::host::unique_ptr<float[]> gz_h_;
+  cms::cuda::host::unique_ptr<float[]> gr_h_;
  
   cms::cuda::host::unique_ptr<uint32_t[]> layerID_;
 
