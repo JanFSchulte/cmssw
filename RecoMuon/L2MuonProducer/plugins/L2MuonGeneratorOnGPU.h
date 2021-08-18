@@ -6,11 +6,11 @@
 #include "FWCore/ParameterSet/interface/ParameterSet.h"
 #include "FWCore/Utilities/interface/EDGetToken.h"
 
-//#include "CUDADataFormats/TrackingRecHit/interface/TrackingRecHit2DHeterogeneous.h"
 #include "CUDADataFormats/Muon/interface/MuonSegmentsCUDA.h"
 #include "CUDADataFormats/Track/interface/L2MuonTrackHeterogeneous.h"
 
 #include "RecoMuon/L2MuonProducer/plugins/L2MuonGeneratorKernels.h"
+#include "RecoPixelVertexing/PixelTriplets/plugins/HelixFitOnGPU.h"
 
 namespace edm {
   class Event;
@@ -34,7 +34,7 @@ public:
   static void fillDescriptions(edm::ParameterSetDescription& desc);
   static const char* fillDescriptionsLabel() { return "l2MuonGeneratorOnGPU"; }
 
-  L2MuonTrackHeterogeneous makeTuplesAsync(MuonSegmentsCUDA const& muonSegments_h, cudaStream_t stream) const;
+  L2MuonTrackHeterogeneous makeTuplesAsync(MuonSegmentsCUDA const& muonSegments_h, float bfield, cudaStream_t stream) const;
 
 public:
 

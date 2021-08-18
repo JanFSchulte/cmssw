@@ -12,6 +12,7 @@
   <use name="HeterogeneousCore/CUDACore"/> 
   <use name="CUDADataFormats/Track"/>
   <use name="CUDADataFormats/Muon"/>
+  <use name="RecoTracker/TkMSParametrization"/>
   <iftool name="cuda"> 
     <use name="cuda"/> 
     <use name="eigen"/> 

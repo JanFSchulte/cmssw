@@ -21,6 +21,7 @@
 #include "CUDADataFormats/Track/interface/L2MuonTrackHeterogeneous.h"
 #include "CUDADataFormats/Muon/interface/MuonSegmentsCUDA.h"
 #include "RecoMuon/L2MuonProducer/plugins/L2MuonGeneratorOnGPU.h"
+#include "RecoTracker/TkMSParametrization/interface/PixelRecoUtilities.h"
 
 class L2MuonProducerGPU : public edm::global::EDProducer<> {
 public:
@@ -58,6 +59,8 @@ void L2MuonProducerGPU::fillDescriptions(edm::ConfigurationDescriptions& descrip
 
 void L2MuonProducerGPU::produce(edm::StreamID streamID, edm::Event& iEvent, const edm::EventSetup& es) const {
 
+    auto bf = 1. / PixelRecoUtilities::fieldInInvGev(es);
+     
     edm::Handle<cms::cuda::Product<MuonSegmentsCUDA>> muonSegments;
     iEvent.getByToken(tokenSegmentsGPU_, muonSegments);
 
@@ -65,7 +68,7 @@ void L2MuonProducerGPU::produce(edm::StreamID streamID, edm::Event& iEvent, cons
     auto const& muonSegments_h = ctx.get(*muonSegments);
 
 
-    ctx.emplace(iEvent, tokenTrackGPU_, gpuAlgo_.makeTuplesAsync(muonSegments_h, ctx.stream()));
+    ctx.emplace(iEvent, tokenTrackGPU_, gpuAlgo_.makeTuplesAsync(muonSegments_h, bf, ctx.stream()));
 
 }
 

@@ -7,7 +7,7 @@
 #include "CUDADataFormats/Common/interface/HeterogeneousSoA.h"
 
 namespace L2MuonTrack {
-  enum class Quality : uint8_t { bad = 0, dup, loose, strict, tight, highPurity };
+  enum class Quality : uint8_t { bad = 0, edup, dup, loose, strict, tight, highPurity };
 }
 
 template <int32_t S>
