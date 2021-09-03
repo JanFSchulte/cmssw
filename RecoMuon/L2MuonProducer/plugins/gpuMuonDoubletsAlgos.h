@@ -30,25 +30,15 @@ namespace gpuMuonDoublets {
                                                     CellTracksVector* cellTracks,
                                                     MuonSegmentsCUDAView const& __restrict__ hh,
                                                     GPUCACellMuon::OuterHitOfCell* isOuterHitOfCell,
-                                                    int16_t const* __restrict__ phicuts,
+                                                    float const* __restrict__ phicuts,
                                                     float const* __restrict__ minz,
                                                     float const* __restrict__ maxz,
                                                     float const* __restrict__ maxr,
+                                                    float const* __restrict__ minr,
                                                     bool doZ0Cut,
                                                     bool doPtCut,
                                                     uint32_t maxNumOfDoublets) {
-    // ysize cuts (z in the barrel)  times 8
-    // these are used if doClusterCut is true
-    //constexpr int minYsizeB1 = 36;
-    //constexpr int minYsizeB2 = 28;
-    //constexpr int maxDYsize12 = 28;
-    //constexpr int maxDYsize = 20;
-    //constexpr int maxDYPred = 20;
-    //constexpr float dzdrFact = 8 * 0.0285 / 0.015;  // from dz/dr to "DY"
 
-    //using PhiBinner = TrackingRecHit2DSOAView::PhiBinner;
-
-    //auto const& __restrict__ phiBinner = hh.phiBinner();
     uint32_t const* __restrict__ offsets = hh.offsets();
     assert(offsets);
 
@@ -89,91 +79,42 @@ namespace gpuMuonDoublets {
       uint8_t outer = layerPairs[2 * pairLayerId + 1];
       assert(outer > inner);
 
-      //auto hoff = PhiBinner::histOff(outer);
-
       auto i = (0 == pairLayerId) ? j : j - innerLayerCumulativeSize[pairLayerId - 1];
       i += offsets[inner];
 
-      // printf("Hit in Layer %d %d %d %d\n", i, inner, pairLayerId, j);
+      printf("Hit in Layer %d %d %d %d %d %d\n", i, inner, pairLayerId, j, idy, first);
 
       assert(i >= offsets[inner]);
       assert(i < offsets[inner + 1]);
 
       // found hit corresponding to our cuda thread, now do the job
-      //auto mi = hh.detectorIndex(i);
-      //if (mi > gpuClustering::maxNumModules)
-      //  continue;  // invalid
-
-      /* maybe clever, not effective when zoCut is on
-      auto bpos = (mi%8)/4;  // if barrel is 1 for z>0
-      auto fpos = (outer>3) & (outer<7);
-      if ( ((inner<3) & (outer>3)) && bpos!=fpos) continue;
-      */
-
       auto mez = hh.gz(i);
 
       if (mez < minz[pairLayerId] || mez > maxz[pairLayerId])
         continue;
 
-/*      int16_t mes = -1;  // make compiler happy
-      if (doClusterCut) {
-        // if ideal treat inner ladder as outer
-        if (inner == 0)
-          assert(mi < 96);
-        isOuterLadder = ideal_cond ? true : 0 == (mi / 8) % 2;  // only for B1/B2/B3 B4 is opposite, FPIX:noclue...
-
-        // in any case we always test mes>0 ...
-        mes = inner > 0 || isOuterLadder ? hh.clusterSizeY(i) : -1;
-
-        if (inner == 0 && outer > 3)  // B1 and F1
-          if (mes > 0 && mes < minYsizeB1)
-            continue;                 // only long cluster  (5*8)
-        if (inner == 1 && outer > 3)  // B2 and F1
-          if (mes > 0 && mes < minYsizeB2)
-            continue;
-      }*/
       auto mep = hh.phi(i);
       auto mer = hh.gr(i);
-
       // all cuts: true if fails
-      constexpr float z0cut = 12.f;      // cm
+      constexpr float z0cut = 1500.f;      // cm
       constexpr float hardPtCut = 0.5f;  // GeV
       // cm (1 GeV track has 1 GeV/c / (e * 3.8T) ~ 87 cm radius in a 3.8T field)
       constexpr float minRadius = hardPtCut * 87.78f;
       constexpr float minRadius2T4 = 4.f * minRadius * minRadius;
-      auto ptcut = [&](int j, int16_t idphi) {
+      auto ptcut = [&](int j, float dphi) {
         auto r2t4 = minRadius2T4;
         auto ri = mer;
         auto ro = hh.gr(j);
-        auto dphi = short2phi(idphi);
         return dphi * dphi * (r2t4 - ri * ro) > (ro - ri) * (ro - ri);
       };
       auto z0cutoff = [&](int j) {
         auto zo = hh.gz(j);
         auto ro = hh.gr(j);
         auto dr = ro - mer;
-        return dr > maxr[pairLayerId] || dr < 0 || std::abs((mez * ro - mer * zo)) > z0cut * dr;
+        return dr > maxr[pairLayerId] || dr < minr[pairLayerId] || std::abs((mez * ro - mer * zo)) > z0cut * dr;
       };
 
-/*      auto zsizeCut = [&](int j) {
-        auto onlyBarrel = outer < 4;
-        auto so = hh.clusterSizeY(j);
-        auto dy = inner == 0 ? maxDYsize12 : maxDYsize;
-        // in the barrel cut on difference in size
-        // in the endcap on the prediction on the first layer (actually in the barrel only: happen to be safe for endcap as well)
-        // FIXME move pred cut to z0cutoff to optmize loading of and computaiton ...
-        auto zo = hh.zGlobal(j);
-        auto ro = hh.rGlobal(j);
-        return onlyBarrel ? mes > 0 && so > 0 && std::abs(so - mes) > dy
-                          : (inner < 4) && mes > 0 &&
-                                std::abs(mes - int(std::abs((mez - zo) / (mer - ro)) * dzdrFact + 0.5f)) > maxDYPred;
-      };
-*/
       auto iphicut = phicuts[pairLayerId];
-
-      //auto kl = PhiBinner::bin(int16_t(mep - iphicut));
-      //auto kh = PhiBinner::bin(int16_t(mep + iphicut));
-      //auto incr = [](auto& k) { return k = (k + 1) % PhiBinner::nbins(); };
 
 #ifdef GPU_DEBUG
       int tot = 0;
@@ -181,53 +122,42 @@ namespace gpuMuonDoublets {
       int tooMany = 0;
 #endif
 
-      //auto khh = kh;
-      //incr(khh);
+      uint32_t p = offsets[outer];
+      uint32_t e = offsets[outer + 1];
+      p += first;
+      printf("before the cuts: %d %d\n", p, e);
+      for (; p < e; p += stride) {
+        auto oi = p;
+        assert(oi >= offsets[outer]);
+        assert(oi < offsets[outer + 1]);
 
-//      for (auto kk = kl; kk != khh; incr(kk)) {
-//#ifdef GPU_DEBUG
-//        if (kk != kl && kk != kh)
-//          nmin += phiBinner.size(kk + hoff);
-//#endif
-        uint32_t p = offsets[outer];
-        uint32_t e = offsets[outer + 1];
-        p += first;
-        for (; p < e; p += stride) {
-          auto oi = p;
-          assert(oi >= offsets[outer]);
-          assert(oi < offsets[outer + 1]);
-          //auto mo = hh.detectorIndex(oi);
-          //if (mo > gpuClustering::maxNumModules)
-          //  continue;  //    invalid
-
-          if (doZ0Cut && z0cutoff(oi))
-            continue;
-
-          auto mop = hh.phi(oi);
-          uint16_t idphi = std::min(std::abs(int16_t(mop - mep)), std::abs(int16_t(mep - mop)));
-          if (idphi > iphicut)
-            continue;
-
-          //if (doClusterCut && zsizeCut(oi))
-           // continue;
-          if (doPtCut && ptcut(oi, idphi))
-            continue;
-
-          auto ind = atomicAdd(nCells, 1);
-          if (ind >= maxNumOfDoublets) {
-            atomicSub(nCells, 1);
-            break;
-          }  // move to SimpleVector??
-          // int layerPairId, int doubletId, int innerHitId, int outerHitId)
-          cells[ind].init(*cellNeighbors, *cellTracks, hh, pairLayerId, ind, i, oi);
-          isOuterHitOfCell[oi].push_back(ind);
+        if (doZ0Cut && z0cutoff(oi))
+          continue;
+        printf("passed z  cut: %d %d\n", p, e);
+        auto mop = hh.phi(oi);
+        float dphi = std::min(std::abs(mop - mep), std::abs(mep - mop));
+        printf("DPhi %f \n", dphi);
+        if (dphi > iphicut)
+          continue;
+        printf("pass phi cut: %d %d\n", p, e);
+        if (doPtCut && ptcut(oi, dphi))
+         continue;
+        printf("pass pT cut: %d %d\n", p, e);
+        auto ind = atomicAdd(nCells, 1);
+        if (ind >= maxNumOfDoublets) {
+          atomicSub(nCells, 1);
+          break;
+        }  // move to SimpleVector??
+        // int layerPairId, int doubletId, int innerHitId, int outerHitId)
+        printf("init a cell\n");
+        cells[ind].init(*cellNeighbors, *cellTracks, hh, pairLayerId, ind, i, oi);
+        isOuterHitOfCell[oi].push_back(ind);
 #ifdef GPU_DEBUG
-          if (isOuterHitOfCell[oi].full())
-            ++tooMany;
-          ++tot;
+        if (isOuterHitOfCell[oi].full())
+          ++tooMany;
+        ++tot;
 #endif
-        }
-//      }
+      }
 
 #ifdef GPU_DEBUG
       if (tooMany > 0)

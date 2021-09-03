@@ -91509,6 +91509,10 @@ process.HLTAK8CaloJetsSequence = cms.Sequence( process.HLTAK8CaloJetsReconstruct
 process.HLTDoCaloSequencePF = cms.Sequence( process.HLTDoFullUnpackingEgammaEcalWithoutPreshowerSequence + process.HLTDoLocalHcalSequence + process.hltTowerMakerForAll )
 process.HLTAK8CaloJetsPrePFRecoSequence = cms.Sequence( process.HLTDoCaloSequencePF + process.hltAK8CaloJetsPF + process.hltAK4CaloJetsPF )
 process.HLTPreAK8PFJetsRecoSequence = cms.Sequence( process.HLTAK8CaloJetsPrePFRecoSequence + process.hltAK8CaloJetsPFEt5 + process.hltAK4CaloJetsPFEt5 )
+from RecoMuon.SegmentAnalyzer.SegmentAnalyzer_cfi import SegmentAnalyzer as SegmentAnalyzer_
+
+process.SegmentAnalyzer = SegmentAnalyzer_
+
 process.HLTMuonLocalRecoSequence = cms.Sequence( process.hltMuonDTDigis + process.hltDt1DRecHits + process.hltDt4DSegments + process.hltMuonCSCDigis + process.hltCsc2DRecHits + process.hltCscSegments + process.hltMuonRPCDigis + process.hltRpcRecHits )
 process.HLTL2muonrecoNocandSequence = cms.Sequence( process.HLTMuonLocalRecoSequence + process.hltL2OfflineMuonSeeds + process.hltL2MuonSeeds + process.hltL2Muons )
 process.HLTL2muonrecoSequence = cms.Sequence( process.HLTL2muonrecoNocandSequence + process.hltL2MuonCandidates )
@@ -92021,7 +92025,7 @@ process.hltL2MuonProducerGPU = _L2MuonProducerGPU.clone(
 )
 process.hltL2MuonProducerGPU.doStats = cms.bool(False)
 
-process.HLTL2muonrecoNocandSequence = cms.Sequence( process.HLTMuonLocalRecoSequence + process.hltMuonSegmentsToCUDA + process.hltL2MuonProducerGPU) 
+process.HLTL2muonrecoNocandSequence = cms.Sequence( process.HLTMuonLocalRecoSequence + process.hltMuonSegmentsToCUDA + process.hltL2MuonProducerGPU + process.hltL2OfflineMuonSeeds + process.hltL2MuonSeeds + process.hltL2Muons + process.SegmentAnalyzer) 
 process.HLTL2muonrecoSequence = cms.Sequence( process.HLTL2muonrecoNocandSequence )
 
 process.HLT_IsoMu24_v13 = cms.Path( process.HLTBeginSequence + process.hltL1sSingleMu22 + process.hltPreIsoMu24 + process.hltL1fL1sMu22L1Filtered0 + process.HLTL2muonrecoSequence +  process.HLTEndSequence )
@@ -92034,6 +92038,14 @@ process.load( "DQMServices.Core.DQMStore_cfi" )
 process.dqmOutput = cms.OutputModule("DQMRootOutputModule",
     fileName = cms.untracked.string("DQMIO.root")
 )
+
+process.TFileService = cms.Service("TFileService",
+      fileName = cms.string("segments.root"),
+      closeFileFast = cms.untracked.bool(True)
+  )
+
+
+
 process.HLTSchedule = cms.Schedule( *(process.HLTriggerFirstPath,process.HLT_IsoMu24_v13,process.HLTriggerFinalPath))
 
 # source module (EDM inputs)
@@ -92054,7 +92066,7 @@ process.source = cms.Source( "PoolSource",
 )
 # limit the number of events to be processed
 process.maxEvents = cms.untracked.PSet(
-    input = cms.untracked.int32( 1000 )
+    input = cms.untracked.int32( 25 )
 )
 
 # enable TrigReport, TimeReport and MultiThreading
