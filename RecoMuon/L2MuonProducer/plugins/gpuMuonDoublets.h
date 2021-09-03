@@ -18,7 +18,7 @@ namespace gpuMuonDoublets {
   CONSTANT_VAR const uint8_t layerPairs[2 * nPairs] = {
       0, 1, 0, 4, 0, 8,              // MB1 (3)
       1, 2, 1, 4, 1, 8,              // MB2 (6)
-      4, 5, 9, 9,                    // ME1 (8)
+      4, 5, 8, 9,                    // ME1 (8)
       2, 3, 2, 4, 2, 8, 5, 6, 9, 10, // MB3 & ME2 (13)
       6, 7, 10, 11,                  // ME3 (15)       
       0, 2, 1, 3,                    // Jumping Barrel (17)
@@ -26,37 +26,41 @@ namespace gpuMuonDoublets {
       4, 6, 5, 7, 8, 10, 9, 11       // Jumping Forward (23)
   };
 
-  constexpr int16_t phi0p05 = 522;  // round(521.52189...) = phi2short(0.05);
-  constexpr int16_t phi0p06 = 626;  // round(625.82270...) = phi2short(0.06);
-  constexpr int16_t phi0p07 = 730;  // round(730.12648...) = phi2short(0.07);
 
-  CONSTANT_VAR const int16_t phicuts[nPairs]{phi0p05,
-                                             phi0p07,
-                                             phi0p07,
-                                             phi0p05,
-                                             phi0p06,
-                                             phi0p06,
-                                             phi0p05,
-                                             phi0p05,
-                                             phi0p06,
-                                             phi0p06,
-                                             phi0p06,
-                                             phi0p05,
-                                             phi0p05,
-                                             phi0p05,
-                                             phi0p05,
-                                             phi0p05,
-                                             phi0p05,
-                                             phi0p05,
-                                             phi0p05};
+  CONSTANT_VAR const float phicuts[nPairs]{0.5,
+                                             0.5,
+                                             0.5,
+                                             0.5,
+                                             0.5,
+                                             0.5,
+                                             0.7,
+                                             0.7,
+                                             0.5,
+                                             0.5,
+                                             0.5,
+                                             0.5,
+                                             0.5,
+                                             0.5,
+                                             0.5,
+                                             0.5,
+                                             0.5,
+                                             0.5,
+                                             0.5,
+                                             0.5,
+                                             0.5,
+                                             0.5,
+                                             0.5,};
   //   phi0p07, phi0p07, phi0p06,phi0p06, phi0p06,phi0p06};  // relaxed cuts
 
   CONSTANT_VAR float const minz[nPairs] = {
-      -20., 0., -30., -22., 10., -30., -70., -70., -22., 15., -30, -70., -70., -20., -22., 0, -30., -70., -70.};
+      -750., 0.,   -750., -750., 0.,  -750., 500., -800., -750., -750., 0, 800., -900., 900., -1000., -750, -750., 0., -750.,500., 750., -800.,-800};
   CONSTANT_VAR float const maxz[nPairs] = {
-      20., 30., 0., 22., 30., -10., 70., 70., 22., 30., -15., 70., 70., 20., 22., 30., 0., 70., 70.};
+       750., 750., 0.,     750., 750., 0.,   800., -500.,  750., 0.,  750., 900.,-800.,  1000., -900., 750., 750., 750., 0., 800., 800., -500.,-750 };
   CONSTANT_VAR float const maxr[nPairs] = {
-      20., 9., 9., 20., 7., 7., 5., 5., 20., 6., 6., 5., 5., 20., 20., 9., 9., 9., 9.};
+      150,250.,300.,150.,200., 200., 200., 200., 200., 100 , 100., 150., 150., 150., 150., 300., 300., 250., 250., 200., 200., 200., 200.};
+  CONSTANT_VAR float const minr[nPairs] = {
+      0.,-200.,-200.,0.,0., 0., -100., -100., 0. , -100., -100., -100., -150., -150., -300., 0., 0., 0., 0., 0., -100., 0.,-100.};
+
 
   // end constants
   // clang-format on
@@ -119,6 +123,7 @@ namespace gpuMuonDoublets {
                       minz,
                       maxz,
                       maxr,
+                      minr,
                       doZ0Cut,
                       doPtCut,
                       maxNumOfDoublets);

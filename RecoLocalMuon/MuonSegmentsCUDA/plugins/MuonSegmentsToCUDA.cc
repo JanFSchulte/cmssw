@@ -97,7 +97,7 @@ void MuonSegmentsToCUDA::produce(edm::StreamID streamID, edm::Event& iEvent, con
 	segmentsCUDA.fillGlobalX(index,gp.x());
 	segmentsCUDA.fillGlobalY(index,gp.y());
 	segmentsCUDA.fillGlobalZ(index,gp.z());
-	segmentsCUDA.fillGlobalR(index,pow(gp.x()*gp.x() + gp.y()*gp.y(),2));
+	segmentsCUDA.fillGlobalR(index,pow(gp.x()*gp.x() + gp.y()*gp.y(),0.5));
 	segmentsCUDA.fillPhi(index,gp.phi().value());
 
 
@@ -124,12 +124,12 @@ void MuonSegmentsToCUDA::produce(edm::StreamID streamID, edm::Event& iEvent, con
 	segmentsCUDA.fillGlobalX(index,gp.x());
 	segmentsCUDA.fillGlobalY(index,gp.y());
 	segmentsCUDA.fillGlobalZ(index,gp.z());
-	segmentsCUDA.fillGlobalR(index,pow(gp.x()*gp.x() + gp.y()*gp.y(),2));
+	segmentsCUDA.fillGlobalR(index,pow(gp.x()*gp.x() + gp.y()*gp.y(),0.5));
 	segmentsCUDA.fillPhi(index,gp.phi().value());
 
 	int layerID = -1;
-	if (id.zendcap() > 0) layerID = id.station() + 3;
-	else layerID = id.station() + 7;
+	if (id.zendcap() > 0) layerID = id.station() + 4;
+	else layerID = id.station() + 8;
 
 	segmentsCUDA.fillLayerID(index,layerID);
 	if (offsets[layerID] == -1) offsets[layerID] = index;
