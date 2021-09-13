@@ -1,6 +1,6 @@
-<use name="CommonTools/Statistics"/>
-<use name="CUDADataFormats/CSCRecHit"/>
+<use name="CUDADataFormats/Muon"/>
 <use name="DataFormats/CSCRecHit"/>
+<use name="DataFormats/DTRecHit"/>
 <use name="DataFormats/Common"/>
 <use name="DataFormats/GeometryVector"/>
 <use name="DataFormats/MuonDetId"/>

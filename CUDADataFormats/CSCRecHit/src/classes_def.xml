@@ -1,0 +1,4 @@
+<lcgdict>
+  <class name="cms::cuda::Product<CSCSegmentCUDA>" persistent="false"/>
+  <class name="edm::Wrapper<cms::cuda::Product<CSCSegmentCUDA>>" persistent="false"/>
+</lcgdict>

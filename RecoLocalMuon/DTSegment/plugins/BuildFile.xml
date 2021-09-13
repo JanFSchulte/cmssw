@@ -1,6 +1,16 @@
 <use name="FWCore/Framework"/>
 <use name="RecoLocalMuon/DTSegment"/>
 <use name="CLHEP"/>
-<library file="*.cc" name="RecoLocalMuonDTSegmentPlugins">
+<library file="SealModule.cc" name="RecoLocalMuonDTSegmentPlugins">
   <flags EDM_PLUGIN="1"/>
 </library>
+<iftool name="cuda">
+  <library file="DTSegmentsToCUDA.cc" name="DTSegmentsToCUDA">
+    <use name="cuda"/>
+    <use name="CUDADataFormats/DTRecHit"/>
+    <use name="DataFormats/DTRecHit"/>
+    <use name="HeterogeneousCore/CUDACore"/>
+    <use name="HeterogeneousCore/CUDAServices"/>
+    <flags EDM_PLUGIN="1"/>
+  </library>
+</iftool>
