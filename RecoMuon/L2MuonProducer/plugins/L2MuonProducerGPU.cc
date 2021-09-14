@@ -20,6 +20,8 @@
 
 #include "CUDADataFormats/Track/interface/L2MuonTrackHeterogeneous.h"
 #include "CUDADataFormats/Muon/interface/MuonSegmentsCUDA.h"
+#include "CUDADataFormats/Muon/interface/MuonSegmentPairsCUDA.h"
+#include "CUDADataFormats/Muon/interface/MuonSegmentPairsHeterogenous.h"
 #include "RecoMuon/L2MuonProducer/plugins/L2MuonGeneratorOnGPU.h"
 #include "RecoTracker/TkMSParametrization/interface/PixelRecoUtilities.h"
 
@@ -35,6 +37,7 @@ private:
 
   edm::EDGetTokenT<cms::cuda::Product<MuonSegmentsCUDA>> tokenSegmentsGPU_;
   edm::EDPutTokenT<cms::cuda::Product<L2MuonTrackHeterogeneous>> tokenTrackGPU_;
+  edm::EDPutTokenT<cms::cuda::Product<MuonSegmentPairsHeterogeneous>> tokenSegmentPairs_;
 
   L2MuonGeneratorOnGPU gpuAlgo_;
 
@@ -45,6 +48,7 @@ L2MuonProducerGPU::L2MuonProducerGPU(const edm::ParameterSet& iConfig):
     tokenSegmentsGPU_ =
         consumes<cms::cuda::Product<MuonSegmentsCUDA>>(iConfig.getParameter<edm::InputTag>("muonSegmentsSource"));
     tokenTrackGPU_ = produces<cms::cuda::Product<L2MuonTrackHeterogeneous>>();
+    tokenSegmentPairs_ = produces<cms::cuda::Product<MuonSegmentPairsHeterogeneous>>();
 }
 
 void L2MuonProducerGPU::fillDescriptions(edm::ConfigurationDescriptions& descriptions) {
@@ -68,6 +72,8 @@ void L2MuonProducerGPU::produce(edm::StreamID streamID, edm::Event& iEvent, cons
     auto const& muonSegments_h = ctx.get(*muonSegments);
 
 
+    //ctx.emplace(iEvent, tokenSegmentPairs_, gpuAlgo_.makeDoubletsAsync(muonSegments_h, bf, ctx.stream()));
+    //gpuAlgo_.makeDoubletsAsync(muonSegments_h, bf, ctx.stream());
     ctx.emplace(iEvent, tokenTrackGPU_, gpuAlgo_.makeTuplesAsync(muonSegments_h, bf, ctx.stream()));
 
 }
