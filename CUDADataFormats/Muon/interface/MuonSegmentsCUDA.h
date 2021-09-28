@@ -45,7 +45,20 @@ public:
   uint32_t nSegments() const { return nSegments_; }
   uint32_t getOffset(int i) const { return offsets_[i]; }
 
-
+  float localX(int i) const { return lx_h_[i];}
+  float localY(int i) const { return ly_h_[i];}
+  float localDXDZ(int i) const { return ldxdz_h_[i];}
+  float localDYDZ(int i) const { return ldxdz_h_[i];}
+  float localSigmaX(int i) const { return lSigmaX_h_[i];}
+  float localSigmaY(int i) const { return lSigmaY_h_[i];}
+  float localSigmaDXDZ(int i) const { return lSigmaDXDZ_h_[i];}
+  float localSigmaDYDZ(int i) const { return lSigmaDYDZ_h_[i];}
+  float globalX(int i) const { return gx_h_[i];}
+  float globalY(int i) const { return gy_h_[i];}
+  float globalZ(int i) const { return gz_h_[i];}
+  float globalR(int i) const { return gr_h_[i];}
+  float phi(int i) const { return phi_h_[i];}
+  uint32_t layerID(int i) const { return layerID_[i];} 
 
 private:
 

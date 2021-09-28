@@ -111,3 +111,18 @@ L2MuonTrackHeterogeneous L2MuonGeneratorOnGPU::makeTuplesAsync(MuonSegmentsCUDA 
 
   return tracks;
 }
+MuonSegmentPairsHeterogeneous L2MuonGeneratorOnGPU::makeDoubletsAsync(MuonSegmentsCUDA const& muonSegments_h,
+                                                                    float bfield,
+                                                                    cudaStream_t stream) const {
+
+  MuonSegmentPairsHeterogeneous pairs(cms::cuda::make_device_unique<MuonSegmentPairsCUDA>(stream));
+  auto* soa = pairs.get();
+
+  L2MuonGeneratorKernelsGPU kernels(m_params);
+  //kernels.setCounters(m_counters);
+  int32_t nSegments = muonSegments_h.nSegments();
+  kernels.allocateOnGPU(nSegments,stream);
+  kernels.buildAndReturnDoublets(muonSegments_h, soa, stream);
+
+  return pairs;
+}

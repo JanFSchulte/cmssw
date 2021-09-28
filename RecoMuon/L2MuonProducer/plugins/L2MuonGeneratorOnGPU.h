@@ -6,9 +6,12 @@
 #include "FWCore/ParameterSet/interface/ParameterSet.h"
 #include "FWCore/Utilities/interface/EDGetToken.h"
 
+
 #include "CUDADataFormats/Muon/interface/MuonSegmentsCUDA.h"
+#include "CUDADataFormats/Muon/interface/MuonSegmentPairsCUDA.h"
 #include "CUDADataFormats/Track/interface/L2MuonTrackHeterogeneous.h"
 
+#include "CUDADataFormats/Muon/interface/MuonSegmentPairsHeterogeneous.h"
 #include "RecoMuon/L2MuonProducer/plugins/L2MuonGeneratorKernels.h"
 #include "RecoPixelVertexing/PixelTriplets/plugins/HelixFitOnGPU.h"
 
@@ -35,6 +38,7 @@ public:
   static const char* fillDescriptionsLabel() { return "l2MuonGeneratorOnGPU"; }
 
   L2MuonTrackHeterogeneous makeTuplesAsync(MuonSegmentsCUDA const& muonSegments_h, float bfield, cudaStream_t stream) const;
+  MuonSegmentPairsHeterogeneous makeDoubletsAsync(MuonSegmentsCUDA const& muonSegments_h, float bfield, cudaStream_t stream) const;
 
 public:
 

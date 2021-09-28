@@ -71,12 +71,11 @@ void MuonSegmentsToCUDA::produce(edm::StreamID streamID, edm::Event& iEvent, con
   const CSCSegmentCollection& cscSegments = iEvent.get(cscSegmentsGetToken_);
 
 
-  int nSegments = dtSegments.size() + cscSegments.size();
+  uint32_t nSegments = dtSegments.size() + cscSegments.size();
 
   auto segmentsCUDA = MuonSegmentsCUDA(nSegments,ctx.stream());  
   segmentsCUDA.setNSegents(nSegments);
-
-  int offsets[12] = {0,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1};
+  int offsets[13] = {0,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,(int)nSegments};
 
   int index = 0;
   for (DTRecSegment4DCollection::const_iterator it = dtSegments.begin(); it != dtSegments.end(); it++) {
@@ -100,10 +99,10 @@ void MuonSegmentsToCUDA::produce(edm::StreamID streamID, edm::Event& iEvent, con
 	segmentsCUDA.fillGlobalR(index,pow(gp.x()*gp.x() + gp.y()*gp.y(),0.5));
 	segmentsCUDA.fillPhi(index,gp.phi().value());
 
-
-	segmentsCUDA.fillLayerID(index,(*it).chamberId().station());
-	if (offsets[(*it).chamberId().station()-1] == -1) offsets[(*it).chamberId().station()-1] = index;	
+	segmentsCUDA.fillLayerID(index,(*it).chamberId().station()-1);
+	//if (offsets[(*it).chamberId().station()-1] == -1) offsets[(*it).chamberId().station()-1] = index;	
 	index++;
+	offsets[(*it).chamberId().station()] = index;	
   }
 
   for (CSCSegmentCollection::const_iterator it = cscSegments.begin(); it != cscSegments.end(); it++) {
@@ -130,13 +129,13 @@ void MuonSegmentsToCUDA::produce(edm::StreamID streamID, edm::Event& iEvent, con
 	int layerID = -1;
 	if (id.zendcap() > 0) layerID = id.station() + 4;
 	else layerID = id.station() + 8;
-
-	segmentsCUDA.fillLayerID(index,layerID);
-	if (offsets[layerID] == -1) offsets[layerID] = index;
+	segmentsCUDA.fillLayerID(index,layerID-1);
+	//if (offsets[layerID-1] == -1) offsets[layerID-1] = index;
 	index++;
+	offsets[layerID] = index;
   }
 
-  for (int i = 0; i < 12; i++){
+  for (int i = 0; i < 13; i++){
      if (offsets[i] == -1) offsets[i] = offsets[i-1];
      segmentsCUDA.fillOffsets(i,offsets[i]);
   }
