@@ -4,6 +4,7 @@
 #include "CUDADataFormats/Track/interface/L2MuonTrackHeterogeneous.h"
 #include "GPUCACellMuon.h" // That's were the hard part will have to go
 #include "CUDADataFormats/Muon/interface/MuonSegmentsCUDA.h"
+#include "CUDADataFormats/Muon/interface/MuonSegmentPairsCUDA.h"
 
 namespace l2MuonGenerator{
 
@@ -126,6 +127,7 @@ public:
   void launchKernels(SegmentsOnCPU const& hh, TkSoA* tuples_d, cudaStream_t cudaStream);
 
   void buildDoublets(SegmentsOnCPU const& hSegments, cudaStream_t stream);
+  void buildAndReturnDoublets(SegmentsOnCPU const& hSegments, MuonSegmentPairsCUDA* pairs_d, cudaStream_t stream);
   void buildL2Muons(SegmentsOnCPU const& hSegments, L2MuonTrack::TrackSoA* l2Muons_d, cudaStream_t stream) const;//
   void allocateOnGPU(int32_t nSegments, cudaStream_t stream);
   void fillHitDetIndices(SegmentsView const* hv, TkSoA* tuples_d, cudaStream_t cudaStream);

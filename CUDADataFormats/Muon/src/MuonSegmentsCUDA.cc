@@ -43,6 +43,7 @@ void MuonSegmentsCUDA::fillViewAndCopy(cudaStream_t stream){
   view_h_->layerID_d_ = layerID_.get();
 
   view_h_->offsets_d_ = offsets_.get();
+  view_h_->nSegments_d_ = nSegments_;
 
   view_d_ = cms::cuda::make_device_unique<MuonSegmentsCUDAView>(stream);
   cms::cuda::copyAsync(view_d_, view_h_, stream);

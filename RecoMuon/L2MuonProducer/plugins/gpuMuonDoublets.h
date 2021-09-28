@@ -27,39 +27,52 @@ namespace gpuMuonDoublets {
   };
 
 
-  CONSTANT_VAR const float phicuts[nPairs]{0.5,
-                                             0.5,
-                                             0.5,
-                                             0.5,
-                                             0.5,
-                                             0.5,
-                                             0.7,
-                                             0.7,
-                                             0.5,
-                                             0.5,
-                                             0.5,
-                                             0.5,
-                                             0.5,
-                                             0.5,
-                                             0.5,
-                                             0.5,
-                                             0.5,
-                                             0.5,
-                                             0.5,
-                                             0.5,
-                                             0.5,
-                                             0.5,
-                                             0.5,};
+  CONSTANT_VAR const float phicuts[nPairs]{0.4,
+                                             0.4,
+                                             0.4,
+                                             0.4,
+                                             0.4,
+                                             0.4,
+                                             0.4,
+                                             0.4,
+                                             0.4,
+                                             0.4,
+                                             0.4,
+                                             0.4,
+                                             0.4,
+                                             0.4,
+                                             0.4,
+                                             0.4,
+                                             0.4,
+                                             0.4,
+                                             0.4,
+                                             0.4,
+                                             0.4,
+                                             0.4,
+                                             0.4,};
   //   phi0p07, phi0p07, phi0p06,phi0p06, phi0p06,phi0p06};  // relaxed cuts
+//  CONSTANT_VAR float const minz[nPairs] = {
+//      -750., 0.,   -750., -750., 0.,  -750., 500., -800., -750., -750., 0, 800., -900., 900., -1000., -750, -750., 0., -750.,500., 750., -800.,-800};
+//  CONSTANT_VAR float const maxz[nPairs] = {
+//       750., 750., 0.,     750., 750., 0.,   800., -500.,  750., 0.,  750., 900.,-800.,  1000., -900., 750., 750., 750., 0., 800., 800., -500.,-750 };
 
   CONSTANT_VAR float const minz[nPairs] = {
-      -750., 0.,   -750., -750., 0.,  -750., 500., -800., -750., -750., 0, 800., -900., 900., -1000., -750, -750., 0., -750.,500., 750., -800.,-800};
+      -750., 0.,   -750., -750., 0.,  -750., 500., -800., -750., -750., 0, 550., -800., 800., -900., -750, -750., 0., -750.,500., 800., -800.,-900};
   CONSTANT_VAR float const maxz[nPairs] = {
-       750., 750., 0.,     750., 750., 0.,   800., -500.,  750., 0.,  750., 900.,-800.,  1000., -900., 750., 750., 750., 0., 800., 800., -500.,-750 };
+       750., 750., 0.,     750., 750., 0.,   800., -500.,  750., 0.,  750., 800.,-550.,  900., -800., 750., 750., 750., 0., 800., 900., -500.,-800 };
   CONSTANT_VAR float const maxr[nPairs] = {
       150,250.,300.,150.,200., 200., 200., 200., 200., 100 , 100., 150., 150., 150., 150., 300., 300., 250., 250., 200., 200., 200., 200.};
   CONSTANT_VAR float const minr[nPairs] = {
       0.,-200.,-200.,0.,0., 0., -100., -100., 0. , -100., -100., -100., -150., -150., -300., 0., 0., 0., 0., 0., -100., 0.,-100.};
+
+  CONSTANT_VAR float const mindz[nPairs] = {
+      -270., 40., -290., -270., 40.,  -210., 80., -300., -290., 20., -100.,  70, -160., 60., -140., -300., -300, 160., -400., 200.,160., -400., -250.};
+  CONSTANT_VAR float const maxdz[nPairs] = {
+       270., 290., -40.,  270., 210., -40., 260., -100.,  290.,100.,  -20., 140, -100.,140., -60. ,  300.,  300, 400., -160., 400.,250., -200., -160.};
+
+  CONSTANT_VAR float const maxdist[nPairs] = {
+       1500., 300., 300.,  1500., 1500., 1500., 150., 150.,  1500.,150.,150., 200, 200.,200.,200., 800.,  800, 500., 500., 200.,200., 200., 20.};
+
 
 
   // end constants
@@ -124,9 +137,40 @@ namespace gpuMuonDoublets {
                       maxz,
                       maxr,
                       minr,
+                      mindz,
+                      maxdz,
+                      maxdist,
                       doZ0Cut,
                       doPtCut,
                       maxNumOfDoublets);
+  }
+    __global__  void fillDoublets(GPUCACellMuon* cells,
+                                uint32_t* nCells,
+                                MuonSegmentsCUDAView const* __restrict__ hhp,
+				MuonSegmentPairsCUDA *pairs_d) {
+    	auto const& __restrict__ hh = *hhp;
+	auto firstCellIndex = threadIdx.y + blockIdx.y * blockDim.y;
+	pairs_d->nPairs = (*nCells);
+  	for (int idx = firstCellIndex, nt = (*nCells); idx < nt; idx += gridDim.y * blockDim.y) {
+
+        auto &thisCell = cells[idx];
+        auto innerHitId = thisCell.inner_hit_id();
+        auto outerHitId = thisCell.outer_hit_id();
+
+ 	pairs_d->gx1[idx]   = hh.gx(innerHitId);	
+ 	pairs_d->gy1[idx]   = hh.gy(innerHitId);	
+ 	pairs_d->gz1[idx]   = hh.gz(innerHitId);	
+ 	pairs_d->gr1[idx]   = hh.gr(innerHitId);	
+ 	pairs_d->gphi1[idx] = hh.phi(innerHitId);	
+ 	pairs_d->layerID1[idx] = hh.layerID(innerHitId);	
+
+ 	pairs_d->gx2[idx]   = hh.gx(outerHitId);	
+ 	pairs_d->gy2[idx]   = hh.gy(outerHitId);	
+ 	pairs_d->gz2[idx]   = hh.gz(outerHitId);	
+ 	pairs_d->gr2[idx]   = hh.gr(outerHitId);	
+ 	pairs_d->gphi2[idx] = hh.phi(outerHitId);	
+ 	pairs_d->layerID2[idx] = hh.layerID(outerHitId);	 
+    }
   }
 
 }  // namespace gpuMuonDoublets

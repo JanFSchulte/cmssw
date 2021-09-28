@@ -29,7 +29,7 @@ class MuonSegmentsCUDAView {
     __device__ __forceinline__ uint32_t offset(int i) const { return offsets_d_[i]; }
     __device__ __forceinline__ uint32_t* offsets() const { return offsets_d_; }
 
-    __device__ __forceinline__ int nSegments() const { return nSegments_d_; }
+    __device__ __forceinline__ uint32_t nSegments() const { return nSegments_d_; }
 
 
     float *lx_d_;
@@ -52,7 +52,7 @@ class MuonSegmentsCUDAView {
     uint32_t *layerID_d_;
     uint32_t *offsets_d_;
 
-    int nSegments_d_;
+    uint32_t nSegments_d_;
 };
  
 

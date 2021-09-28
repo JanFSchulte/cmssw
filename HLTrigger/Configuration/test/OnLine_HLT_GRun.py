@@ -92023,9 +92023,14 @@ from RecoMuon.L2MuonProducer.L2MuonProducerGPU_cfi import L2MuonProducerGPU as _
 process.hltL2MuonProducerGPU = _L2MuonProducerGPU.clone( 
         muonSegmentsSource = "hltMuonSegmentsToCUDA", 
 )
-process.hltL2MuonProducerGPU.doStats = cms.bool(False)
 
-process.HLTL2muonrecoNocandSequence = cms.Sequence( process.HLTMuonLocalRecoSequence + process.hltMuonSegmentsToCUDA + process.hltL2MuonProducerGPU + process.hltL2OfflineMuonSeeds + process.hltL2MuonSeeds + process.hltL2Muons + process.SegmentAnalyzer) 
+from RecoMuon.L2MuonProducer.segmentPairsSoA_cfi import segmentPairsSoA as _segmentPairsSoA
+process.hltSegmentPairsSoA = _segmentPairsSoA.clone(
+	src = "hltL2MuonProducerGPU",
+)
+
+process.HLTL2muonrecoNocandSequence = cms.Sequence( process.HLTMuonLocalRecoSequence + process.hltMuonSegmentsToCUDA + process.hltL2MuonProducerGPU + process.hltSegmentPairsSoA + process.hltL2OfflineMuonSeeds + process.hltL2MuonSeeds + process.hltL2Muons + process.SegmentAnalyzer) 
+#process.HLTL2muonrecoNocandSequence = cms.Sequence( process.HLTMuonLocalRecoSequence + process.hltMuonSegmentsToCUDA + process.hltL2MuonProducerGPU) 
 process.HLTL2muonrecoSequence = cms.Sequence( process.HLTL2muonrecoNocandSequence )
 
 process.HLT_IsoMu24_v13 = cms.Path( process.HLTBeginSequence + process.hltL1sSingleMu22 + process.hltPreIsoMu24 + process.hltL1fL1sMu22L1Filtered0 + process.HLTL2muonrecoSequence +  process.HLTEndSequence )
@@ -92051,22 +92056,25 @@ process.HLTSchedule = cms.Schedule( *(process.HLTriggerFirstPath,process.HLT_Iso
 # source module (EDM inputs)
 process.source = cms.Source( "PoolSource",
     fileNames = cms.untracked.vstring(
-        '/store/data/Run2018D/EphemeralHLTPhysics1/RAW/v1/000/323/775/00000/A27DFA33-8FCB-BE42-A2D2-1A396EEE2B6E.root',
-        '/store/data/Run2018D/EphemeralHLTPhysics2/RAW/v1/000/323/775/00000/C1A7FD48-D1F8-4440-BE12-A8C90ED8C7F8.root',
-        '/store/data/Run2018D/EphemeralHLTPhysics3/RAW/v1/000/323/775/00000/626BED2E-B368-F047-ADDA-DCB753121E2E.root',
-        '/store/data/Run2018D/EphemeralHLTPhysics4/RAW/v1/000/323/775/00000/18F33B51-4280-8043-80B0-D362E095A290.root',
-        '/store/data/Run2018D/EphemeralHLTPhysics5/RAW/v1/000/323/775/00000/ED086F76-9375-5441-BD4E-C2D417CEEC2E.root',
-        '/store/data/Run2018D/EphemeralHLTPhysics6/RAW/v1/000/323/775/00000/1B27116A-815D-9F4E-92F8-FCFB35B405A3.root',
-        '/store/data/Run2018D/EphemeralHLTPhysics7/RAW/v1/000/323/775/00000/44ACDD26-C399-CE47-B3FF-3804C43692E2.root',
-        '/store/data/Run2018D/EphemeralHLTPhysics8/RAW/v1/000/323/775/00000/15C71EAD-C24E-484A-A8C7-6DCEB86A7730.root',
+       '/store/relval/CMSSW_12_0_0_pre6/RelValZMM_14/GEN-SIM-DIGI-RAW/120X_mcRun3_2021_realistic_v4-v1/00000/feb97e50-1031-4433-9cdc-3ba89432de34.root', 
+       #'/store/data/Run2018D/EphemeralHLTPhysics1/RAW/v1/000/323/775/00000/A27DFA33-8FCB-BE42-A2D2-1A396EEE2B6E.root',
+       # '/store/data/Run2018D/EphemeralHLTPhysics2/RAW/v1/000/323/775/00000/C1A7FD48-D1F8-4440-BE12-A8C90ED8C7F8.root',
+       # '/store/data/Run2018D/EphemeralHLTPhysics3/RAW/v1/000/323/775/00000/626BED2E-B368-F047-ADDA-DCB753121E2E.root',
+       # '/store/data/Run2018D/EphemeralHLTPhysics4/RAW/v1/000/323/775/00000/18F33B51-4280-8043-80B0-D362E095A290.root',
+       # '/store/data/Run2018D/EphemeralHLTPhysics5/RAW/v1/000/323/775/00000/ED086F76-9375-5441-BD4E-C2D417CEEC2E.root',
+       # '/store/data/Run2018D/EphemeralHLTPhysics6/RAW/v1/000/323/775/00000/1B27116A-815D-9F4E-92F8-FCFB35B405A3.root',
+       # '/store/data/Run2018D/EphemeralHLTPhysics7/RAW/v1/000/323/775/00000/44ACDD26-C399-CE47-B3FF-3804C43692E2.root',
+       # '/store/data/Run2018D/EphemeralHLTPhysics8/RAW/v1/000/323/775/00000/15C71EAD-C24E-484A-A8C7-6DCEB86A7730.root',
     ),
     inputCommands = cms.untracked.vstring(
         'keep *'
     )
 )
+#process.source.eventsToProcess = cms.untracked.VEventRange("1:10211-1:10211")
 # limit the number of events to be processed
 process.maxEvents = cms.untracked.PSet(
-    input = cms.untracked.int32( 25 )
+    #input = cms.untracked.int32( 25 )
+    input = cms.untracked.int32( -1 )
 )
 
 # enable TrigReport, TimeReport and MultiThreading

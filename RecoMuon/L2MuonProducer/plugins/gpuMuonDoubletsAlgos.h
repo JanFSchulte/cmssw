@@ -35,14 +35,16 @@ namespace gpuMuonDoublets {
                                                     float const* __restrict__ maxz,
                                                     float const* __restrict__ maxr,
                                                     float const* __restrict__ minr,
+                                                    float const* __restrict__ mindz,
+                                                    float const* __restrict__ maxdz,
+                                                    float const* __restrict__ maxdist,
                                                     bool doZ0Cut,
                                                     bool doPtCut,
                                                     uint32_t maxNumOfDoublets) {
 
     uint32_t const* __restrict__ offsets = hh.offsets();
     assert(offsets);
-
-    auto layerSize = [=](uint8_t li) { return offsets[li + 1] - offsets[li]; };
+    auto layerSize = [=](uint8_t li) { return offsets[li+1] - offsets[li]; };
 
     // nPairsMax to be optimized later (originally was 64).
     // If it should be much bigger, consider using a block-wide parallel prefix scan,
@@ -64,13 +66,12 @@ namespace gpuMuonDoublets {
     auto idy = blockIdx.y * blockDim.y + threadIdx.y;
     auto first = threadIdx.x;
     auto stride = blockDim.x;
-
+    //printf("going in\n");
     uint32_t pairLayerId = 0;  // cannot go backward
     for (auto j = idy; j < ntot; j += blockDim.y * gridDim.y) {
       while (j >= innerLayerCumulativeSize[pairLayerId++])
         ;
       --pairLayerId;  // move to lower_bound ??
-
       assert(pairLayerId < nPairs);
       assert(j < innerLayerCumulativeSize[pairLayerId]);
       assert(0 == pairLayerId || j >= innerLayerCumulativeSize[pairLayerId - 1]);
@@ -78,40 +79,31 @@ namespace gpuMuonDoublets {
       uint8_t inner = layerPairs[2 * pairLayerId];
       uint8_t outer = layerPairs[2 * pairLayerId + 1];
       assert(outer > inner);
-
       auto i = (0 == pairLayerId) ? j : j - innerLayerCumulativeSize[pairLayerId - 1];
       i += offsets[inner];
-
-      printf("Hit in Layer %d %d %d %d %d %d\n", i, inner, pairLayerId, j, idy, first);
-
+      //if (!(inner == 2 && outer ==4)) continue;
+      //printf("inner: %d outer %d\n",inner, outer);
       assert(i >= offsets[inner]);
-      assert(i < offsets[inner + 1]);
+      assert(i < offsets[inner+1]);
 
       // found hit corresponding to our cuda thread, now do the job
       auto mez = hh.gz(i);
-
-      if (mez < minz[pairLayerId] || mez > maxz[pairLayerId])
-        continue;
-
+      //if (mez < minz[pairLayerId] || mez > maxz[pairLayerId])
+      //  continue;
       auto mep = hh.phi(i);
       auto mer = hh.gr(i);
       // all cuts: true if fails
-      constexpr float z0cut = 1500.f;      // cm
-      constexpr float hardPtCut = 0.5f;  // GeV
-      // cm (1 GeV track has 1 GeV/c / (e * 3.8T) ~ 87 cm radius in a 3.8T field)
-      constexpr float minRadius = hardPtCut * 87.78f;
-      constexpr float minRadius2T4 = 4.f * minRadius * minRadius;
-      auto ptcut = [&](int j, float dphi) {
-        auto r2t4 = minRadius2T4;
-        auto ri = mer;
-        auto ro = hh.gr(j);
-        return dphi * dphi * (r2t4 - ri * ro) > (ro - ri) * (ro - ri);
-      };
+      auto z0cut = maxdist[pairLayerId];      // cm
       auto z0cutoff = [&](int j) {
         auto zo = hh.gz(j);
         auto ro = hh.gr(j);
         auto dr = ro - mer;
-        return dr > maxr[pairLayerId] || dr < minr[pairLayerId] || std::abs((mez * ro - mer * zo)) > z0cut * dr;
+        return (dr > maxr[pairLayerId] || dr < minr[pairLayerId] || (std::abs((mez * ro - mer * zo))/dr) > z0cut);
+      };
+      auto dzcutoff = [&](int j) {
+        auto zo = hh.gz(j);
+        auto dz = zo - mez;
+        return (dz < mindz[pairLayerId] || dz > maxdz[pairLayerId]);
       };
 
       auto iphicut = phicuts[pairLayerId];
@@ -121,35 +113,30 @@ namespace gpuMuonDoublets {
       int nmin = 0;
       int tooMany = 0;
 #endif
-
       uint32_t p = offsets[outer];
-      uint32_t e = offsets[outer + 1];
+      uint32_t e = offsets[outer+1];
+      //printf("%d %d\n", p, e);
       p += first;
-      printf("before the cuts: %d %d\n", p, e);
+      //printf("before the loop\n");
       for (; p < e; p += stride) {
         auto oi = p;
         assert(oi >= offsets[outer]);
-        assert(oi < offsets[outer + 1]);
-
-        if (doZ0Cut && z0cutoff(oi))
+        assert(oi < offsets[outer+1]);
+        if (doZ0Cut && (z0cutoff(oi) || dzcutoff(oi)))
           continue;
-        printf("passed z  cut: %d %d\n", p, e);
+
+        //printf("after cut1\n");
         auto mop = hh.phi(oi);
         float dphi = std::min(std::abs(mop - mep), std::abs(mep - mop));
-        printf("DPhi %f \n", dphi);
         if (dphi > iphicut)
           continue;
-        printf("pass phi cut: %d %d\n", p, e);
-        if (doPtCut && ptcut(oi, dphi))
-         continue;
-        printf("pass pT cut: %d %d\n", p, e);
+        //printf("after cut 2\n");
         auto ind = atomicAdd(nCells, 1);
         if (ind >= maxNumOfDoublets) {
           atomicSub(nCells, 1);
           break;
         }  // move to SimpleVector??
         // int layerPairId, int doubletId, int innerHitId, int outerHitId)
-        printf("init a cell\n");
         cells[ind].init(*cellNeighbors, *cellTracks, hh, pairLayerId, ind, i, oi);
         isOuterHitOfCell[oi].push_back(ind);
 #ifdef GPU_DEBUG
@@ -158,7 +145,6 @@ namespace gpuMuonDoublets {
         ++tot;
 #endif
       }
-
 #ifdef GPU_DEBUG
       if (tooMany > 0)
         printf("OuterHitOfCell full for %d in layer %d/%d, %d,%d %d\n", i, inner, outer, nmin, tot, tooMany);

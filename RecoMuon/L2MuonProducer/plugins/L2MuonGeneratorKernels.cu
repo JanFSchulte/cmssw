@@ -178,6 +178,98 @@ void L2MuonGeneratorKernelsGPU::buildDoublets(MuonSegmentsCUDA const &muonSegmen
   cudaDeviceSynchronize();
   cudaCheck(cudaGetLastError());
 #endif
+
+}
+
+template <>
+void L2MuonGeneratorKernelsGPU::buildAndReturnDoublets(MuonSegmentsCUDA const &muonSegments_h, MuonSegmentPairsCUDA *pairs_d, cudaStream_t stream) {
+  int32_t nSegments = muonSegments_h.nSegments();
+#ifdef GPU_DEBUG
+  cudaDeviceSynchronize();
+  cudaCheck(cudaGetLastError());
+#endif
+
+  device_isOuterHitOfCell_ = cms::cuda::make_device_unique<GPUCACellMuon::OuterHitOfCell[]>(std::max(1, nSegments), stream);
+  assert(device_isOuterHitOfCell_.get());
+
+  cellStorage_ = cms::cuda::make_device_unique<unsigned char[]>(
+      caConstants::maxNumOfActiveDoublets * sizeof(GPUCACellMuon::CellNeighbors) +
+          caConstants::maxNumOfActiveDoublets * sizeof(GPUCACellMuon::CellTracks),
+      stream);
+  device_theCellNeighborsContainer_ = (GPUCACellMuon::CellNeighbors *)cellStorage_.get();
+  device_theCellTracksContainer_ = (GPUCACellMuon::CellTracks *)(cellStorage_.get() + caConstants::maxNumOfActiveDoublets *
+                                                                                      sizeof(GPUCACellMuon::CellNeighbors));
+
+
+
+  {
+    int threadsPerBlock = 128;
+    // at least one block!
+    int blocks = (std::max(1, nSegments) + threadsPerBlock - 1) / threadsPerBlock;
+    gpuMuonDoublets::initDoublets<<<blocks, threadsPerBlock, 0, stream>>>(device_isOuterHitOfCell_.get(),
+                                                                           nSegments,
+                                                                           device_theCellNeighbors_.get(),
+                                                                           device_theCellNeighborsContainer_,
+                                                                           device_theCellTracks_.get(),
+                                                                           device_theCellTracksContainer_);
+    cudaCheck(cudaGetLastError());
+  }
+  device_theCells_ = cms::cuda::make_device_unique<GPUCACellMuon[]>(params_.maxNumberOfDoublets_, stream);
+
+#ifdef GPU_DEBUG
+  cudaDeviceSynchronize();
+  cudaCheck(cudaGetLastError());
+#endif
+
+  if (0 == nSegments)
+    return;  // protect against empty events
+
+  // take all layer pairs into account
+  auto nActualPairs = gpuMuonDoublets::nPairs;
+  if (not params_.includeJumpingForwardDoublets_) {
+    // exclude forward "jumping" layer pairs
+    nActualPairs = gpuMuonDoublets::nPairsForTriplets;
+  }
+  if (params_.minHitsPerNtuplet_ > 3) {
+    // for quadruplets, exclude all "jumping" layer pairs
+    nActualPairs = gpuMuonDoublets::nPairsForQuadruplets;
+  }
+
+  assert(nActualPairs <= gpuMuonDoublets::nPairs);
+  int stride = 4;
+  int threadsPerBlock = gpuMuonDoublets::getDoubletsFromHistoMaxBlockSize / stride;
+  int blocks = (4 * nSegments + threadsPerBlock - 1) / threadsPerBlock;
+
+//  int threadsPerBlock = 1;
+//  int blocks = 1;
+ 
+
+  dim3 blks(1, blocks, 1);
+  dim3 thrs(stride, threadsPerBlock, 1);
+  gpuMuonDoublets::getDoubletsFromHisto<<<blks, thrs, 0, stream>>>(device_theCells_.get(),
+                                                                    device_nCells_,
+                                                                    device_theCellNeighbors_.get(),
+                                                                    device_theCellTracks_.get(),
+                                                                    muonSegments_h.view(),
+                                                                    device_isOuterHitOfCell_.get(),
+                                                                    nActualPairs,
+                                                                    params_.doZ0Cut_,
+                                                                    params_.doPtCut_,
+                                                                    params_.maxNumberOfDoublets_);
+
+  cudaDeviceSynchronize();
+  cudaCheck(cudaGetLastError());
+#ifdef GPU_DEBUG
+  cudaDeviceSynchronize();
+  cudaCheck(cudaGetLastError());
+#endif
+
+  gpuMuonDoublets::fillDoublets<<<blks, thrs, 0, stream>>>(device_theCells_.get(),
+                                                                    device_nCells_,
+                                                                    muonSegments_h.view(),
+								    pairs_d);
+
+
 }
 
 template <>
