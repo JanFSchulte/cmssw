@@ -93266,7 +93266,8 @@ process.hltSegmentPairsSoA = _segmentPairsSoA.clone(
 	src = "hltL2MuonProducerGPU",
 )
 
-process.HLTL2muonrecoNocandSequence = cms.Sequence( process.HLTMuonLocalRecoSequence + process.hltMuonSegmentsToCUDA + process.hltL2MuonProducerGPU + process.hltSegmentPairsSoA + process.hltL2OfflineMuonSeeds + process.hltL2MuonSeeds + process.hltL2Muons + process.SegmentAnalyzer) 
+#process.HLTL2muonrecoNocandSequence = cms.Sequence( process.HLTMuonLocalRecoSequence + process.hltMuonSegmentsToCUDA + process.hltL2MuonProducerGPU + process.hltSegmentPairsSoA + process.hltL2OfflineMuonSeeds + process.hltL2MuonSeeds + process.hltL2Muons + process.SegmentAnalyzer) 
+process.HLTL2muonrecoNocandSequence = cms.Sequence( process.HLTMuonLocalRecoSequence + process.hltMuonSegmentsToCUDA + process.hltL2MuonProducerGPU + process.hltL2OfflineMuonSeeds + process.hltL2MuonSeeds + process.hltL2Muons) 
 #process.HLTL2muonrecoNocandSequence = cms.Sequence( process.HLTMuonLocalRecoSequence + process.hltMuonSegmentsToCUDA + process.hltL2MuonProducerGPU) 
 process.HLTL2muonrecoSequence = cms.Sequence( process.HLTL2muonrecoNocandSequence )
 

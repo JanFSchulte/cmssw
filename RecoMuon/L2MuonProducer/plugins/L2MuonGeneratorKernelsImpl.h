@@ -76,14 +76,14 @@ __global__ void kernel_connect(cms::cuda::AtomicPairCounter *apc1,
           zo,
           ptmin,
           isBarrel ? CAThetaCutBarrel : CAThetaCutForward);  // 2.f*thetaCut); // FIXME tune cuts
-      //printf("aligned? %d\n",aligned);
+      printf("aligned? %d\n",aligned);
       if (aligned && thisCell.dcaCut(hh,
                                      oc,
                                      oc.inner_detIndex(hh) < caConstants::last_bpix1_detIndex ? dcaCutInnerTriplet
                                                                                               : dcaCutOuterTriplet,
                                      hardCurvCut)) {  // FIXME tune cuts
         oc.addOuterNeighbor(cellIndex, *cellNeighbors);
-        //printf("success\n");
+        printf("success\n");
         thisCell.setUsedBit(1);
         oc.setUsedBit(1);
       }

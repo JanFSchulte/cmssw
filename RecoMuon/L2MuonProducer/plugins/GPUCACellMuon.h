@@ -176,8 +176,8 @@ public:
 
     float pMin = ptmin * std::sqrt(distance_13_squared);  // this needs to be divided by
                                                           // radius_diff later
-
     float tan_12_13_half_mul_distance_13_squared = fabs(z1 * (ri - ro) + zi * (ro - r1) + zo * (r1 - ri));
+//    printf("one side: %f other side %f\n",tan_12_13_half_mul_distance_13_squared * pMin,thetaCut * distance_13_squared * radius_diff); 
     return tan_12_13_half_mul_distance_13_squared * pMin <= thetaCut * distance_13_squared * radius_diff;
   }
 
@@ -195,10 +195,10 @@ public:
     auto y3 = outer_y(hh);
 
     CircleEq<float> eq(x1, y1, x2, y2, x3, y3);
-
+    if (eq.curvature() > maxCurv) printf("failing because of max curv\n");
     if (eq.curvature() > maxCurv)
       return false;
-
+    printf("%f %f %f\n",std::abs(eq.dca0()),region_origin_radius_plus_tolerance , std::abs(eq.curvature()));
     return std::abs(eq.dca0()) < region_origin_radius_plus_tolerance * std::abs(eq.curvature());
   }
 

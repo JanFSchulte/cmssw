@@ -75,11 +75,11 @@ void L2MuonGeneratorOnGPU::fillDescriptions(edm::ParameterSetDescription& desc) 
      desc.add<bool>("doZ0Cut",true);
      desc.add<bool>("doPtCut",true);
      desc.add<double>("ptmin", 0.9f)->setComment("Cut on minimum pt");
-     desc.add<double>("CAThetaCutBarrel", 0.002f)->setComment("Cut on RZ alignement for Barrel");
-     desc.add<double>("CAThetaCutForward", 0.003f)->setComment("Cut on RZ alignment for Forward");
+     desc.add<double>("CAThetaCutBarrel", 2.0f)->setComment("Cut on RZ alignement for Barrel");
+     desc.add<double>("CAThetaCutForward", 2.0f)->setComment("Cut on RZ alignment for Forward");
      desc.add<double>("hardCurvCut", 1.f / (0.35 * 87.f))->setComment("Cut on minimum curvature");
-     desc.add<double>("dcaCutInnerTriplet", 0.15f)->setComment("Cut on origin radius when the inner hit is on BPix1");
-     desc.add<double>("dcaCutOuterTriplet", 0.25f)->setComment("Cut on origin radius when the outer hit is on BPix1");
+     desc.add<double>("dcaCutInnerTriplet", 150.f)->setComment("Cut on origin radius when the inner hit is on BPix1");
+     desc.add<double>("dcaCutOuterTriplet", 250.f)->setComment("Cut on origin radius when the outer hit is on BPix1");
      desc.add<bool>("dupPassThrough", false)->setComment("Do not reject duplicate");
 }
 
