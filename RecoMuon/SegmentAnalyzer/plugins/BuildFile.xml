@@ -12,6 +12,7 @@
 <use name="TrackingTools/Records"/>
 <use name="RecoTracker/TransientTrackingRecHit"/>
 <use name="RecoMuon/TransientTrackingRecHit"/>
+  <use name="CUDADataFormats/Track"/>
   <use name="CUDADataFormats/Muon"/>
   <iftool name="cuda"> 
     <use name="cuda"/> 

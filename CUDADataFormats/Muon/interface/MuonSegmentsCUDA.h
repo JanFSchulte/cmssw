@@ -27,38 +27,45 @@ public:
 
   void setNSegents(uint32_t nSegments) { nSegments_ = nSegments; }
   void fillOffsets(uint32_t i, uint32_t offset) { offsets_[i] = offset; }
-  void fillLocalX(int i, float x) { lx_h_[i] = x;}
-  void fillLocalY(int i, float y) { ly_h_[i] = y;}
-  void fillLocalDXDZ(int i, float dxdz) { ldxdz_h_[i] = dxdz;}
-  void fillLocalDYDZ(int i, float dydz) { ldxdz_h_[i] = dydz;}
-  void fillLocalSigmaX(int i, float sigmaX) { lSigmaX_h_[i] = sigmaX;}
-  void fillLocalSigmaY(int i, float sigmaY) { lSigmaY_h_[i] = sigmaY;}
-  void fillLocalSigmaDXDZ(int i, float sigmaDXDZ) { lSigmaDXDZ_h_[i] = sigmaDXDZ;}
-  void fillLocalSigmaDYDZ(int i, float sigmaDYDZ) { lSigmaDYDZ_h_[i] = sigmaDYDZ;}
-  void fillGlobalX(int i, float x) { gx_h_[i] = x;}
-  void fillGlobalY(int i, float y) { gy_h_[i] = y;}
-  void fillGlobalZ(int i, float z) { gz_h_[i] = z;}
-  void fillGlobalR(int i, float r) { gr_h_[i] = r;}
-  void fillPhi(int i, float phi) { phi_h_[i] = phi;}
-  void fillLayerID(int i, uint32_t layerID) { layerID_[i] = layerID;}
+
+  void fillLocalX(uint32_t i, float x) { lx_h_[i] = x;}
+  void fillLocalY(uint32_t i, float y) { ly_h_[i] = y;}
+  void fillLocalDXDZ(uint32_t i, float dxdz) { ldxdz_h_[i] = dxdz;}
+  void fillLocalDYDZ(uint32_t i, float dydz) { ldxdz_h_[i] = dydz;}
+  void fillLocalSigmaX(uint32_t i, float sigmaX) { lSigmaX_h_[i] = sigmaX;}
+  void fillLocalSigmaY(uint32_t i, float sigmaY) { lSigmaY_h_[i] = sigmaY;}
+  void fillLocalSigmaDXDZ(uint32_t i, float sigmaDXDZ) { lSigmaDXDZ_h_[i] = sigmaDXDZ;}
+  void fillLocalSigmaDYDZ(uint32_t i, float sigmaDYDZ) { lSigmaDYDZ_h_[i] = sigmaDYDZ;}
+  void fillGlobalX(uint32_t i, float x) { gx_h_[i] = x;}
+  void fillGlobalY(uint32_t i, float y) { gy_h_[i] = y;}
+  void fillGlobalZ(uint32_t i, float z) { gz_h_[i] = z;}
+  void fillGlobalR(uint32_t i, float r) { gr_h_[i] = r;}
+  void fillGlobalDX(uint32_t i, float dx) { gdx_h_[i] = dx;}
+  void fillGlobalDY(uint32_t i, float dy) { gdy_h_[i] = dy;}  
+  void fillGlobalDZ(uint32_t i, float dz) { gdz_h_[i] = dz;}  
+  void fillPhi(uint32_t i, float phi) { phi_h_[i] = phi;}
+  void fillLayerID(uint32_t i, uint32_t layerID) { layerID_[i] = layerID;}
  
   uint32_t nSegments() const { return nSegments_; }
-  uint32_t getOffset(int i) const { return offsets_[i]; }
+  uint32_t getOffset(uint32_t i) const { return offsets_[i]; }
 
-  float localX(int i) const { return lx_h_[i];}
-  float localY(int i) const { return ly_h_[i];}
-  float localDXDZ(int i) const { return ldxdz_h_[i];}
-  float localDYDZ(int i) const { return ldxdz_h_[i];}
-  float localSigmaX(int i) const { return lSigmaX_h_[i];}
-  float localSigmaY(int i) const { return lSigmaY_h_[i];}
-  float localSigmaDXDZ(int i) const { return lSigmaDXDZ_h_[i];}
-  float localSigmaDYDZ(int i) const { return lSigmaDYDZ_h_[i];}
-  float globalX(int i) const { return gx_h_[i];}
-  float globalY(int i) const { return gy_h_[i];}
-  float globalZ(int i) const { return gz_h_[i];}
-  float globalR(int i) const { return gr_h_[i];}
-  float phi(int i) const { return phi_h_[i];}
-  uint32_t layerID(int i) const { return layerID_[i];} 
+  float localX(uint32_t i) const { return lx_h_[i];}
+  float localY(uint32_t i) const { return ly_h_[i];}
+  float localDXDZ(uint32_t i) const { return ldxdz_h_[i];}
+  float localDYDZ(uint32_t i) const { return ldydz_h_[i];}
+  float localSigmaX(uint32_t i) const { return lSigmaX_h_[i];}
+  float localSigmaY(uint32_t i) const { return lSigmaY_h_[i];}
+  float localSigmaDXDZ(uint32_t i) const { return lSigmaDXDZ_h_[i];}
+  float localSigmaDYDZ(uint32_t i) const { return lSigmaDYDZ_h_[i];}  
+  float globalX(uint32_t i) const { return gx_h_[i];}
+  float globalY(uint32_t i) const { return gy_h_[i];}
+  float globalZ(uint32_t i) const { return gz_h_[i];}
+  float globalR(uint32_t i) const { return gr_h_[i];}
+  float globalDX(uint32_t i) const { return gdx_h_[i];}
+  float globalDY(uint32_t i) const { return gdy_h_[i];}
+  float globalDZ(uint32_t i) const { return gdz_h_[i];}
+  float phi(uint32_t i) const { return phi_h_[i];}
+  uint32_t layerID(uint32_t i) const { return layerID_[i];} 
 
 private:
 
@@ -79,6 +86,11 @@ private:
   cms::cuda::host::unique_ptr<float[]> gy_h_;
   cms::cuda::host::unique_ptr<float[]> gz_h_;
   cms::cuda::host::unique_ptr<float[]> gr_h_;
+  //global direction of the segments
+  cms::cuda::host::unique_ptr<float[]> gdx_h_; 
+  cms::cuda::host::unique_ptr<float[]> gdy_h_;
+  cms::cuda::host::unique_ptr<float[]> gdz_h_;
+
   cms::cuda::host::unique_ptr<float[]> phi_h_;
  
   cms::cuda::host::unique_ptr<uint32_t[]> layerID_;

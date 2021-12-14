@@ -92,15 +92,20 @@ void MuonSegmentsToCUDA::produce(edm::StreamID streamID, edm::Event& iEvent, con
 
         DTChamberId id = (DTChamberId)(*it).chamberId();
         GlobalPoint gp = dtGeom->chamber(id)->toGlobal((*it).localPosition());
+        GlobalVector gv = dtGeom->chamber(id)->toGlobal((*it).localDirection());
 
 	segmentsCUDA.fillGlobalX(index,gp.x());
 	segmentsCUDA.fillGlobalY(index,gp.y());
 	segmentsCUDA.fillGlobalZ(index,gp.z());
 	segmentsCUDA.fillGlobalR(index,pow(gp.x()*gp.x() + gp.y()*gp.y(),0.5));
+	segmentsCUDA.fillGlobalDX(index,gv.x());
+	segmentsCUDA.fillGlobalDY(index,gv.y());
+	segmentsCUDA.fillGlobalDZ(index,gv.z());
+
 	segmentsCUDA.fillPhi(index,gp.phi().value());
 
+
 	segmentsCUDA.fillLayerID(index,(*it).chamberId().station()-1);
-	//if (offsets[(*it).chamberId().station()-1] == -1) offsets[(*it).chamberId().station()-1] = index;	
 	index++;
 	offsets[(*it).chamberId().station()] = index;	
   }
@@ -120,10 +125,16 @@ void MuonSegmentsToCUDA::produce(edm::StreamID streamID, edm::Event& iEvent, con
         CSCDetId id = (CSCDetId)(*it).cscDetId();
         const CSCChamber* cscChamber = cscGeom->chamber(id);
         GlobalPoint gp = cscChamber->toGlobal((*it).localPosition());
+        GlobalVector gv = cscChamber->toGlobal((*it).localDirection());
+
 	segmentsCUDA.fillGlobalX(index,gp.x());
 	segmentsCUDA.fillGlobalY(index,gp.y());
 	segmentsCUDA.fillGlobalZ(index,gp.z());
 	segmentsCUDA.fillGlobalR(index,pow(gp.x()*gp.x() + gp.y()*gp.y(),0.5));
+	segmentsCUDA.fillGlobalDX(index,gv.x());
+	segmentsCUDA.fillGlobalDY(index,gv.y());
+	segmentsCUDA.fillGlobalDZ(index,gv.z());
+
 	segmentsCUDA.fillPhi(index,gp.phi().value());
 
 	int layerID = -1;

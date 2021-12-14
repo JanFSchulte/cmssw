@@ -66,7 +66,6 @@ __global__ void kernel_connect(cms::cuda::AtomicPairCounter *apc1,
       auto &oc = cells[otherCell];
       auto r1 = oc.inner_r(hh);
       auto z1 = oc.inner_z(hh);
-      //printf("trying\n");
       bool aligned = GPUCACellMuon::areAlignedRZ(
           r1,
           z1,
@@ -76,14 +75,19 @@ __global__ void kernel_connect(cms::cuda::AtomicPairCounter *apc1,
           zo,
           ptmin,
           isBarrel ? CAThetaCutBarrel : CAThetaCutForward);  // 2.f*thetaCut); // FIXME tune cuts
-      //printf("aligned? %d\n",aligned);
-      if (aligned && thisCell.dcaCut(hh,
+
+      auto dDirMax = 0.;
+      auto innerID = thisCell.inner_detIndex(hh);
+      auto outerID = thisCell.outer_detIndex(hh);
+
+      if (innerID < 5 && outerID < 5) dDirMax = 0.6;
+      else if (innerID < 5 && outerID >= 5) dDirMax = 0.3;
+      else dDirMax = 0.75;
+      aligned = true;
+      if (aligned && thisCell.dDirCut(hh,
                                      oc,
-                                     oc.inner_detIndex(hh) < caConstants::last_bpix1_detIndex ? dcaCutInnerTriplet
-                                                                                              : dcaCutOuterTriplet,
-                                     hardCurvCut)) {  // FIXME tune cuts
+                                     dDirMax)) {  // FIXME tune cuts
         oc.addOuterNeighbor(cellIndex, *cellNeighbors);
-        //printf("success\n");
         thisCell.setUsedBit(1);
         oc.setUsedBit(1);
       }
@@ -113,13 +117,12 @@ __global__ void kernel_find_ntuplets(GPUCACellMuon::Hits const *__restrict__ hhp
     if (thisCell.outerNeighbors().empty())
       continue;
     auto pid = thisCell.layerPairId();
-    auto doit = minHitsPerNtuplet > 3 ? pid < 3 : pid < 8 || pid > 12;
+    auto doit = true;
     if (doit) {
       GPUCACellMuon::TmpTuple stack;
       stack.reset();
       thisCell.find_ntuplets(hh, cells, *cellTracks, *foundNtuplets, *apc, quality, stack, minHitsPerNtuplet, pid < 3);
       assert(stack.empty());
-      // printf("in %d found quadruplets: %d\n", cellIndex, apc->get());
     }
   }
 }
@@ -223,5 +226,91 @@ __global__ void kernel_fillHitDetIndices(HitContainer const *__restrict__ tuples
   for (int idx = first, ntot = tuples->size(); idx < ntot; idx += gridDim.x * blockDim.x) {
     assert(tuples->content[idx] < nSegments);
     hitDetIndices->content[idx] = hh.layerID(tuples->content[idx]);
+  }
+}
+
+__global__ void kernel_extractNtuplets(MuonSegmentsCUDAView const *__restrict__ hhp,
+					 MuonSegmentNtupletsCUDA *ntuplets,
+					 HitContainer const *__restrict__ tuples) {
+
+  auto const& __restrict__ hh = *hhp;
+  int first = blockDim.x * blockIdx.x + threadIdx.x;
+  if (first == 0){
+	for (int k = 0; k < 100; k++) {
+		ntuplets->nNtuplets = 0;
+		ntuplets->segmentsInNtuplet[k] = 0;
+		ntuplets->gx1[k] = -999.;
+		ntuplets->gy1[k] = -999.;
+		ntuplets->gz1[k] = -999.;
+		ntuplets->gphi1[k] = - 999.;
+		ntuplets->gr1[k] = -999.;
+		ntuplets->layerID1[k] = -999;
+
+		ntuplets->gx2[k] = -999.;
+		ntuplets->gy2[k] = -999.;
+		ntuplets->gz2[k] = -999.;
+		ntuplets->gphi2[k] = - 999.;
+		ntuplets->gr2[k] = -999.;
+		ntuplets->layerID2[k] = -999;
+
+		ntuplets->gx3[k] = -999.;
+		ntuplets->gy3[k] = -999.;
+		ntuplets->gz3[k] = -999.;
+		ntuplets->gphi3[k] = - 999.;
+		ntuplets->gr3[k] = -999.;
+		ntuplets->layerID3[k] = -999;
+
+		ntuplets->gx4[k] = -999.;
+		ntuplets->gy4[k] = -999.;
+		ntuplets->gz4[k] = -999.;
+		ntuplets->gphi4[k] = - 999.;
+		ntuplets->gr4[k] = -999.;
+		ntuplets->layerID4[k] = -999;
+
+	}
+
+  }
+  for (int idx = first, ntot = tuples->size(); idx < ntot; idx += gridDim.x * blockDim.x) {
+	ntuplets->nNtuplets = ntot;
+	ntuplets->segmentsInNtuplet[idx] = tuples->size(idx);
+        auto const *segmentID = tuples->begin(idx);
+
+        for (unsigned int i = 0; i < tuples->size(idx); ++i) {
+        	auto index = segmentID[i]; 	
+		if (i == 0){	
+			ntuplets->gx1[idx] = hh.gx(index) ;
+	  		ntuplets->gy1[idx] = hh.gy(index);
+	  		ntuplets->gz1[idx] = hh.gz(index);
+	  		ntuplets->gphi1[idx] = hh.phi(index);
+	  		ntuplets->gr1[idx] = hh.gr(index);
+	  		ntuplets->layerID1[idx] = hh.layerID(index);
+		}
+		if (i == 1){	  
+			ntuplets->gx2[idx] = hh.gx(index) ;
+			ntuplets->gy2[idx] = hh.gy(index);
+			ntuplets->gz2[idx] = hh.gz(index);
+			ntuplets->gphi2[idx] = hh.phi(index);
+			ntuplets->gr2[idx] = hh.gr(index);
+			ntuplets->layerID2[idx] = hh.layerID(index);
+		}
+		if (i == 2){	  
+			ntuplets->gx3[idx] = hh.gx(index) ;
+			ntuplets->gy3[idx] = hh.gy(index);
+			ntuplets->gz3[idx] = hh.gz(index);
+			ntuplets->gphi3[idx] = hh.phi(index);
+			ntuplets->gr3[idx] = hh.gr(index);
+			ntuplets->layerID3[idx] = hh.layerID(index);
+		}
+		if (i == 3){	  
+			ntuplets->gx4[idx] = hh.gx(index) ;
+			ntuplets->gy4[idx] = hh.gy(index);
+			ntuplets->gz4[idx] = hh.gz(index);
+			ntuplets->gphi4[idx] = hh.phi(index);
+			ntuplets->gr4[idx] = hh.gr(index);
+			ntuplets->layerID4[idx] = hh.layerID(index);
+		}
+
+
+	}
   }
 }

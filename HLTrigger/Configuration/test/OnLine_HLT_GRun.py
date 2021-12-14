@@ -91513,6 +91513,11 @@ from RecoMuon.SegmentAnalyzer.SegmentAnalyzer_cfi import SegmentAnalyzer as Segm
 
 process.SegmentAnalyzer = SegmentAnalyzer_
 
+from RecoMuon.SegmentAnalyzer.SegmentNtupletAnalyzer_cfi import SegmentNtupletAnalyzer as SegmentNtupletAnalyzer_
+
+process.SegmentNtupletAnalyzer = SegmentNtupletAnalyzer_
+
+
 process.HLTMuonLocalRecoSequence = cms.Sequence( process.hltMuonDTDigis + process.hltDt1DRecHits + process.hltDt4DSegments + process.hltMuonCSCDigis + process.hltCsc2DRecHits + process.hltCscSegments + process.hltMuonRPCDigis + process.hltRpcRecHits )
 process.HLTL2muonrecoNocandSequence = cms.Sequence( process.HLTMuonLocalRecoSequence + process.hltL2OfflineMuonSeeds + process.hltL2MuonSeeds + process.hltL2Muons )
 process.HLTL2muonrecoSequence = cms.Sequence( process.HLTL2muonrecoNocandSequence + process.hltL2MuonCandidates )
@@ -92028,8 +92033,14 @@ from RecoMuon.L2MuonProducer.segmentPairsSoA_cfi import segmentPairsSoA as _segm
 process.hltSegmentPairsSoA = _segmentPairsSoA.clone(
 	src = "hltL2MuonProducerGPU",
 )
+from RecoMuon.L2MuonProducer.l2MuonsSoA_cfi import l2MuonsSoA as _l2MuonsSoA
+process.hltL2MuonsSoA = _l2MuonsSoA.clone(
+	src = "hltL2MuonProducerGPU",
+)
 
-process.HLTL2muonrecoNocandSequence = cms.Sequence( process.HLTMuonLocalRecoSequence + process.hltMuonSegmentsToCUDA + process.hltL2MuonProducerGPU + process.hltSegmentPairsSoA + process.hltL2OfflineMuonSeeds + process.hltL2MuonSeeds + process.hltL2Muons + process.SegmentAnalyzer) 
+
+#process.HLTL2muonrecoNocandSequence = cms.Sequence( process.HLTMuonLocalRecoSequence + process.hltMuonSegmentsToCUDA + process.hltL2MuonProducerGPU + process.hltSegmentPairsSoA + process.hltL2OfflineMuonSeeds + process.hltL2MuonSeeds + process.hltL2Muons + process.SegmentAnalyzer) 
+process.HLTL2muonrecoNocandSequence = cms.Sequence( process.HLTMuonLocalRecoSequence + process.hltMuonSegmentsToCUDA + process.hltL2MuonProducerGPU + process.hltL2MuonsSoA + process.hltL2OfflineMuonSeeds + process.hltL2MuonSeeds + process.hltL2Muons + process.SegmentNtupletAnalyzer) 
 #process.HLTL2muonrecoNocandSequence = cms.Sequence( process.HLTMuonLocalRecoSequence + process.hltMuonSegmentsToCUDA + process.hltL2MuonProducerGPU) 
 process.HLTL2muonrecoSequence = cms.Sequence( process.HLTL2muonrecoNocandSequence )
 
@@ -92056,7 +92067,7 @@ process.HLTSchedule = cms.Schedule( *(process.HLTriggerFirstPath,process.HLT_Iso
 # source module (EDM inputs)
 process.source = cms.Source( "PoolSource",
     fileNames = cms.untracked.vstring(
-       '/store/relval/CMSSW_12_0_0_pre6/RelValZMM_14/GEN-SIM-DIGI-RAW/120X_mcRun3_2021_realistic_v4-v1/00000/feb97e50-1031-4433-9cdc-3ba89432de34.root', 
+       '/store/relval/CMSSW_12_2_0_pre2/RelValZMM_14/GEN-SIM-DIGI-RAW/122X_mcRun3_2021_realistic_v1-v1/2580000/1639090c-9f92-491c-87d4-85f26fb44da9.root', 
        #'/store/data/Run2018D/EphemeralHLTPhysics1/RAW/v1/000/323/775/00000/A27DFA33-8FCB-BE42-A2D2-1A396EEE2B6E.root',
        # '/store/data/Run2018D/EphemeralHLTPhysics2/RAW/v1/000/323/775/00000/C1A7FD48-D1F8-4440-BE12-A8C90ED8C7F8.root',
        # '/store/data/Run2018D/EphemeralHLTPhysics3/RAW/v1/000/323/775/00000/626BED2E-B368-F047-ADDA-DCB753121E2E.root',

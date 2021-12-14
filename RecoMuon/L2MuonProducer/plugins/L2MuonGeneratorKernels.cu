@@ -78,9 +78,8 @@ void L2MuonGeneratorKernelsGPU::buildL2Muons(MuonSegmentsCUDA const& muonSegment
   cms::cuda::finalizeBulk<<<numberOfBlocks, blockSize, 0, stream>>>(device_hitTuple_apc_, tuples_d);
   // remove duplicates (tracks that share a doublet)
   numberOfBlocks = nDoubletBlocks(blockSize);
-  kernel_earlyDuplicateRemover<<<numberOfBlocks, blockSize, 0, stream>>>(
-      device_theCells_.get(), device_nCells_, tuples_d, quality_d, params_.dupPassThrough_);
-  cudaCheck(cudaGetLastError());
+  //kernel_earlyDuplicateRemover<<<numberOfBlocks, blockSize, 0, stream>>>(
+  //    device_theCells_.get(), device_nCells_, tuples_d, quality_d, params_.dupPassThrough_);
 
   blockSize = 128;
   numberOfBlocks = (3 * caConstants::maxTuples / 4 + blockSize - 1) / blockSize;
@@ -178,6 +177,23 @@ void L2MuonGeneratorKernelsGPU::buildDoublets(MuonSegmentsCUDA const &muonSegmen
   cudaDeviceSynchronize();
   cudaCheck(cudaGetLastError());
 #endif
+
+}
+
+template <>
+void L2MuonGeneratorKernelsGPU::extractNtuplets(MuonSegmentsCUDA const &muonSegments_h, MuonSegmentNtupletsCUDA *ntuplets_d, L2MuonTrack::TrackSoA *tracks_d, cudaStream_t stream) {
+  auto blockSize = 128;
+  auto numberOfBlocks = (HitContainer::ctCapacity() + blockSize - 1) / blockSize;
+
+  kernel_extractNtuplets<<<numberOfBlocks, blockSize, 0, stream>>>(
+      muonSegments_h.view(), ntuplets_d,  &tracks_d->hitIndices);
+
+  cudaCheck(cudaGetLastError());
+#ifdef GPU_DEBUG
+  cudaDeviceSynchronize();
+  cudaCheck(cudaGetLastError());
+#endif
+
 
 }
 

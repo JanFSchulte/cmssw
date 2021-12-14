@@ -118,7 +118,13 @@ public:
   __device__ __forceinline__ float inner_r(Hits const& hh) const { return theInnerR; }
   // { return hh.rGlobal(theInnerHitId); } // { return theInnerR; }
   __device__ __forceinline__ float outer_r(Hits const& hh) const { return hh.gr(theOuterHitId); }
-
+  __device__ __forceinline__ float inner_dx(Hits const& hh) const { return hh.gdx(theInnerHitId); }
+  __device__ __forceinline__ float outer_dx(Hits const& hh) const { return hh.gdx(theOuterHitId); }
+  __device__ __forceinline__ float inner_dy(Hits const& hh) const { return hh.gdy(theInnerHitId); }
+  __device__ __forceinline__ float outer_dy(Hits const& hh) const { return hh.gdy(theOuterHitId); }
+  __device__ __forceinline__ float inner_dz(Hits const& hh) const { return hh.gdz(theInnerHitId); }
+  __device__ __forceinline__ float outer_dz(Hits const& hh) const { return hh.gdz(theOuterHitId); }
+ 
 
   __device__ __forceinline__ float inner_detIndex(Hits const& hh) const { return hh.layerID(theInnerHitId); }
   __device__ __forceinline__ float outer_detIndex(Hits const& hh) const { return hh.layerID(theOuterHitId); }
@@ -176,9 +182,9 @@ public:
 
     float pMin = ptmin * std::sqrt(distance_13_squared);  // this needs to be divided by
                                                           // radius_diff later
-
     float tan_12_13_half_mul_distance_13_squared = fabs(z1 * (ri - ro) + zi * (ro - r1) + zo * (r1 - ri));
-    return tan_12_13_half_mul_distance_13_squared * pMin <= thetaCut * distance_13_squared * radius_diff;
+//    printf("one side: %f other side %f\n",tan_12_13_half_mul_distance_13_squared * pMin,thetaCut * distance_13_squared * radius_diff); 
+    return abs(tan_12_13_half_mul_distance_13_squared * pMin) <= thetaCut * distance_13_squared * radius_diff;
   }
 
   __device__ inline bool dcaCut(Hits const& hh,
@@ -195,10 +201,10 @@ public:
     auto y3 = outer_y(hh);
 
     CircleEq<float> eq(x1, y1, x2, y2, x3, y3);
-
+    if (eq.curvature() > maxCurv) printf("failing because of max curv\n");
     if (eq.curvature() > maxCurv)
       return false;
-
+    printf("%f %f %f\n",std::abs(eq.dca0()),region_origin_radius_plus_tolerance , std::abs(eq.curvature()));
     return std::abs(eq.dca0()) < region_origin_radius_plus_tolerance * std::abs(eq.curvature());
   }
 
@@ -217,6 +223,25 @@ public:
 
     return std::abs(eq.dca0()) < region_origin_radius_plus_tolerance * std::abs(eq.curvature());
   }
+
+  __device__ inline bool dDirCut(Hits const& hh,
+                                GPUCACellMuon const& otherCell,
+                                const float dDirMax) const {
+
+    auto dx1 = otherCell.outer_dx(hh);
+    auto dy1 = otherCell.outer_dy(hh);
+    auto dz1 = otherCell.outer_dz(hh);
+
+    auto dx2 = inner_dx(hh);
+    auto dy2 = inner_dy(hh);
+    auto dz2 = inner_dz(hh);
+
+    float dDir2 = (dx1*dx2 + dy1*dy2 + dz1*dz2) * (dx1*dx2 + dy1*dy2 + dz1*dz2)  / ((dx1*dx1 + dy1*dy1 + dz1*dz1)*(dx2*dx2 + dy2*dy2 + dz2*dz2)); 
+
+    return dDir2 > dDirMax*dDirMax;
+  }
+
+ 
 
 
 

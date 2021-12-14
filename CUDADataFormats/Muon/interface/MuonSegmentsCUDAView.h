@@ -10,23 +10,27 @@ class MuonSegmentsCUDAView {
 
     using hindex_type = uint32_t;
 
-    __device__ __forceinline__ float lx(int i) const { return __ldg(lx_d_ + i); }
-    __device__ __forceinline__ float ly(int i) const { return __ldg(ly_d_ + i); }
-    __device__ __forceinline__ float ldxdz(int i) const { return __ldg(ldxdz_d_ + i); }
-    __device__ __forceinline__ float ldydz(int i) const { return __ldg(ldydz_d_ + i); }
-    __device__ __forceinline__ float lSigmaX(int i) const { return __ldg(lSigmaX_d_ + i); }
-    __device__ __forceinline__ float lSigmaY(int i) const { return __ldg(lSigmaY_d_ + i); }
-    __device__ __forceinline__ float lSigmaDXDZ(int i) const { return __ldg(lSigmaDXDZ_d_ + i); }
-    __device__ __forceinline__ float lSigmaDYDZ(int i) const { return __ldg(lSigmaDYDZ_d_ + i); }
+    __device__ __forceinline__ float lx(uint32_t i) const { return __ldg(lx_d_ + i); }
+    __device__ __forceinline__ float ly(uint32_t i) const { return __ldg(ly_d_ + i); }
+    __device__ __forceinline__ float ldxdz(uint32_t i) const { return __ldg(ldxdz_d_ + i); }
+    __device__ __forceinline__ float ldydz(uint32_t i) const { return __ldg(ldydz_d_ + i); }
+    __device__ __forceinline__ float lSigmaX(uint32_t i) const { return __ldg(lSigmaX_d_ + i); }
+    __device__ __forceinline__ float lSigmaY(uint32_t i) const { return __ldg(lSigmaY_d_ + i); }
+    __device__ __forceinline__ float lSigmaDXDZ(uint32_t i) const { return __ldg(lSigmaDXDZ_d_ + i); }
+    __device__ __forceinline__ float lSigmaDYDZ(uint32_t i) const { return __ldg(lSigmaDYDZ_d_ + i); }
 
-    __device__ __forceinline__ float gx(int i) const { return __ldg(gx_d_ + i); }
-    __device__ __forceinline__ float gy(int i) const { return __ldg(gy_d_ + i); }
-    __device__ __forceinline__ float gz(int i) const { return __ldg(gz_d_ + i); }
-    __device__ __forceinline__ float gr(int i) const { return __ldg(gr_d_ + i); }
-    __device__ __forceinline__ float phi(int i) const { return __ldg(phi_d_ + i); }
+    __device__ __forceinline__ float gx(uint32_t i) const { return __ldg(gx_d_ + i); }
+    __device__ __forceinline__ float gy(uint32_t i) const { return __ldg(gy_d_ + i); }
+    __device__ __forceinline__ float gz(uint32_t i) const { return __ldg(gz_d_ + i); }
+    __device__ __forceinline__ float gr(uint32_t i) const { return __ldg(gr_d_ + i); }
+    __device__ __forceinline__ float gdx(uint32_t i) const { return __ldg(gdx_d_ + i); }
+    __device__ __forceinline__ float gdy(uint32_t i) const { return __ldg(gdy_d_ + i); }
+    __device__ __forceinline__ float gdz(uint32_t i) const { return __ldg(gdz_d_ + i); }
+
+    __device__ __forceinline__ float phi(uint32_t i) const { return __ldg(phi_d_ + i); }
  
-    __device__ __forceinline__ uint32_t layerID(int i) const { return __ldg(layerID_d_ + i); }
-    __device__ __forceinline__ uint32_t offset(int i) const { return offsets_d_[i]; }
+    __device__ __forceinline__ uint32_t layerID(uint32_t i) const { return __ldg(layerID_d_ + i); }
+    __device__ __forceinline__ uint32_t offset(uint32_t i) const { return offsets_d_[i]; }
     __device__ __forceinline__ uint32_t* offsets() const { return offsets_d_; }
 
     __device__ __forceinline__ uint32_t nSegments() const { return nSegments_d_; }
@@ -47,6 +51,10 @@ class MuonSegmentsCUDAView {
     float *gy_d_;
     float *gz_d_;
     float *gr_d_;
+    float *gdx_d_;
+    float *gdy_d_;
+    float *gdz_d_;
+
     float *phi_d_;
 
     uint32_t *layerID_d_;

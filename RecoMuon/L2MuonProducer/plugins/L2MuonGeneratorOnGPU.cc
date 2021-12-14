@@ -75,8 +75,8 @@ void L2MuonGeneratorOnGPU::fillDescriptions(edm::ParameterSetDescription& desc) 
      desc.add<bool>("doZ0Cut",true);
      desc.add<bool>("doPtCut",true);
      desc.add<double>("ptmin", 0.9f)->setComment("Cut on minimum pt");
-     desc.add<double>("CAThetaCutBarrel", 0.002f)->setComment("Cut on RZ alignement for Barrel");
-     desc.add<double>("CAThetaCutForward", 0.003f)->setComment("Cut on RZ alignment for Forward");
+     desc.add<double>("CAThetaCutBarrel", 0.1f)->setComment("Cut on RZ alignement for Barrel");
+     desc.add<double>("CAThetaCutForward", 0.1f)->setComment("Cut on RZ alignment for Forward");
      desc.add<double>("hardCurvCut", 1.f / (0.35 * 87.f))->setComment("Cut on minimum curvature");
      desc.add<double>("dcaCutInnerTriplet", 0.15f)->setComment("Cut on origin radius when the inner hit is on BPix1");
      desc.add<double>("dcaCutOuterTriplet", 0.25f)->setComment("Cut on origin radius when the outer hit is on BPix1");
@@ -111,6 +111,28 @@ L2MuonTrackHeterogeneous L2MuonGeneratorOnGPU::makeTuplesAsync(MuonSegmentsCUDA 
 
   return tracks;
 }
+MuonSegmentNtupletsHeterogeneous L2MuonGeneratorOnGPU::makeTuplesAsyncForReturn(MuonSegmentsCUDA const& muonSegments_h,
+                                                                    float bfield,
+                                                                    cudaStream_t stream) const {
+  MuonSegmentNtupletsHeterogeneous ntuplets(cms::cuda::make_device_unique<MuonSegmentNtupletsCUDA>(stream));
+
+  L2MuonTrackHeterogeneous tracks(cms::cuda::make_device_unique<L2MuonTrack::TrackSoA>(stream));
+
+  auto* soaNtuplets = ntuplets.get();
+  auto* soa = tracks.get();
+
+  L2MuonGeneratorKernelsGPU kernels(m_params);
+  int32_t nSegments = muonSegments_h.nSegments();
+  kernels.allocateOnGPU(nSegments,stream);
+  kernels.buildDoublets(muonSegments_h, stream);
+  kernels.buildL2Muons(muonSegments_h, soa, stream);
+  kernels.fillHitDetIndices(muonSegments_h.view(), soa, stream);  // in principle needed only if Hits not "available"
+
+  kernels.extractNtuplets(muonSegments_h, soaNtuplets, soa, stream);
+
+  return ntuplets;
+}
+
 MuonSegmentPairsHeterogeneous L2MuonGeneratorOnGPU::makeDoubletsAsync(MuonSegmentsCUDA const& muonSegments_h,
                                                                     float bfield,
                                                                     cudaStream_t stream) const {
