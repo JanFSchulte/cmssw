@@ -1,0 +1,12 @@
+<lcgdict>
+  <class name="cms::cuda::Product<MuonSegmentsCUDA>" persistent="false"/>
+  <class name="edm::Wrapper<cms::cuda::Product<MuonSegmentsCUDA>>" persistent="false"/>
+  <class name="cms::cuda::Product<HeterogeneousSoA<MuonSegmentPairsCUDA>>" persistent="false"/>
+  <class name="HeterogeneousSoA<MuonSegmentPairsCUDA>" persistent="false"/>
+  <class name="edm::Wrapper<cms::cuda::Product<HeterogeneousSoA<MuonSegmentPairsCUDA>>>" persistent="false"/>
+  <class name="edm::Wrapper<HeterogeneousSoA<MuonSegmentPairsCUDA>>" persistent="false"/>
+  <class name="cms::cuda::Product<HeterogeneousSoA<MuonSegmentNtupletsCUDA>>" persistent="false"/>
+  <class name="HeterogeneousSoA<MuonSegmentNtupletsCUDA>" persistent="false"/>
+  <class name="edm::Wrapper<cms::cuda::Product<HeterogeneousSoA<MuonSegmentNtupletsCUDA>>>" persistent="false"/>
+  <class name="edm::Wrapper<HeterogeneousSoA<MuonSegmentNtupletsCUDA>>" persistent="false"/>
+</lcgdict>

@@ -1,0 +1,26 @@
+<use name="FWCore/Framework"/>
+<use name="FWCore/ParameterSet"/>
+<use name="FWCore/PluginManager"/>
+<use name="DataFormats/CSCRecHit"/>
+<use name="DataFormats/DTRecHit"/>
+<use name="Geometry/DTGeometry"/>
+<use name="Geometry/CSCGeometry"/>
+<use name="Geometry/Records"/>
+<use name="FWCore/ServiceRegistry"/>
+<use name="CommonTools/UtilAlgos"/>
+<use name="DataFormats/TrackReco"/>
+<use name="TrackingTools/Records"/>
+<use name="RecoTracker/TransientTrackingRecHit"/>
+<use name="RecoMuon/TransientTrackingRecHit"/>
+  <use name="CUDADataFormats/Track"/>
+  <use name="CUDADataFormats/Muon"/>
+  <iftool name="cuda"> 
+    <use name="cuda"/> 
+    <use name="eigen"/> 
+    <use name="FWCore/Utilities"/> 
+    <export> 
+     <lib name="1"/> 
+   </export> 
+  </iftool>
+
+<flags EDM_PLUGIN="1"/>
