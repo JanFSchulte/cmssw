@@ -68,6 +68,8 @@
 
 #include "DataFormats/Math/interface/deltaR.h"
 #include "DataFormats/Math/interface/deltaPhi.h"
+
+#include "PhysicsTools/TensorFlow/interface/TensorFlow.h"
 //
 //
 // class declaration
@@ -97,9 +99,13 @@ private:
   edm::EDGetTokenT<CSCSegmentCollection> cscSegmentsGetToken_;
   edm::EDGetTokenT<reco::TrackCollection> l2MuonGetToken_;
 
+  std::string dnnModelPath_ = "RecoMuon/SegmentAnalyzer/data/dnn_L2Regressor_1000Epoch_ScaledInputOutput_y_pred_less_full_dataset.pb";
+  std::unique_ptr<tensorflow::GraphDef> graphDef_;
+  tensorflow::Session* tf_session_;
 
   struct tree_t {
 	float gen_pt[100];
+	float gen_pt_pred[100];
 	float gen_eta[100];
 	float gen_phi[100];
 	int gen_charge[100];
@@ -139,6 +145,7 @@ SegmentAnalyzerForML::SegmentAnalyzerForML(const edm::ParameterSet& iConfig)
   tree = fs->make<TTree>("t", "");
 
   tree->Branch("gen_pt", &t.gen_pt, "gen_pt[100]/F");
+  tree->Branch("gen_pt_pred", &t.gen_pt_pred, "gen_pt_pred[100]/F");
   tree->Branch("gen_eta", &t.gen_eta, "gen_eta[100]/F");
   tree->Branch("gen_phi", &t.gen_phi, "gen_phi[100]/F");
   tree->Branch("gen_charge", &t.gen_charge, "gen_charge[100]/I");
@@ -162,8 +169,13 @@ SegmentAnalyzerForML::SegmentAnalyzerForML(const edm::ParameterSet& iConfig)
   tree->Branch("segment_deltaPhi", &t.segment_deltaPhi, "segment_deltaPhi[100]/F");
   tree->Branch("segment_phiBend", &t.segment_phiBend, "segment_phiBend[100]/F");
 
+  edm::FileInPath dnnPath(dnnModelPath_);
+  graphDef_ = std::unique_ptr<tensorflow::GraphDef>(tensorflow::loadGraphDef(dnnPath.fullPath()));
+  tf_session_ = tensorflow::createSession(graphDef_.get());
+
 }
 SegmentAnalyzerForML::~SegmentAnalyzerForML() {
+  tensorflow::closeSession(tf_session_);
   // do anything here that needs to be done at desctruction time
   //   // (e.g. close files, deallocate resources etc.)
   //     //
@@ -222,7 +234,10 @@ void SegmentAnalyzerForML::analyze(const edm::Event& iEvent, const edm::EventSet
 
 
    int L2ID = 0;
+   int nFound = 0;
    for (reco::TrackCollection::const_iterator itL2 = l2Muons.begin(); itL2 != l2Muons.end(); itL2++) {
+	
+	std::unordered_map<std::string, float> feature_map;
 	bool genMatched = false;
 	for (reco::GenParticleCollection::const_iterator itGen = genParticles.begin(); itGen != genParticles.end(); itGen++) {
 
@@ -232,6 +247,7 @@ void SegmentAnalyzerForML::analyze(const edm::Event& iEvent, const edm::EventSet
 			t.gen_eta[L2ID] = itGen->eta();
 			t.gen_phi[L2ID] = itGen->phi();
 			t.gen_charge[L2ID] = itGen->charge();
+			feature_map["Muon_gen_pt"] = itGen->pt();
 		}
 		
 	}
@@ -240,10 +256,10 @@ void SegmentAnalyzerForML::analyze(const edm::Event& iEvent, const edm::EventSet
 	t.l2_pt[L2ID] = itL2->pt();
 	t.l2_eta[L2ID] = itL2->eta();
 	t.l2_phi[L2ID] = itL2->phi();
+	int nFoundPerL2 = 0;
 	double previousPhi = -999;
 	GlobalVector previousGv;
 	int previousLayer = -1;
-   	int nFound = 0;
         for (DTRecSegment4DCollection::const_iterator it = dtSegments.begin(); it != dtSegments.end(); it++) {
 		DTChamberId id = (DTChamberId)(*it).chamberId();
 		GlobalPoint gp = dtGeom->chamber(id)->toGlobal((*it).localPosition());
@@ -280,6 +296,7 @@ void SegmentAnalyzerForML::analyze(const edm::Event& iEvent, const edm::EventSet
 			previousLayer = layerID-1;
 			t.segment_phiBend[nFound] = -999;
 			nFound++;
+			nFoundPerL2++;
 
 		}
 
@@ -334,15 +351,111 @@ void SegmentAnalyzerForML::analyze(const edm::Event& iEvent, const edm::EventSet
 				//std::cout << pow(recHitGp.x()*recHitGp.x() + recHitGp.y()*recHitGp.y(),0.5) << std::endl;		
 			//}
 			nFound++;
-
+			nFoundPerL2++;
 		}
-
 	}
-   	t.nSegments[L2ID]=nFound;
+   	t.nSegments[L2ID]=nFoundPerL2;
+	if (nFoundPerL2 > 1){
+		int firstIndex = nFound - nFoundPerL2;
+		//feature_map["Muon_L2_deltaPhiFirstLast"] = deltaPhi(t.segment_phi[firstIndex],t.segment_phi[nFound]);
+		//feature_map["Muon_L2_deltaDirFirstLast"] = (t.segment_globalDX[firstIndex]*t.segment_globalDX[nFound] + t.segment_globalDY[firstIndex]*t.segment_globalDY[nFound] + t.segment_globalDZ[firstIndex]*t.segment_globalDZ[nFound] );
+
+		int index = firstIndex;
+		feature_map["ST_layerID1"] = t.segment_layerID[index];
+		feature_map["ST_globalR1"] = t.segment_layerID[index];
+		feature_map["ST_globalZ1"] = t.segment_layerID[index];
+		feature_map["ST_phi1"] = t.segment_layerID[index];
+		feature_map["ST_deltaDir1"] = t.segment_layerID[index];
+		feature_map["ST_deltaPhi1"] = t.segment_layerID[index];
+
+		index = firstIndex+1;
+		feature_map["ST_layerID2"] = t.segment_layerID[index];
+		feature_map["ST_globalR2"] = t.segment_layerID[index];
+		feature_map["ST_globalZ2"] = t.segment_layerID[index];
+		feature_map["ST_phi2"] = t.segment_layerID[index];
+		feature_map["ST_deltaDir2"] = t.segment_layerID[index];
+		feature_map["ST_deltaPhi2"] = t.segment_layerID[index];
+
+		index = firstIndex+2;
+		if (nFoundPerL2 > 2){
+			feature_map["ST_layerID3"] = t.segment_layerID[index];
+			feature_map["ST_globalR3"] = t.segment_layerID[index];
+			feature_map["ST_globalZ3"] = t.segment_layerID[index];
+			feature_map["ST_phi3"] = t.segment_layerID[index];
+			feature_map["ST_deltaDir3"] = t.segment_layerID[index];
+			feature_map["ST_deltaPhi3"] = t.segment_layerID[index];
+		}
+		else{
+			feature_map["ST_layerID3"] = -999;
+			feature_map["ST_globalR3"] = -999;
+			feature_map["ST_globalZ3"] = -999;
+			feature_map["ST_phi3"] = -999;
+			feature_map["ST_deltaDir3"] = -999;
+			feature_map["ST_deltaPhi3"] = -999;
+		}	
+		index = firstIndex+3;
+		if (nFoundPerL2 > 3){
+			feature_map["ST_layerID4"] = t.segment_layerID[index];
+			feature_map["ST_globalR4"] = t.segment_layerID[index];
+			feature_map["ST_globalZ4"] = t.segment_layerID[index];
+			feature_map["ST_phi4"] = t.segment_layerID[index];
+			feature_map["ST_deltaDir4"] = t.segment_layerID[index];
+			feature_map["ST_deltaPhi4"] = t.segment_layerID[index];
+		}
+		else{
+			feature_map["ST_layerID4"] = -999;
+			feature_map["ST_globalR4"] = -999;
+			feature_map["ST_globalZ4"] = -999;
+			feature_map["ST_phi4"] = -999;
+			feature_map["ST_deltaDir4"] = -999;
+			feature_map["ST_deltaPhi4"] = -999;
+		}	
+
+		tensorflow::Tensor input(tensorflow::DT_FLOAT, {1, 24});
+		input.matrix<float>()(0, 0) = float(feature_map.at("ST_layerID1"));
+		input.matrix<float>()(0, 1) = float(feature_map.at("ST_globalR1"));
+		input.matrix<float>()(0, 2) = float(feature_map.at("ST_globalZ1"));
+		input.matrix<float>()(0, 3) = float(feature_map.at("ST_phi1"));
+		input.matrix<float>()(0, 4) = float(feature_map.at("ST_deltaDir1"));
+		input.matrix<float>()(0, 5) = float(feature_map.at("ST_deltaPhi1"));
+		input.matrix<float>()(0, 6) = float(feature_map.at("ST_layerID1"));
+		input.matrix<float>()(0, 7) = float(feature_map.at("ST_globalR2"));
+		input.matrix<float>()(0, 8) = float(feature_map.at("ST_globalZ2"));
+		input.matrix<float>()(0, 9) = float(feature_map.at("ST_phi2"));
+		input.matrix<float>()(0, 10) = float(feature_map.at("ST_deltaDir2"));
+		input.matrix<float>()(0, 11) = float(feature_map.at("ST_deltaPhi2"));
+		input.matrix<float>()(0, 12) = float(feature_map.at("ST_layerID3"));
+		input.matrix<float>()(0, 13) = float(feature_map.at("ST_globalR3"));
+		input.matrix<float>()(0, 14) = float(feature_map.at("ST_globalZ3"));
+		input.matrix<float>()(0, 15) = float(feature_map.at("ST_phi3"));
+		input.matrix<float>()(0, 16) = float(feature_map.at("ST_deltaDir3"));
+		input.matrix<float>()(0, 17) = float(feature_map.at("ST_deltaPhi3"));
+		input.matrix<float>()(0, 18) = float(feature_map.at("ST_layerID4"));
+		input.matrix<float>()(0, 19) = float(feature_map.at("ST_globalR4"));
+		input.matrix<float>()(0, 20) = float(feature_map.at("ST_globalZ4"));
+		input.matrix<float>()(0, 21) = float(feature_map.at("ST_phi4"));
+		input.matrix<float>()(0, 22) = float(feature_map.at("ST_deltaDir4"));
+		input.matrix<float>()(0, 23) = float(feature_map.at("ST_deltaPhi4"));
+
+		std::vector<tensorflow::Tensor> outputs;
+
+		std::string input_layer = "dnn_L2Regressor_1000Epoch_ScaledInputOutput_y_pred_less_input";
+		std::string output_layer = "model/dnn_L2Regressor_1000Epoch_ScaledInputOutput_y_pred_less_output/BiasAdd";
+
+		tensorflow::run(tf_session_, {{input_layer, input}}, {output_layer}, &outputs);
+		tensorflow::Tensor out_tensor = outputs[0];
+
+		tensorflow::TTypes<float, 1>::Matrix dnn_outputs = out_tensor.matrix<float>();
+		
+		t.gen_pt_pred[L2ID] = dnn_outputs(0,0);
+		std::cout << dnn_outputs(0,0) << std::endl;
+	}
 	L2ID++;
    }
    t.nL2s=L2ID;
    tree->Fill();
+
+  
 
 }  
 
