@@ -70,6 +70,8 @@
 #include "DataFormats/Math/interface/deltaPhi.h"
 
 #include "PhysicsTools/TensorFlow/interface/TensorFlow.h"
+#include <boost/property_tree/ptree.hpp>
+#include <boost/property_tree/json_parser.hpp>
 //
 //
 // class declaration
@@ -80,6 +82,7 @@
 // from  edm::one::EDAnalyzer<>
 // This will improve performance in multithreaded jobs.
 
+ namespace pt = boost::property_tree;
 using reco::TrackCollection;
 
 class SegmentAnalyzerForML : public edm::one::EDAnalyzer<edm::one::SharedResources> {
@@ -100,8 +103,12 @@ private:
   edm::EDGetTokenT<reco::TrackCollection> l2MuonGetToken_;
 
   std::string dnnModelPath_ = "RecoMuon/SegmentAnalyzer/data/dnn_L2Regressor_1000Epoch_ScaledInputOutput_y_pred_less_full_dataset.pb";
+  std::string dnnScalerInputPath_ = "RecoMuon/SegmentAnalyzer/data/inputRanges.json";
+  std::string dnnScalerOutputPath_ = "RecoMuon/SegmentAnalyzer/data/outputRanges.json";
   std::unique_ptr<tensorflow::GraphDef> graphDef_;
   tensorflow::Session* tf_session_;
+  pt::ptree scalerInput_;
+  pt::ptree scalerOutput_;
 
   struct tree_t {
 	float gen_pt[100];
@@ -172,6 +179,12 @@ SegmentAnalyzerForML::SegmentAnalyzerForML(const edm::ParameterSet& iConfig)
   edm::FileInPath dnnPath(dnnModelPath_);
   graphDef_ = std::unique_ptr<tensorflow::GraphDef>(tensorflow::loadGraphDef(dnnPath.fullPath()));
   tf_session_ = tensorflow::createSession(graphDef_.get());
+
+  edm::FileInPath dnnMetadataPathIn(dnnScalerInputPath_);
+  pt::read_json(dnnMetadataPathIn.fullPath(), scalerInput_);
+
+  edm::FileInPath dnnMetadataPathOut(dnnScalerOutputPath_);
+  pt::read_json(dnnMetadataPathOut.fullPath(), scalerOutput_);
 
 }
 SegmentAnalyzerForML::~SegmentAnalyzerForML() {
@@ -355,35 +368,36 @@ void SegmentAnalyzerForML::analyze(const edm::Event& iEvent, const edm::EventSet
 		}
 	}
    	t.nSegments[L2ID]=nFoundPerL2;
-	if (nFoundPerL2 > 1){
+	if (nFoundPerL2 == 4){
 		int firstIndex = nFound - nFoundPerL2;
-		//feature_map["Muon_L2_deltaPhiFirstLast"] = deltaPhi(t.segment_phi[firstIndex],t.segment_phi[nFound]);
-		//feature_map["Muon_L2_deltaDirFirstLast"] = (t.segment_globalDX[firstIndex]*t.segment_globalDX[nFound] + t.segment_globalDY[firstIndex]*t.segment_globalDY[nFound] + t.segment_globalDZ[firstIndex]*t.segment_globalDZ[nFound] );
+		std::cout << t.segment_L2ID[firstIndex] << " " << t.segment_L2ID[nFound] << std::endl;
+		feature_map["Muon_L2_deltaPhiFirstLast"] = deltaPhi(t.segment_phi[firstIndex],t.segment_phi[nFound-1]);
+		feature_map["Muon_L2_deltaDirFirstLast"] = (t.segment_globalDX[firstIndex]*t.segment_globalDX[nFound-1] + t.segment_globalDY[firstIndex]*t.segment_globalDY[nFound-1] + t.segment_globalDZ[firstIndex]*t.segment_globalDZ[nFound-1] );
 
 		int index = firstIndex;
 		feature_map["ST_layerID1"] = t.segment_layerID[index];
-		feature_map["ST_globalR1"] = t.segment_layerID[index];
-		feature_map["ST_globalZ1"] = t.segment_layerID[index];
-		feature_map["ST_phi1"] = t.segment_layerID[index];
-		feature_map["ST_deltaDir1"] = t.segment_layerID[index];
-		feature_map["ST_deltaPhi1"] = t.segment_layerID[index];
+		feature_map["ST_globalR1"] = t.segment_globalR[index];
+		feature_map["ST_globalZ1"] = t.segment_globalZ[index];
+		feature_map["ST_phi1"] = t.segment_phi[index];
+		feature_map["ST_deltaDir1"] = t.segment_deltaDir[index];
+		feature_map["ST_deltaPhi1"] = t.segment_deltaPhi[index];
 
 		index = firstIndex+1;
 		feature_map["ST_layerID2"] = t.segment_layerID[index];
-		feature_map["ST_globalR2"] = t.segment_layerID[index];
-		feature_map["ST_globalZ2"] = t.segment_layerID[index];
-		feature_map["ST_phi2"] = t.segment_layerID[index];
-		feature_map["ST_deltaDir2"] = t.segment_layerID[index];
-		feature_map["ST_deltaPhi2"] = t.segment_layerID[index];
+		feature_map["ST_globalR2"] = t.segment_globalR[index];
+		feature_map["ST_globalZ2"] = t.segment_globalZ[index];
+		feature_map["ST_phi2"] = t.segment_phi[index];
+		feature_map["ST_deltaDir2"] = t.segment_deltaDir[index];
+		feature_map["ST_deltaPhi2"] = t.segment_deltaPhi[index];
 
 		index = firstIndex+2;
 		if (nFoundPerL2 > 2){
 			feature_map["ST_layerID3"] = t.segment_layerID[index];
-			feature_map["ST_globalR3"] = t.segment_layerID[index];
-			feature_map["ST_globalZ3"] = t.segment_layerID[index];
-			feature_map["ST_phi3"] = t.segment_layerID[index];
-			feature_map["ST_deltaDir3"] = t.segment_layerID[index];
-			feature_map["ST_deltaPhi3"] = t.segment_layerID[index];
+			feature_map["ST_globalR3"] = t.segment_globalR[index];
+			feature_map["ST_globalZ3"] = t.segment_globalZ[index];
+			feature_map["ST_phi3"] = t.segment_phi[index];
+			feature_map["ST_deltaDir3"] = t.segment_deltaDir[index];
+			feature_map["ST_deltaPhi3"] = t.segment_deltaPhi[index];
 		}
 		else{
 			feature_map["ST_layerID3"] = -999;
@@ -396,11 +410,11 @@ void SegmentAnalyzerForML::analyze(const edm::Event& iEvent, const edm::EventSet
 		index = firstIndex+3;
 		if (nFoundPerL2 > 3){
 			feature_map["ST_layerID4"] = t.segment_layerID[index];
-			feature_map["ST_globalR4"] = t.segment_layerID[index];
-			feature_map["ST_globalZ4"] = t.segment_layerID[index];
-			feature_map["ST_phi4"] = t.segment_layerID[index];
-			feature_map["ST_deltaDir4"] = t.segment_layerID[index];
-			feature_map["ST_deltaPhi4"] = t.segment_layerID[index];
+			feature_map["ST_globalR4"] = t.segment_globalR[index];
+			feature_map["ST_globalZ4"] = t.segment_globalZ[index];
+			feature_map["ST_phi4"] = t.segment_phi[index];
+			feature_map["ST_deltaDir4"] = t.segment_deltaDir[index];
+			feature_map["ST_deltaPhi4"] = t.segment_deltaPhi[index];
 		}
 		else{
 			feature_map["ST_layerID4"] = -999;
@@ -412,31 +426,60 @@ void SegmentAnalyzerForML::analyze(const edm::Event& iEvent, const edm::EventSet
 		}	
 
 		tensorflow::Tensor input(tensorflow::DT_FLOAT, {1, 24});
-		input.matrix<float>()(0, 0) = float(feature_map.at("ST_layerID1"));
-		input.matrix<float>()(0, 1) = float(feature_map.at("ST_globalR1"));
-		input.matrix<float>()(0, 2) = float(feature_map.at("ST_globalZ1"));
-		input.matrix<float>()(0, 3) = float(feature_map.at("ST_phi1"));
-		input.matrix<float>()(0, 4) = float(feature_map.at("ST_deltaDir1"));
-		input.matrix<float>()(0, 5) = float(feature_map.at("ST_deltaPhi1"));
-		input.matrix<float>()(0, 6) = float(feature_map.at("ST_layerID1"));
-		input.matrix<float>()(0, 7) = float(feature_map.at("ST_globalR2"));
-		input.matrix<float>()(0, 8) = float(feature_map.at("ST_globalZ2"));
-		input.matrix<float>()(0, 9) = float(feature_map.at("ST_phi2"));
-		input.matrix<float>()(0, 10) = float(feature_map.at("ST_deltaDir2"));
-		input.matrix<float>()(0, 11) = float(feature_map.at("ST_deltaPhi2"));
-		input.matrix<float>()(0, 12) = float(feature_map.at("ST_layerID3"));
-		input.matrix<float>()(0, 13) = float(feature_map.at("ST_globalR3"));
-		input.matrix<float>()(0, 14) = float(feature_map.at("ST_globalZ3"));
-		input.matrix<float>()(0, 15) = float(feature_map.at("ST_phi3"));
-		input.matrix<float>()(0, 16) = float(feature_map.at("ST_deltaDir3"));
-		input.matrix<float>()(0, 17) = float(feature_map.at("ST_deltaPhi3"));
-		input.matrix<float>()(0, 18) = float(feature_map.at("ST_layerID4"));
-		input.matrix<float>()(0, 19) = float(feature_map.at("ST_globalR4"));
-		input.matrix<float>()(0, 20) = float(feature_map.at("ST_globalZ4"));
-		input.matrix<float>()(0, 21) = float(feature_map.at("ST_phi4"));
-		input.matrix<float>()(0, 22) = float(feature_map.at("ST_deltaDir4"));
-		input.matrix<float>()(0, 23) = float(feature_map.at("ST_deltaPhi4"));
 
+
+		input.matrix<float>()(0, 0) = (float(feature_map.at("Muon_L2_deltaPhiFirstLast")) - scalerInput_.get<float>("Muon_L2_deltaPhiFirstLast.mean")) / scalerInput_.get<float>("Muon_L2_deltaPhiFirstLast.std") ;
+		input.matrix<float>()(0, 1) = (float(feature_map.at("Muon_L2_deltaDirFirstLast")) - scalerInput_.get<float>("Muon_L2_deltaDirFirstLast.mean")) / scalerInput_.get<float>("Muon_L2_deltaDirFirstLast.std") ;
+		input.matrix<float>()(0, 2) = (float(feature_map.at("ST_layerID1")) - scalerInput_.get<float>("ST_layerID1.mean")) / scalerInput_.get<float>("ST_layerID1.std") ;
+		input.matrix<float>()(0, 3) = (float(feature_map.at("ST_globalR1")) - scalerInput_.get<float>("ST_globalR1.mean")) / scalerInput_.get<float>("ST_globalR1.std");
+		input.matrix<float>()(0, 4) = (float(feature_map.at("ST_globalZ1")) - scalerInput_.get<float>("ST_globalZ1.mean")) / scalerInput_.get<float>("ST_globalZ1.std");
+		input.matrix<float>()(0, 5) = (float(feature_map.at("ST_phi1")) - scalerInput_.get<float>("ST_phi1.mean")) / scalerInput_.get<float>("ST_phi1.std");
+		input.matrix<float>()(0, 6) = (float(feature_map.at("ST_deltaDir1")) - scalerInput_.get<float>("ST_deltaDir1.mean")) / scalerInput_.get<float>("ST_deltaDir1.std");
+		input.matrix<float>()(0, 7) = (float(feature_map.at("ST_deltaPhi1")) - scalerInput_.get<float>("ST_deltaPhi1.mean")) / scalerInput_.get<float>("ST_deltaPhi1.std");
+		input.matrix<float>()(0, 8) = (float(feature_map.at("ST_layerID2")) - scalerInput_.get<float>("ST_layerID2.mean")) / scalerInput_.get<float>("ST_layerID2.std");
+		input.matrix<float>()(0, 9) = (float(feature_map.at("ST_globalR2")) - scalerInput_.get<float>("ST_globalR2.mean")) / scalerInput_.get<float>("ST_globalR2.std");
+		input.matrix<float>()(0, 10) = (float(feature_map.at("ST_globalZ2")) - scalerInput_.get<float>("ST_globalZ2.mean")) / scalerInput_.get<float>("ST_globalZ2.std");
+		input.matrix<float>()(0, 11) = (float(feature_map.at("ST_phi2")) - scalerInput_.get<float>("ST_phi2.mean")) / scalerInput_.get<float>("ST_phi2.std");
+		input.matrix<float>()(0, 12) = (float(feature_map.at("ST_deltaDir2")) - scalerInput_.get<float>("ST_deltaDir2.mean")) / scalerInput_.get<float>("ST_deltaDir2.std");
+		input.matrix<float>()(0, 13) = (float(feature_map.at("ST_deltaPhi2")) - scalerInput_.get<float>("ST_deltaPhi2.mean")) / scalerInput_.get<float>("ST_deltaPhi2.std");
+		input.matrix<float>()(0, 14) = (float(feature_map.at("ST_layerID3")) - scalerInput_.get<float>("ST_layerID3.mean")) / scalerInput_.get<float>("ST_layerID3.std");
+		input.matrix<float>()(0, 15) = (float(feature_map.at("ST_globalR3")) - scalerInput_.get<float>("ST_globalR3.mean")) / scalerInput_.get<float>("ST_globalR3.std");
+		input.matrix<float>()(0, 16) = (float(feature_map.at("ST_globalZ3")) - scalerInput_.get<float>("ST_globalZ3.mean")) / scalerInput_.get<float>("ST_globalZ3.std");
+		input.matrix<float>()(0, 17) = (float(feature_map.at("ST_phi3")) - scalerInput_.get<float>("ST_phi3.mean")) / scalerInput_.get<float>("ST_phi3.std");
+		input.matrix<float>()(0, 18) = (float(feature_map.at("ST_deltaDir3")) - scalerInput_.get<float>("ST_deltaDir3.mean")) / scalerInput_.get<float>("ST_deltaDir3.std");
+		input.matrix<float>()(0, 19) = (float(feature_map.at("ST_deltaPhi3")) - scalerInput_.get<float>("ST_deltaPhi3.mean")) / scalerInput_.get<float>("ST_deltaPhi3.std");
+		input.matrix<float>()(0, 20) = (float(feature_map.at("ST_layerID4")) - scalerInput_.get<float>("ST_layerID4.mean")) / scalerInput_.get<float>("ST_layerID4.std");
+		input.matrix<float>()(0, 21) = (float(feature_map.at("ST_globalR4")) - scalerInput_.get<float>("ST_globalR4.mean")) / scalerInput_.get<float>("ST_globalR4.std");
+		input.matrix<float>()(0, 22) = (float(feature_map.at("ST_globalZ4")) - scalerInput_.get<float>("ST_globalZ4.mean")) / scalerInput_.get<float>("ST_globalZ4.std");
+		input.matrix<float>()(0, 23) = (float(feature_map.at("ST_phi4")) - scalerInput_.get<float>("ST_phi4.mean")) / scalerInput_.get<float>("ST_phi4.std");
+
+
+/*
+		input.matrix<float>()(0, 0) = float(feature_map.at("Muon_L2_deltaPhiFirstLast"));
+		input.matrix<float>()(0, 1) = float(feature_map.at("Muon_L2_deltaDirFirstLast"));
+		input.matrix<float>()(0, 2) = float(feature_map.at("ST_layerID1"));
+		input.matrix<float>()(0, 3) = float(feature_map.at("ST_globalR1"));
+		input.matrix<float>()(0, 4) = float(feature_map.at("ST_globalZ1"));
+		input.matrix<float>()(0, 5) = float(feature_map.at("ST_phi1"));
+		input.matrix<float>()(0, 6) = float(feature_map.at("ST_deltaDir1"));
+		input.matrix<float>()(0, 7) = float(feature_map.at("ST_deltaPhi1"));
+		input.matrix<float>()(0, 8) = float(feature_map.at("ST_layerID2"));
+		input.matrix<float>()(0, 9) = float(feature_map.at("ST_globalR2"));
+		input.matrix<float>()(0, 10) = float(feature_map.at("ST_globalZ2"));
+		input.matrix<float>()(0, 11) = float(feature_map.at("ST_phi2"));
+		input.matrix<float>()(0, 12) = float(feature_map.at("ST_deltaDir2"));
+		input.matrix<float>()(0, 13) = float(feature_map.at("ST_deltaPhi2"));
+		input.matrix<float>()(0, 14) = float(feature_map.at("ST_layerID3"));
+		input.matrix<float>()(0, 15) = float(feature_map.at("ST_globalR3"));
+		input.matrix<float>()(0, 16) = float(feature_map.at("ST_globalZ3"));
+		input.matrix<float>()(0, 17) = float(feature_map.at("ST_phi3"));
+		input.matrix<float>()(0, 18) = float(feature_map.at("ST_deltaDir3"));
+		input.matrix<float>()(0, 19) = float(feature_map.at("ST_deltaPhi3"));
+		input.matrix<float>()(0, 20) = float(feature_map.at("ST_layerID4"));
+		input.matrix<float>()(0, 21) = float(feature_map.at("ST_globalR4"));
+		input.matrix<float>()(0, 22) = float(feature_map.at("ST_globalZ4"));
+		input.matrix<float>()(0, 23) = float(feature_map.at("ST_phi4"));
+*/
 		std::vector<tensorflow::Tensor> outputs;
 
 		std::string input_layer = "dnn_L2Regressor_1000Epoch_ScaledInputOutput_y_pred_less_input";
@@ -446,9 +489,12 @@ void SegmentAnalyzerForML::analyze(const edm::Event& iEvent, const edm::EventSet
 		tensorflow::Tensor out_tensor = outputs[0];
 
 		tensorflow::TTypes<float, 1>::Matrix dnn_outputs = out_tensor.matrix<float>();
-		
-		t.gen_pt_pred[L2ID] = dnn_outputs(0,0);
-		std::cout << dnn_outputs(0,0) << std::endl;
+		std::cout << "-----------------------" << std::endl;	
+		std::cout << dnn_outputs(0,0) << " " << t.gen_pt[L2ID] << std::endl;
+		std::cout << dnn_outputs(0,0)* scalerOutput_.get<float>("Muon_gen_pt.std") + scalerOutput_.get<float>("Muon_gen_pt.mean") << " " << t.gen_pt[L2ID] << std::endl;
+
+	
+		t.gen_pt_pred[L2ID] = dnn_outputs(0,0) * scalerOutput_.get<float>("Muon_gen_pt.std") + scalerOutput_.get<float>("Muon_gen_pt.mean");
 	}
 	L2ID++;
    }
