@@ -114,6 +114,10 @@ void HLTMuonL3PreFilter::fillDescriptions(edm::ConfigurationDescriptions& descri
   desc.add<double>("L1MatchingdR", 0.3);
   desc.add<bool>("MatchToPreviousCand", true);
   desc.add<edm::InputTag>("InputLinks", edm::InputTag(""));
+  desc.add<bool>("useSimpleGeometry", true);
+  desc.add<bool>("useStation2", true);
+  desc.add<string>("useTrack", "tracker");
+  desc.add<string>("useState", "atVertex");
   descriptions.add("hltMuonL3PreFilter", desc);
 }
 

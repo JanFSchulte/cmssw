@@ -39,7 +39,7 @@ private:
   bool triggeredByLevel2(const reco::TrackRef& track, std::vector<reco::RecoChargedCandidateRef>& vcands) const;
   bool applySelection(const reco::RecoChargedCandidateRef&, const reco::BeamSpot&) const;
 
-  PropagateToMuon prop_;
+  mutable PropagateToMuon prop_;
   const edm::InputTag beamspotTag_;
   const edm::EDGetTokenT<reco::BeamSpot> beamspotToken_;
   const edm::InputTag candTag_;  // input tag identifying product contains muons
