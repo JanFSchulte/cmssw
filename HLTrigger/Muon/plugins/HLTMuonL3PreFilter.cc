@@ -242,7 +242,8 @@ bool HLTMuonL3PreFilter::hltFilter(Event& iEvent,
           level1Cands->getObjects(trigger::TriggerL1Mu, vl1cands);
           const unsigned int nL1Muons(vl1cands.size());
           for (unsigned int il1 = 0; il1 != nL1Muons; ++il1) {
-            if (deltaR(etaForMatch, phiForMatch, vl1cands[il1]->eta(), vl1cands[il1]->phi()) < L1MatchingdR_) {
+            if (deltaR2(etaForMatch, phiForMatch, vl1cands[il1]->eta(), vl1cands[il1]->phi()) <
+                L1MatchingdR_ * L1MatchingdR_) {
               MuonToL3s[i] = RecoChargedCandidateRef(cand);
             }
           }
