@@ -355,6 +355,16 @@ electronTable = cms.EDProducer("SimpleCandidateFlatTableProducer",
         eInvMinusPInv = Var("(1-eSuperClusterOverP())/ecalEnergy()",float,doc="1/E_SC - 1/p_trk",precision=10),
         scEtOverPt = Var("(superCluster().energy()/(pt*cosh(superCluster().eta())))-1",float,doc="(supercluster transverse energy)/pt-1",precision=8),
 
+	#special variables for HEEP ID
+       	deltaPhiIn = Var("deltaPhiSuperClusterTrackAtVtx()",float,doc="delta phi between super cluster and track at vertex",precision=10),
+       	deltaEtaIn = Var("deltaEtaSuperClusterTrackAtVtx()",float,doc="delta eta between super cluster and track at vertex",precision=10),
+       	eta_SC = Var("superCluster().eta()",float,doc="supercluster eta",precision=10),
+       	eta_SCSeed = Var("superCluster().seed().eta()",float,doc="supercluster seed eta",precision=10),
+       	full5x5E1x5 = Var("full5x5_e1x5()",float,doc="supercluster 1x5 energy",precision=10),
+       	full5x5E5x5 = Var("full5x5_e5x5()",float,doc="supercluster 5x5 energy",precision=10),
+       	full5x5E2x5Max = Var("full5x5_e2x5Max()",float,doc="supercluster 2x5 max energy",precision=10),
+       	isECALDriven = Var("ecalDrivenSeed()",float,doc="supercluster 2x5 max energy",precision=10),
+	
         mvaFall17V2Iso = Var("userFloat('mvaFall17V2Iso')",float,doc="MVA Iso ID V2 score"),
         mvaFall17V2Iso_WP80 = Var("userInt('mvaFall17V2Iso_WP80')",bool,doc="MVA Iso ID V2 WP80"),
         mvaFall17V2Iso_WP90 = Var("userInt('mvaFall17V2Iso_WP90')",bool,doc="MVA Iso ID V2 WP90"),
