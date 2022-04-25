@@ -485,8 +485,6 @@ particleLevelForMatching = particleLevel.clone(
     lepMinPt    = cms.double(3.),
     phoMinPt = cms.double(3),
 )
-#############electron Table END#####################
-# Depends on particlelevel producer run in particlelevel_cff
 tautaggerForMatching = cms.EDProducer("GenJetTauTaggerProducer",
                                       src = cms.InputTag('particleLevelForMatching:leptons')
 )
@@ -548,7 +546,7 @@ electronMCTable = cms.EDProducer("CandMCMatchTableProducer",
 electronSequence = cms.Sequence(bitmapVIDForEle + bitmapVIDForEleHEEP + isoForEle + ptRatioRelForEle + seedGainEle + slimmedElectronsWithUserData + finalElectrons)
 electronTables = cms.Sequence (electronMVATTH + electronTable)
 electronMCold = cms.Sequence(electronsMCMatchForTable + electronMCTable)
-electronMC = cms.Sequence(tautaggerForMatching + matchingElecPhoton + electronsMCMatchForTable + electronsMCMatchForTableAlt + electronMCTable)
+electronMC = cms.Sequence(particleLevelForMatching + tautaggerForMatching + matchingElecPhoton + electronsMCMatchForTable + electronsMCMatchForTableAlt + electronMCTable)
 ( run2_nanoAOD_106Xv1 & ~run2_nanoAOD_devel).toModify( electronMCTable,
                                                        mcMapDressedLep=None,
                                                        mcMap   = cms.InputTag("electronsMCMatchForTable"),
