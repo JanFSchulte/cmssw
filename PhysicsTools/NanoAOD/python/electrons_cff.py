@@ -479,16 +479,21 @@ run2_miniAOD_80XLegacy.toModify(electronTable.variables,
     vidNestedWPBitmapSum16 = Var("userInt('VIDNestedWPBitmapSum16')",int,doc=_bitmapVIDForEleSum16_docstring),
 
 )
+
+from PhysicsTools.NanoAOD.particlelevel_cff import particleLevel
+particleLevelForMatching = particleLevel.clone(
+    lepMinPt    = cms.double(3.),
+    phoMinPt = cms.double(3),
+)
 #############electron Table END#####################
 # Depends on particlelevel producer run in particlelevel_cff
 tautaggerForMatching = cms.EDProducer("GenJetTauTaggerProducer",
-                                      src = cms.InputTag('particleLevel:leptons')
+                                      src = cms.InputTag('particleLevelForMatching:leptons')
 )
 
 matchingElecPhoton = cms.EDProducer("GenJetGenPartMerger",
-                                    srcJet =cms.InputTag("particleLevel:leptons"),
-                                    srcPart=cms.InputTag("particleLevel:photons"),
-                                    cut = cms.string("pt > 3"),
+                                    srcJet =cms.InputTag("particleLevelForMatching:leptons"),
+                                    srcPart=cms.InputTag("particleLevelForMatching:photons"),
                                     hasTauAnc=cms.InputTag("tautaggerForMatching"),
 )
 
