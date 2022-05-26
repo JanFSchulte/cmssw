@@ -114,21 +114,34 @@ inline void FillMiniIso(
   //  { 0.1440, 0.1562, 0.1032, 0.0859, 0.1116, 0.1321, 0.1654 },
   //  { 0.0735, 0.0619, 0.0465, 0.0433, 0.0577 , 0.0,0.0}
   //};
-  // Use the following AEs for all years according to nanoAOD
   double Aeff_Fall17Anal[5] = {0.0566, 0.0562, 0.0363, 0.0119, 0.0064};
-  //double Aeff_16[5] = {0.0735, 0.0619, 0.0465, 0.0433, 0.0577};
+  double Aeff_16[5] = {0.0735, 0.0619, 0.0465, 0.0433, 0.0577};
 
   double CorrectedTerm = 0.0;
-  if (TMath::Abs(mu.eta()) < 0.8)
-    CorrectedTerm = rho * Aeff_Fall17Anal[0] * (riso2 / 0.09);
-  else if (TMath::Abs(mu.eta()) > 0.8 && TMath::Abs(mu.eta()) < 1.3)
-    CorrectedTerm = rho * Aeff_Fall17Anal[1] * (riso2 / 0.09);
-  else if (TMath::Abs(mu.eta()) > 1.3 && TMath::Abs(mu.eta()) < 2.0)
-    CorrectedTerm = rho * Aeff_Fall17Anal[2] * (riso2 / 0.09);
-  else if (TMath::Abs(mu.eta()) > 2.0 && TMath::Abs(mu.eta()) < 2.2)
-    CorrectedTerm = rho * Aeff_Fall17Anal[3] * (riso2 / 0.09);
-  else if (TMath::Abs(mu.eta()) > 2.2 && TMath::Abs(mu.eta()) < 2.5)
-    CorrectedTerm = rho * Aeff_Fall17Anal[4] * (riso2 / 0.09);
+  if (is2016 == false) {
+      if (TMath::Abs(mu.eta()) < 0.8)
+        CorrectedTerm = rho * Aeff_Fall17Anal[0] * (riso2 / 0.09);
+      else if (TMath::Abs(mu.eta()) > 0.8 && TMath::Abs(mu.eta()) < 1.3)
+        CorrectedTerm = rho * Aeff_Fall17Anal[1] * (riso2 / 0.09);
+      else if (TMath::Abs(mu.eta()) > 1.3 && TMath::Abs(mu.eta()) < 2.0)
+        CorrectedTerm = rho * Aeff_Fall17Anal[2] * (riso2 / 0.09);
+      else if (TMath::Abs(mu.eta()) > 2.0 && TMath::Abs(mu.eta()) < 2.2)
+        CorrectedTerm = rho * Aeff_Fall17Anal[3] * (riso2 / 0.09);
+      else if (TMath::Abs(mu.eta()) > 2.2 && TMath::Abs(mu.eta()) < 2.5)
+        CorrectedTerm = rho * Aeff_Fall17Anal[4] * (riso2 / 0.09);
+  }
+  else {
+      if (TMath::Abs(mu.eta()) < 0.8)
+        CorrectedTerm = rho * Aeff_16[0] * (riso2 / 0.09);
+      else if (TMath::Abs(mu.eta()) > 0.8 && TMath::Abs(mu.eta()) < 1.3)
+        CorrectedTerm = rho * Aeff_16[1] * (riso2 / 0.09);
+      else if (TMath::Abs(mu.eta()) > 1.3 && TMath::Abs(mu.eta()) < 2.0)
+        CorrectedTerm = rho * Aeff_16[2] * (riso2 / 0.09);
+      else if (TMath::Abs(mu.eta()) > 2.0 && TMath::Abs(mu.eta()) < 2.2)
+        CorrectedTerm = rho * Aeff_16[3] * (riso2 / 0.09);
+      else if (TMath::Abs(mu.eta()) > 2.2 && TMath::Abs(mu.eta()) < 2.5)
+        CorrectedTerm = rho * Aeff_16[4] * (riso2 / 0.09);
+  }
 
   iso = iso_ch + TMath::Max(0.0, iso_ph + iso_nh - CorrectedTerm) / mu.pt();
   //} //end if not mu pt < 5
