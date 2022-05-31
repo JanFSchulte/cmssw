@@ -115,7 +115,9 @@ inline void FillMiniIso(
   //  { 0.0735, 0.0619, 0.0465, 0.0433, 0.0577 , 0.0,0.0}
   //};
   double Aeff_Fall17Anal[5] = {0.0566, 0.0562, 0.0363, 0.0119, 0.0064};
-  double Aeff_16[5] = {0.0735, 0.0619, 0.0465, 0.0433, 0.0577};
+  // For now use the same EAs in 2016 as in 2017 (based on nanoAOD)
+  //double Aeff_16[5] = {0.0735, 0.0619, 0.0465, 0.0433, 0.0577};
+  double Aeff_16[5] = {0.0566, 0.0562, 0.0363, 0.0119, 0.0064};
 
   double CorrectedTerm = 0.0;
   if (is2016 == false) {
@@ -143,7 +145,7 @@ inline void FillMiniIso(
         CorrectedTerm = rho * Aeff_16[4] * (riso2 / 0.09);
   }
 
-  iso = iso_ch + TMath::Max(0.0, iso_ph + iso_nh - CorrectedTerm) / mu.pt();
+  iso = (iso_ch + TMath::Max(0.0, iso_ph + iso_nh - CorrectedTerm)) / mu.pt();
   //} //end if not mu pt < 5
 
   if (isTag) {
