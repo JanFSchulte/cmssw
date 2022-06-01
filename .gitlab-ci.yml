@@ -11,6 +11,7 @@ build:
         - merge_requests
         - master
     script:
+        - export SCRAM_ARCH=$CMSSW_SCRAM_ARCH
         - set +e && source /cvmfs/cms.cern.ch/cmsset_default.sh; set -e
         - shopt -s extglob
         - scramv1 project CMSSW $CMSSW_RELEASE
@@ -35,6 +36,7 @@ run-aod:
         - merge_requests
         - master
     script:
+        - export SCRAM_ARCH=$CMSSW_SCRAM_ARCH
         - set +e && source /cvmfs/cms.cern.ch/cmsset_default.sh; set -e
         - shopt -s extglob
         - source ci/untar_cmssw.sh
@@ -57,6 +59,7 @@ run-miniaod:
         - merge_requests
         - master
     script:
+        - export SCRAM_ARCH=$CMSSW_SCRAM_ARCH
         - set +e && source /cvmfs/cms.cern.ch/cmsset_default.sh; set -e
         - shopt -s extglob
         - source ci/untar_cmssw.sh
@@ -79,6 +82,7 @@ compare-aod:
         - merge_requests
         - master
     script:
+        - export SCRAM_ARCH=$CMSSW_SCRAM_ARCH
         - set +e && source /cvmfs/cms.cern.ch/cmsset_default.sh; set -e
         - shopt -s extglob
         - source ci/untar_cmssw.sh
@@ -98,6 +102,7 @@ compare-miniaod:
         - merge_requests
         - master
     script:
+        - export SCRAM_ARCH=$CMSSW_SCRAM_ARCH
         - set +e && source /cvmfs/cms.cern.ch/cmsset_default.sh; set -e
         - shopt -s extglob
         - source ci/untar_cmssw.sh
