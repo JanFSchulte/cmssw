@@ -278,22 +278,28 @@ def main():
             isDataDM = ('Run' in subera_name and 'DM' in subera_name)
             if doDataDM and not isDataDM: continue
 
+            hostname = os.getenv('HOSTNAME')
+            if 'lxplus' in hostname:
+                LM_prefix = '/afs/cern.ch/cms/CAF/CMSCOMM/COMM_DQM/certification/Collisions'
+            else:
+                LM_prefix = 'https://cms-service-dqmdc.web.cern.ch/CAF/certification/Collisions' 
+             
             config.Data.lumiMask = ''
             if isData:
                 if 'UL' in era:
                     if '2018' in era:
-                        config.Data.lumiMask = '/afs/cern.ch/cms/CAF/CMSCOMM/COMM_DQM/certification/Collisions18/13TeV/Legacy_2018/Cert_314472-325175_13TeV_Legacy2018_Collisions18_JSON.txt'
+                        config.Data.lumiMask = LM_prefix + '18/13TeV/Legacy_2018/Cert_314472-325175_13TeV_Legacy2018_Collisions18_JSON.txt'
                     elif '2017' in era:
-                        config.Data.lumiMask = '/afs/cern.ch/cms/CAF/CMSCOMM/COMM_DQM/certification/Collisions17/13TeV/Legacy_2017/Cert_294927-306462_13TeV_UL2017_Collisions17_GoldenJSON.txt'
+                        config.Data.lumiMask = LM_prefix + '17/13TeV/Legacy_2017/Cert_294927-306462_13TeV_UL2017_Collisions17_GoldenJSON.txt'
                     elif '2016' in era:
-                        config.Data.lumiMask = '/afs/cern.ch/cms/CAF/CMSCOMM/COMM_DQM/certification/Collisions16/13TeV/Legacy_2016/Cert_271036-284044_13TeV_Legacy2016_Collisions16_JSON.txt'
+                        config.Data.lumiMask = LM_prefic + '16/13TeV/Legacy_2016/Cert_271036-284044_13TeV_Legacy2016_Collisions16_JSON.txt'
                 else:
                     if '2018' in era:
-                        config.Data.lumiMask = '/afs/cern.ch/cms/CAF/CMSCOMM/COMM_DQM/certification/Collisions18/13TeV/ReReco/Cert_314472-325175_13TeV_17SeptEarlyReReco2018ABC_PromptEraD_Collisions18_JSON.txt'
+                        config.Data.lumiMask = LM_prefix + '18/13TeV/ReReco/Cert_314472-325175_13TeV_17SeptEarlyReReco2018ABC_PromptEraD_Collisions18_JSON.txt'
                     elif '2017' in era:
-                        config.Data.lumiMask = '/afs/cern.ch/cms/CAF/CMSCOMM/COMM_DQM/certification/Collisions17/13TeV/ReReco/Cert_294927-306462_13TeV_EOY2017ReReco_Collisions17_JSON_v1.txt'
+                        config.Data.lumiMask = LM_prefix + '17/13TeV/ReReco/Cert_294927-306462_13TeV_EOY2017ReReco_Collisions17_JSON_v1.txt'
                     elif '2016' in era:
-                        config.Data.lumiMask = '/afs/cern.ch/cms/CAF/CMSCOMM/COMM_DQM/certification/Collisions16/13TeV/ReReco/Cert_271036-284044_13TeV_ReReco_07Aug2017_Collisions16_JSON.txt'
+                        config.Data.lumiMask = LM_prefix + '16/13TeV/ReReco/Cert_271036-284044_13TeV_ReReco_07Aug2017_Collisions16_JSON.txt'
 
                 #config.Data.splitting = 'Automatic' # Not working after rucio transition
                 config.Data.splitting = options.splittingData
