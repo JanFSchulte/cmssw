@@ -14,9 +14,16 @@ ele9X105XUpdateModifier=egamma9X105XUpdateModifier.clone(
     phoChargedHadWorstVtxConeVetoIso = "",
     phoChargedHadPFPVIso = ""
 )
+
+electronsWithVariables = cms.EDProducer("PATHEEPIDResultEmbedder",
+    src = cms.InputTag("slimmedElectrons"),
+    vtx_src = cms.InputTag('offlineSlimmedPrimaryVertices'),
+    rho = cms.InputTag("fixedGridRhoFastjetAll"),
+)
+
 #we have dataformat changes to 106X so to read older releases we use egamma updators
 slimmedElectronsTo106X = cms.EDProducer("ModifiedElectronProducer",
-    src = cms.InputTag("slimmedElectrons"),
+    src = cms.InputTag("electronsWithVariables"),
     modifierConfig = cms.PSet( modifications = cms.VPSet(ele9X105XUpdateModifier) )
 )
 #might as well fix 80X while we're at it although the differences are not so relavent for nano
@@ -24,10 +31,11 @@ run2_miniAOD_80XLegacy.toModify( slimmedElectronsTo106X.modifierConfig.modificat
 
 # this below is used only in some eras
 slimmedElectronsUpdated = cms.EDProducer("PATElectronUpdater",
-    src = cms.InputTag("slimmedElectrons"),
+    src = cms.InputTag("electronsWithVariables"),
     vertices = cms.InputTag("offlineSlimmedPrimaryVertices"),
     computeMiniIso = cms.bool(False),
     fixDxySign = cms.bool(True),
+    addIDVariables = cms.bool(True),
     pfCandsForMiniIso = cms.InputTag("packedPFCandidates"),
     miniIsoParamsB = PhysicsTools.PatAlgos.producersLayer1.electronProducer_cfi.patElectrons.miniIsoParamsB, # so they're in sync
     miniIsoParamsE = PhysicsTools.PatAlgos.producersLayer1.electronProducer_cfi.patElectrons.miniIsoParamsE, # so they're in sync
@@ -36,6 +44,8 @@ run2_miniAOD_80XLegacy.toModify( slimmedElectronsUpdated, computeMiniIso = True 
 #modify the past eras
 for modifier in run2_miniAOD_80XLegacy,run2_nanoAOD_94X2016,run2_nanoAOD_94XMiniAODv1,run2_nanoAOD_94XMiniAODv2,run2_nanoAOD_102Xv1:
     modifier.toModify(slimmedElectronsUpdated, src = cms.InputTag("slimmedElectronsTo106X"))
+
+
 
 
 electron_id_modules_WorkingPoints_nanoAOD = cms.PSet(
@@ -93,7 +103,7 @@ def _get_bitmapVIDForEle_docstring(modules,WorkingPoints):
     return docstring
 
 bitmapVIDForEle = cms.EDProducer("EleVIDNestedWPBitmapProducer",
-    src = cms.InputTag("slimmedElectrons"),
+    src = cms.InputTag("electronsWithVariables"),
     WorkingPoints = electron_id_modules_WorkingPoints_nanoAOD.WorkingPoints,
 )
 _bitmapVIDForEle_docstring = _get_bitmapVIDForEle_docstring(electron_id_modules_WorkingPoints_nanoAOD.modules,bitmapVIDForEle.WorkingPoints)
@@ -126,7 +136,7 @@ bitmapVIDForEleHEEP = bitmapVIDForEle.clone(
 _bitmapVIDForEleHEEP_docstring = _get_bitmapVIDForEle_docstring(electron_id_modules_WorkingPoints_nanoAOD.modules,bitmapVIDForEleHEEP.WorkingPoints)
 
 isoForEle = cms.EDProducer("EleIsoValueMapProducer",
-    src = cms.InputTag("slimmedElectrons"),
+    src = cms.InputTag("electronsWithVariables"),
     relative = cms.bool(False),
     rho_MiniIso = cms.InputTag("fixedGridRhoFastjetAll"),
     rho_PFIso = cms.InputTag("fixedGridRhoFastjetAll"),
@@ -142,17 +152,17 @@ run2_nanoAOD_94X2016.toModify(isoForEle,
 
 ptRatioRelForEle = cms.EDProducer("ElectronJetVarProducer",
     srcJet = cms.InputTag("updatedJets"),
-    srcLep = cms.InputTag("slimmedElectrons"),
+    srcLep = cms.InputTag("electronsWithVariables"),
     srcVtx = cms.InputTag("offlineSlimmedPrimaryVertices"),
 )
 
-seedGainEle = cms.EDProducer("ElectronSeedGainProducer", src = cms.InputTag("slimmedElectrons"))
+seedGainEle = cms.EDProducer("ElectronSeedGainProducer", src = cms.InputTag("electronsWithVariables"))
 
 import RecoEgamma.EgammaTools.calibratedEgammas_cff
 
 calibratedPatElectronsNano = RecoEgamma.EgammaTools.calibratedEgammas_cff.calibratedPatElectrons.clone(
     produceCalibratedObjs = False,
-    src = "slimmedElectrons"
+    src = "electronsWithVariables"
 )
 
 #the second part is introduced to protect v8 since (run2_nanoAOD_106Xv1 & ~run2_nanoAOD_devel) is the v8 condition
@@ -187,7 +197,7 @@ run2_nanoAOD_102Xv1.toModify(calibratedPatElectronsNano,
 ##############################end calibratedPatElectronsNano############################
 
 slimmedElectronsWithUserData = cms.EDProducer("PATElectronUserDataEmbedder",
-    src = cms.InputTag("slimmedElectrons"),
+    src = cms.InputTag("electronsWithVariables"),
     userFloats = cms.PSet(
         mvaFall17V1Iso = cms.InputTag("electronMVAValueMapProducer:ElectronMVAEstimatorRun2Fall17IsoV1Values"),
         mvaFall17V1noIso = cms.InputTag("electronMVAValueMapProducer:ElectronMVAEstimatorRun2Fall17NoIsoV1Values"),
@@ -363,7 +373,22 @@ electronTable = cms.EDProducer("SimpleCandidateFlatTableProducer",
        	full5x5E1x5 = Var("full5x5_e1x5()",float,doc="supercluster 1x5 energy",precision=10),
        	full5x5E5x5 = Var("full5x5_e5x5()",float,doc="supercluster 5x5 energy",precision=10),
        	full5x5E2x5Max = Var("full5x5_e2x5Max()",float,doc="supercluster 2x5 max energy",precision=10),
-       	isECALDriven = Var("ecalDrivenSeed()",float,doc="supercluster 2x5 max energy",precision=10),
+       	isECALDriven = Var("ecalDrivenSeed()",float,doc="isEcalDriven",precision=10),
+
+       	passHEEPEmHadIso = Var("userInt('passHEEPEmHadIso')",bool,doc="passes HEEP ID cut on calo isolation",precision=10),
+       	passHEEPEmHadIso2018 = Var("userInt('passHEEPEmHadIso2018')",bool,doc="passes HEEP ID cut on calo isolation (2018 version)",precision=10),
+       	passHEEPHOverE = Var("userInt('passHEEPHOverE')",bool,doc="passes HEEP ID cut on calo HoverE",precision=10),
+       	passHEEPHOverE2018 = Var("userInt('passHEEPHOverE2018')",bool,doc="passes HEEP ID cut on calo HoverE (2018 version)",precision=10),
+       	passHEEPShowershape = Var("userInt('passHEEPShowershape')",bool,doc="passes HEEP ID cut on the ECAL shower shape",precision=10),
+       	passHEEPSieie = Var("userInt('passHEEPSieie')",bool,doc="passes HEEP ID cut on Sieie",precision=10),
+       	passHEEPEcalDriven = Var("userInt('passHEEPEcalDriven')",bool,doc="passes HEEP ID cut on isEcalDriven",precision=10),
+       	passHEEPDeltaEtaIn = Var("userInt('passHEEPDEta')",bool,doc="passes HEEP ID cut on delta eta between super cluster and track at vertex",precision=10),
+       	passHEEPDeltaPhiIn= Var("userInt('passHEEPDPhi')",bool,doc="passes HEEP ID cut on delta phi between super cluster and track at vertex",precision=10),
+       	passHEEPTrackIso= Var("userInt('passHEEPTrackIso')",bool,doc="passes HEEP ID cut on tracker isolation",precision=10),
+       	passHEEPMissingHits= Var("userInt('passHEEPMissingHits')",bool,doc="passes HEEP ID cut on missing pixel hits",precision=10),
+       	passHEEPDxy= Var("userInt('passHEEPDXY')",bool,doc="passes HEEP ID cut on transverse impact parameter",precision=10),
+       	passHEEPID = Var("userInt('passHEEPID')",bool,doc="passes HEEP ID (recomputed by hand)",precision=10),
+       	passHEEPID2018 = Var("userInt('passHEEPID')",bool,doc="passes HEEP ID 2018 (recomputed by hand)",precision=10),
 	
         mvaFall17V2Iso = Var("userFloat('mvaFall17V2Iso')",float,doc="MVA Iso ID V2 score"),
         mvaFall17V2Iso_WP80 = Var("userInt('mvaFall17V2Iso_WP80')",bool,doc="MVA Iso ID V2 WP80"),
@@ -492,6 +517,7 @@ tautaggerForMatching = cms.EDProducer("GenJetTauTaggerProducer",
 matchingElecPhoton = cms.EDProducer("GenJetGenPartMerger",
                                     srcJet =cms.InputTag("particleLevelForMatching:leptons"),
                                     srcPart=cms.InputTag("particleLevelForMatching:photons"),
+                                    cut = cms.string(""),
                                     hasTauAnc=cms.InputTag("tautaggerForMatching"),
 )
 
@@ -543,7 +569,7 @@ electronMCTable = cms.EDProducer("CandMCMatchTableProducer",
 )
 
 
-electronSequence = cms.Sequence(bitmapVIDForEle + bitmapVIDForEleHEEP + isoForEle + ptRatioRelForEle + seedGainEle + slimmedElectronsWithUserData + finalElectrons)
+electronSequence = cms.Sequence(electronsWithVariables + bitmapVIDForEle + bitmapVIDForEleHEEP + isoForEle + ptRatioRelForEle + seedGainEle + slimmedElectronsWithUserData + finalElectrons)
 electronTables = cms.Sequence (electronMVATTH + electronTable)
 electronMCold = cms.Sequence(electronsMCMatchForTable + electronMCTable)
 electronMC = cms.Sequence(particleLevelForMatching + tautaggerForMatching + matchingElecPhoton + electronsMCMatchForTable + electronsMCMatchForTableAlt + electronMCTable)

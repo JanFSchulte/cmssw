@@ -9,7 +9,7 @@ DiMuonVertex = cms.EDProducer("DiMuonVertexProducer",
     mu1Selection = cms.string ("pt>5 && abs(eta)<2.4"),
     mu2Selection = cms.string ("pt>3 && abs(eta)<2.4"),
     preVtxSelection = cms.string ("pt>5 && abs(eta)<2.4"),
-    postVtxSelection = cms.string ("userFloat('prob')>0.01"), # WP 0.01
+    postVtxSelection = cms.string ("userFloat('prob')>0.0"), # WP 0.01
     RefitTracks = cms.bool (True),
     FitTunePTransientTracks = cms.bool(True),
 )
