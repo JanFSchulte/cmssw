@@ -8,6 +8,7 @@
 #ifndef MuonAnalysis_MuonAnalyzer_MuonMiniIsolation
 #define MuonAnalysis_MuonAnalyzer_MuonMiniIsolation
 
+#include "DataFormats/Candidate/interface/Candidate.h"
 #include "DataFormats/MuonReco/interface/Muon.h"
 #include "DataFormats/MuonReco/interface/MuonSelectors.h"
 #include "DataFormats/PatCandidates/interface/Muon.h"
@@ -15,6 +16,7 @@
 #include "DataFormats/ParticleFlowCandidate/interface/PFCandidate.h"
 #include "DataFormats/TrackReco/interface/Track.h"
 #include "DataFormats/Math/interface/deltaR.h"
+
 
 #include <type_traits>
 #include "NtupleContent.h"
@@ -29,8 +31,7 @@ template <>
 inline bool is_fromPV<reco::PFCandidate>(reco::PFCandidate &pfc) {
   if (pfc.bestTrack())
     return (pfc.bestTrack()->dz() < 0.0 ? true : false);
-  else
-    return false;
+  return false;
 }
 
 template <>
@@ -38,126 +39,93 @@ inline bool is_fromPV<pat::PackedCandidate>(pat::PackedCandidate &pfc) {
   return (pfc.fromPV() > 1 ? true : false);
 }
 
-template <typename MUON, typename PFCANDS>
-inline void FillMiniIso(
-    const std::vector<PFCANDS> &pfcands, const MUON &mu, const double rho, NtupleContent &nt, bool isTag, bool is2016) {
-  // define variables for Muons
-  double r_iso_min = 0.05, r_iso_max = 0.2, kt_scale = 10.;
-  double deadcone_ch = 0.0001, deadcone_pu = 0.01;
-  double deadcone_ph = 0.01, deadcone_nh = 0.01;
-  double ptThresh(0.5);
+inline float miniIsoDr(const reco::Candidate::PolarLorentzVector &p4, float mindr, float maxdr, float kt_scale) {
+  return std::max(mindr, std::min(maxdr, float(kt_scale / p4.pt())));
+}
 
-  // initialize variables
-  double iso(-1.), iso_nh(0.), iso_ch(0.), iso_ph(0.), iso_pu(0.);
-
-  //if (mu.pt()<5.){
-  //  iso = -1.;
-  //  std::cout<< "Muon pT < 5 "<<std::endl;
-  //}
-  //else{
-  double r_iso = std::max(r_iso_min, std::min(r_iso_max, kt_scale / mu.pt()));
-  double riso2 = r_iso * r_iso;
-
-  for (const auto &pfc : pfcands) {
-    //std::cout<< "pfc id " << pfc.pdgId()<< " from PV "<< pfc.fromPV() <<std::endl;
-    if (abs(pfc.pdgId()) < 7)
+// Adapted from PhysicsTools/PatUtils/src/MiniIsolation.cc
+template <typename PFCANDS>
+pat::PFIsolation getMiniPFIsolation(const std::vector<PFCANDS> & pfcands,
+                                const reco::Candidate::PolarLorentzVector &p4,
+                                float mindr = 0.05,
+                                float maxdr = 0.2,
+                                float kt_scale = 10.0,
+                                float ptthresh = 0.5,
+                                float deadcone_ch = 0.0001,
+                                float deadcone_pu = 0.01,
+                                float deadcone_ph = 0.01,
+                                float deadcone_nh = 0.01,
+                                float dZ_cut = 0.0) {
+  float chiso = 0, nhiso = 0, phiso = 0, puiso = 0;
+  float drcut = miniIsoDr(p4, mindr, maxdr, kt_scale);
+  for (auto const pc : pfcands) {
+    float dr2 = deltaR2(p4, pc);
+    if (dr2 > drcut * drcut)
       continue;
-
-    double dr = deltaR(pfc, mu);
-    //std::cout<< "muon pt eta phi " << mu.pt() <<" " <<mu.eta() << " "<<mu.phi() <<std::endl;
-    //std::cout<< "pfc pt eta phi " << pfc.pt() <<" " << pfc.eta() << " "<<pfc.phi() <<std::endl;
-    //std::cout<<  " dr " <<  dr << " v.s. riso " << r_iso <<std::endl;
-    if (dr > r_iso)
-      continue;
-
-    //std::cout<< " chg " << pfc.charge() << std::endl;
-    if (pfc.charge() == 0) {
-      //////////////////  NEUTRALS  //////////////////
-      //std::cout<< " pt " << pfc.pt() << " v.s. ptThresh " << ptThresh << std::endl;
-      if (pfc.pt() > ptThresh) {
-        /////////// PHOTONS ////////////
-        if (abs(pfc.pdgId()) == 22) {
-          //std::cout<< " 22 dr " << dr << " v.s. deadcone_ph "<<deadcone_ph <<std::endl;
-          if (dr < deadcone_ph)
-            continue;
-          iso_ph += pfc.pt();
-        }
-        /////////// NEUTRAL HADRONS ////////////
-        if (abs(pfc.pdgId()) == 130) {
-          //std::cout<< " 130 dr " << dr << " v.s. deadcone_nh "<<deadcone_nh <<std::endl;
-          if (dr < deadcone_nh)
-            continue;
-          iso_nh += pfc.pt();
-        }
-      }
-    } else {
-      if (is_fromPV(pfc)) {
-        //////////////////  CHARGED from PV  //////////////////
-        if (abs(pfc.pdgId()) == 211) {
-          if (dr < deadcone_ch)
-            continue;
-          iso_ch += pfc.pt();
-        }
-      } else {
-        //////////////////  CHARGED from PU  //////////////////
-        if (pfc.pt() > ptThresh) {
-          if (dr < deadcone_pu)
-            continue;
-          iso_pu += pfc.pt();
-        }
+    float pt = pc.p4().pt();
+    int id = pc.pdgId();
+    if (std::abs(id) == 211) {
+      // bool fromPV = (pc.fromPV() > 1 || fabs(pc.dz()) < dZ_cut);
+      bool fromPV = is_fromPV(pc);
+      if (fromPV && dr2 > deadcone_ch * deadcone_ch) {
+        // if charged hadron and from primary vertex, add to charged hadron isolation
+        chiso += pt;
+      } else if (!fromPV && pt > ptthresh && dr2 > deadcone_pu * deadcone_pu) {
+        // if charged hadron and NOT from primary vertex, add to pileup isolation
+        puiso += pt;
       }
     }
-    //std::cout<< "ph "<< iso_ph << " nh " <<iso_nh << " ch " <<iso_ch<<std::endl;
+    // if neutral hadron, add to neutral hadron isolation
+    if (std::abs(id) == 130 && pt > ptthresh && dr2 > deadcone_nh * deadcone_nh)
+      nhiso += pt;
+    // if photon, add to photon isolation
+    if (std::abs(id) == 22 && pt > ptthresh && dr2 > deadcone_ph * deadcone_ph)
+      phiso += pt;
   }
-  //std::cout<< "rho "<< rho << " riso2 " << riso2 <<std::endl;
-  //double Aeff_Fall17Anal[2][7] = {
-  //  { 0.1440, 0.1562, 0.1032, 0.0859, 0.1116, 0.1321, 0.1654 },
-  //  { 0.0735, 0.0619, 0.0465, 0.0433, 0.0577 , 0.0,0.0}
-  //};
-  double Aeff_Fall17Anal[5] = {0.0566, 0.0562, 0.0363, 0.0119, 0.0064};
-  // For now use the same EAs in 2016 as in 2017 (based on nanoAOD)
-  //double Aeff_16[5] = {0.0735, 0.0619, 0.0465, 0.0433, 0.0577};
-  double Aeff_16[5] = {0.0566, 0.0562, 0.0363, 0.0119, 0.0064};
+  return pat::PFIsolation(chiso, nhiso, phiso, puiso);
+}
 
-  double CorrectedTerm = 0.0;
-  if (is2016 == false) {
-      if (TMath::Abs(mu.eta()) < 0.8)
-        CorrectedTerm = rho * Aeff_Fall17Anal[0] * (riso2 / 0.09);
-      else if (TMath::Abs(mu.eta()) > 0.8 && TMath::Abs(mu.eta()) < 1.3)
-        CorrectedTerm = rho * Aeff_Fall17Anal[1] * (riso2 / 0.09);
-      else if (TMath::Abs(mu.eta()) > 1.3 && TMath::Abs(mu.eta()) < 2.0)
-        CorrectedTerm = rho * Aeff_Fall17Anal[2] * (riso2 / 0.09);
-      else if (TMath::Abs(mu.eta()) > 2.0 && TMath::Abs(mu.eta()) < 2.2)
-        CorrectedTerm = rho * Aeff_Fall17Anal[3] * (riso2 / 0.09);
-      else if (TMath::Abs(mu.eta()) > 2.2 && TMath::Abs(mu.eta()) < 2.5)
-        CorrectedTerm = rho * Aeff_Fall17Anal[4] * (riso2 / 0.09);
+// Adapted from implementation from Daniel Li (Brown)
+template <typename MUON, typename PFCANDS>
+inline void FillMiniIso(
+  const std::vector<PFCANDS> & pfcands, 
+  const MUON &mu,
+  const double rho,
+  NtupleContent &nt,
+  bool isTag  
+) {
+  
+  double Aeff_Fall17[5] = { 0.0566, 0.0562, 0.0363, 0.0119, 0.0064 };
+  double EA;
+
+  auto iso = getMiniPFIsolation<PFCANDS>(pfcands, mu.polarP4());
+  // auto iso = mu.miniPFIsolation();
+  auto chg = iso.chargedHadronIso();
+  auto neu = iso.neutralHadronIso();
+  auto pho = iso.photonIso();
+    
+  if( TMath::Abs(mu.eta()) < 0.8 ) EA = Aeff_Fall17[0];
+  else if( TMath::Abs(mu.eta()) < 1.3 ) EA = Aeff_Fall17[1];
+  else if( TMath::Abs(mu.eta()) < 2.0 ) EA = Aeff_Fall17[2];
+  else if( TMath::Abs(mu.eta()) < 2.2 ) EA = Aeff_Fall17[3];
+  else EA = Aeff_Fall17[4];
+
+  float R = 10.0 / std::min( std::max( mu.pt(), 50.0 ), 200.0 );
+  EA *= std::pow( R / 0.3, 2 );
+    
+  float miniIso = ( chg + TMath::Max( 0.0, neu + pho - (rho) * EA ) ) / mu.pt();
+
+  if( isTag ){
+    nt.tag_miniIso = miniIso;
+    nt.tag_miniIsoCharged = chg / mu.pt();
+    nt.tag_miniIsoPhotons = pho / mu.pt();
+    nt.tag_miniIsoNeutrals = neu / mu.pt();
   }
   else {
-      if (TMath::Abs(mu.eta()) < 0.8)
-        CorrectedTerm = rho * Aeff_16[0] * (riso2 / 0.09);
-      else if (TMath::Abs(mu.eta()) > 0.8 && TMath::Abs(mu.eta()) < 1.3)
-        CorrectedTerm = rho * Aeff_16[1] * (riso2 / 0.09);
-      else if (TMath::Abs(mu.eta()) > 1.3 && TMath::Abs(mu.eta()) < 2.0)
-        CorrectedTerm = rho * Aeff_16[2] * (riso2 / 0.09);
-      else if (TMath::Abs(mu.eta()) > 2.0 && TMath::Abs(mu.eta()) < 2.2)
-        CorrectedTerm = rho * Aeff_16[3] * (riso2 / 0.09);
-      else if (TMath::Abs(mu.eta()) > 2.2 && TMath::Abs(mu.eta()) < 2.5)
-        CorrectedTerm = rho * Aeff_16[4] * (riso2 / 0.09);
-  }
-
-  iso = (iso_ch + TMath::Max(0.0, iso_ph + iso_nh - CorrectedTerm)) / mu.pt();
-  //} //end if not mu pt < 5
-
-  if (isTag) {
-    nt.tag_miniIso = iso;
-    nt.tag_miniIsoCharged = iso_ch;
-    nt.tag_miniIsoPhotons = iso_ph;
-    nt.tag_miniIsoNeutrals = iso_nh;
-  } else {
-    nt.probe_miniIso = iso;
-    nt.probe_miniIsoCharged = iso_ch;
-    nt.probe_miniIsoPhotons = iso_ph;
-    nt.probe_miniIsoNeutrals = iso_nh;
+    nt.probe_miniIso = miniIso;
+    nt.probe_miniIsoCharged = chg / mu.pt();
+    nt.probe_miniIsoPhotons = pho / mu.pt();
+    nt.probe_miniIsoNeutrals = neu / mu.pt();
   }
 }
 

@@ -1186,10 +1186,7 @@ void MuonFullAODAnalyzer::analyze(const edm::Event& iEvent, const edm::EventSetu
       nt.tag_isMatchedGen = genmatched_tag[&tag - &tag_trkttrk[0]];
 
       FillTagBranches<reco::Muon, reco::Track>(tag.first, *tracks, nt, *pv);
-      if (TString(era_).Contains("2016"))
-          FillMiniIso<reco::Muon, reco::PFCandidate>(*pfcands, tag.first, *rhoJetsNC, nt, true, true);
-      else
-          FillMiniIso<reco::Muon, reco::PFCandidate>(*pfcands, tag.first, *rhoJetsNC, nt, true, false);
+      FillMiniIso<reco::Muon, reco::PFCandidate>(*pfcands, tag.first, *rhoJetsNC, nt, true);
 
       // Tag-trigger matching
       auto tagRef = muonsView->refAt(tag_muon_map[&tag - &tag_trkttrk[0]]);
@@ -1236,10 +1233,7 @@ void MuonFullAODAnalyzer::analyze(const edm::Event& iEvent, const edm::EventSetu
         fakeMuon.setCharge(probe.charge());
         FillProbeBranches<reco::Muon, reco::Track>(fakeMuon, *tracks, nt, false, *pv);
         FillProbeBranchesSelector<reco::Muon>(fakeMuon, nt, probeSelectorBits_, false);
-        if (TString(era_).Contains("2016"))
-            FillMiniIso<reco::Muon, reco::PFCandidate>(*pfcands, fakeMuon, *rhoJetsNC, nt, false, true);
-        else
-            FillMiniIso<reco::Muon, reco::PFCandidate>(*pfcands, fakeMuon, *rhoJetsNC, nt, false, false);
+        FillMiniIso<reco::Muon, reco::PFCandidate>(*pfcands, fakeMuon, *rhoJetsNC, nt, false);
         if (includeJets_)
           FindJetProbePair<reco::PFJet, reco::Muon>(corrJets, fakeMuon, nt);
 
@@ -1269,12 +1263,7 @@ void MuonFullAODAnalyzer::analyze(const edm::Event& iEvent, const edm::EventSetu
                     << std::endl;
         FillProbeBranches<reco::Muon, reco::Track>(muons->at(trk_muon_map.second[idx]), *tracks, nt, true, *pv);
         FillProbeBranchesSelector<reco::Muon>(muons->at(trk_muon_map.second[idx]), nt, probeSelectorBits_, true);
-        if (TString(era_).Contains("2016"))
-            FillMiniIso<reco::Muon, reco::PFCandidate>(
-                *pfcands, muons->at(trk_muon_map.second[idx]), *rhoJetsNC, nt, false, true);
-        else
-            FillMiniIso<reco::Muon, reco::PFCandidate>(
-                *pfcands, muons->at(trk_muon_map.second[idx]), *rhoJetsNC, nt, false, false);
+        FillMiniIso<reco::Muon, reco::PFCandidate>(*pfcands, muons->at(trk_muon_map.second[idx]), *rhoJetsNC, nt, false);
         if (includeJets_)
           FindJetProbePair<reco::PFJet, pat::Muon>(corrJets, muons->at(trk_muon_map.second[idx]), nt);
 
