@@ -31,35 +31,35 @@
                 "globalTag": "106X_upgrade2018_realistic_v16_L1v1"
             },
             "Run2018A": {
-                "dataset": "/SingleMuon/Run2018A-15Feb2022_UL2018-v1/MINIAOD",
+                "dataset": "/SingleMuon/Run2018A-UL2018_MiniAODv2_GT36-v1/MINIAOD",
                 "globalTag": "106X_dataRun2_v32"
             },
             "Run2018B": {
-                "dataset": "/SingleMuon/Run2018B-15Feb2022_UL2018-v1/MINIAOD",
+                "dataset": "/SingleMuon/Run2018B-UL2018_MiniAODv2_GT36-v1/MINIAOD",
                 "globalTag": "106X_dataRun2_v32"
             },
             "Run2018C": {
-                "dataset": "/SingleMuon/Run2018C-15Feb2022_UL2018-v1/MINIAOD",
+                "dataset": "/SingleMuon/Run2018C-UL2018_MiniAODv2_GT36-v2/MINIAOD",
                 "globalTag": "106X_dataRun2_v32"
             },
             "Run2018D": {
-                "dataset": "/SingleMuon/Run2018D-15Feb2022_UL2018-v1/MINIAOD",
+                "dataset": "/SingleMuon/Run2018D-UL2018_MiniAODv2_GT36-v1/MINIAOD",
                 "globalTag": "106X_dataRun2_v32"
             },
             "Run2018A_DM": {
-                "dataset": "/DoubleMuon/Run2018A-15Feb2022_UL2018-v1/MINIAOD",
+                "dataset": "/DoubleMuon/Run2018A-UL2018_MiniAODv2_GT36-v1/MINIAOD",
                 "globalTag": "106X_dataRun2_v32"
             },
             "Run2018B_DM": {
-                "dataset": "/DoubleMuon/Run2018B-15Feb2022_UL2018-v1/MINIAOD",
+                "dataset": "/DoubleMuon/Run2018B-UL2018_MiniAODv2_GT36-v1/MINIAOD",
                 "globalTag": "106X_dataRun2_v32"
             },
             "Run2018C_DM": {
-                "dataset": "/DoubleMuon/Run2018C-15Feb2022_UL2018-v1/MINIAOD",
+                "dataset": "/DoubleMuon/Run2018C-UL2018_MiniAODv2_GT36-v1/MINIAOD",
                 "globalTag": "106X_dataRun2_v32"
             },
             "Run2018D_DM": {
-                "dataset": "/DoubleMuon/Run2018D-15Feb2022_UL2018-v1/MINIAOD",
+                "dataset": "/DoubleMuon/Run2018D-UL2018_MiniAODv2_GT36-v1/MINIAOD",
                 "globalTag": "106X_dataRun2_v32"
             }
         }
