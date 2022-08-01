@@ -23,7 +23,7 @@ public:
 
   // Standard stuff
   int run;
-  int event;
+  long int event;
   int ls;
   bool fromFullAOD;
 
