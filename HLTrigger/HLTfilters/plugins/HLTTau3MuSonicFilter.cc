@@ -57,6 +57,8 @@ void HLTTau3MuSonicFilter::acquire(edm::Event const& iEvent, edm::EventSetup con
     auto edgeFeaturesData = edgeFeatures.allocate<float>();
     auto& vEdgeFeaturesData = (*edgeFeaturesData)[0];
 
+
+
     size_t i_hits = 0;
 
     std::vector<float> hit_z;
@@ -100,6 +102,11 @@ void HLTTau3MuSonicFilter::acquire(edm::Event const& iEvent, edm::EventSetup con
             }
         } 
     }
+
+    nodes.setShape(0,i_hits);
+    edgeIndices.setShape(1,i_edges);
+    edgeFeatures.setShape(0,i_edges);
+
     std::cout << "found " << i_hits << " hits and " << i_edges << " edges" << std::endl;
     if (zeropad_){
         vnodedata.resize(3 * max_n_hits_);
@@ -111,14 +118,14 @@ void HLTTau3MuSonicFilter::acquire(edm::Event const& iEvent, edm::EventSetup con
     edgeIndices.toServer(edgeIndexData);
     std::cout << "edge indices to server" << std::endl;
     edgeFeatures.toServer(edgeFeaturesData);
-    std::cout << "at the end of this function" << std::endl;
+    std::cout << "edge features to server, running inference now" << std::endl;
 }
 
 bool HLTTau3MuSonicFilter::filter(edm::Event& iEvent, edm::EventSetup const& iSetup, Output const& iOutput) {
 
     const auto& output1 = iOutput.begin()->second;
     const auto& outputs = output1.fromServer<float>();
-
+    std::cout << "GNN score: "  << outputs[0][0] << std::endl;
     return (outputs[0][0] > gnn_threshold_);
 
 }
