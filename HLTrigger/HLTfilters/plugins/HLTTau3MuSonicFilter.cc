@@ -45,15 +45,15 @@ void HLTTau3MuSonicFilter::acquire(edm::Event const& iEvent, edm::EventSetup con
     iEvent.getByToken(mu_hitToken, l1muhitsH);  
     const EMTFHitCollection& l1muhits = (*l1muhitsH.product());
 
-    auto& nodes = iInput.at("x");
+    auto& nodes = iInput.at("x__0");
     auto nodedata = nodes.allocate<float>();
     auto& vnodedata = (*nodedata)[0];
 
-    auto& edgeIndices = iInput.at("edge_index");
+    auto& edgeIndices = iInput.at("edge_index__1");
     auto edgeIndexData = edgeIndices.allocate<int64_t>();
     auto& vEdgeIndexData = (*edgeIndexData)[0];
 
-    auto& edgeFeatures = iInput.at("edge_attr");
+    auto& edgeFeatures = iInput.at("edge_attr__2");
     auto edgeFeaturesData = edgeFeatures.allocate<float>();
     auto& vEdgeFeaturesData = (*edgeFeaturesData)[0];
 
@@ -63,7 +63,6 @@ void HLTTau3MuSonicFilter::acquire(edm::Event const& iEvent, edm::EventSetup con
     std::vector<float> hit_eta;
     std::vector<float> hit_phi;
     std::vector<float> hit_bend;
-
     for (const auto& hit : l1muhits)
     {    
         if ((hit.Station() != 1) || (hit.Neighbor() != 0) || (hit.Subsystem() == 0)) continue;
@@ -101,15 +100,18 @@ void HLTTau3MuSonicFilter::acquire(edm::Event const& iEvent, edm::EventSetup con
             }
         } 
     }
-
+    std::cout << "found " << i_hits << " hits and " << i_edges << " edges" << std::endl;
     if (zeropad_){
         vnodedata.resize(3 * max_n_hits_);
         vnodedata.resize(2 * max_n_edges_);
         vnodedata.resize(4 * max_n_edges_);
     }
     nodes.toServer(nodedata);
+    std::cout << "nodes to server" << std::endl;
     edgeIndices.toServer(edgeIndexData);
+    std::cout << "edge indices to server" << std::endl;
     edgeFeatures.toServer(edgeFeaturesData);
+    std::cout << "at the end of this function" << std::endl;
 }
 
 bool HLTTau3MuSonicFilter::filter(edm::Event& iEvent, edm::EventSetup const& iSetup, Output const& iOutput) {
@@ -124,11 +126,13 @@ bool HLTTau3MuSonicFilter::filter(edm::Event& iEvent, edm::EventSetup const& iSe
 void HLTTau3MuSonicFilter::fillDescriptions(edm::ConfigurationDescriptions& descriptions) {
   edm::ParameterSetDescription desc;
   TritonClient::fillPSetDescription(desc);
-  desc.add<edm::InputTag>("L1EMTFHitInputTag");
+  desc.add<edm::InputTag>("L1EMTFHitInputTag",edm::InputTag("simEmtfDigis"));
   desc.add<bool>("zeropad", false);
   desc.add<double>("gnn_threshold", 0.5);
   desc.add<unsigned int>("max_n_hits", 999999);
   desc.add<unsigned int>("max_n_edges", 999999);
   descriptions.add("hltTau3MuSonicFilter", desc);
 }
-
+// register as framework plugin
+#include "FWCore/Framework/interface/MakerMacros.h"
+DEFINE_FWK_MODULE(HLTTau3MuSonicFilter);
