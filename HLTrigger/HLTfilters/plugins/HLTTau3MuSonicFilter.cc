@@ -101,7 +101,7 @@ void HLTTau3MuSonicFilter::acquire(edm::Event const& iEvent, edm::EventSetup con
     for (size_t index1 = 0; index1 < i_hits; index1++){
         for (size_t index2 = 0; index2 < i_hits; index2++){
 
-            if (deltaR(hit_eta.at(index1),hit_phi.at(index1),hit_eta.at(index2),hit_phi.at(index2)) > 1.0) continue;
+            if (deltaR(hit_eta.at(index1),hit_phi.at(index1),hit_eta.at(index2),hit_phi.at(index2)) > 1.0 && index1 !=0 && index2 !=0) continue;
             vEdgeIndexData.push_back(index1);            
             vEdgeIndexData.push_back(index2);            
 
