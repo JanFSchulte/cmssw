@@ -38,7 +38,7 @@ process.maxEvents = cms.untracked.PSet(
 Source_Files = cms.untracked.vstring(
     #'/store/group/l1upgrades/L1MuTrks/MuMu_2to2000_flatOneOverPt_8Mar2018/output/MuMu_FEVTDEBUGHLT_0.root',
 #    '/store/group/l1upgrades/L1MuTrks/MuMu_2to500_flatPt_8Mar2018/output/MuMu_FEVTDEBUGHLT_0.root',
-     'file:../../Tau3Mu/production/CMSSW_12_3_6/src/DsTau3Mu-GEN-SIM-DIGI-RAW.root'
+     'file:/depot/cms/users/schul105/Tau3Mu/production/CMSSW_12_3_6/src/DsTau3Mu-GEN-SIM-DIGI-RAW.root'
   )
 
 process.source = cms.Source("PoolSource", fileNames = Source_Files,
