@@ -59,12 +59,25 @@ void HLTTau3MuSonicFilter::acquire(edm::Event const& iEvent, edm::EventSetup con
 
 
 
-    size_t i_hits = 0;
 
     std::vector<float> hit_z;
     std::vector<float> hit_eta;
     std::vector<float> hit_phi;
     std::vector<float> hit_bend;
+
+    //add virtual global node
+    vnodedata.push_back(0);
+    vnodedata.push_back(0);
+    vnodedata.push_back(0);
+
+    hit_z.push_back(0);
+    hit_eta.push_back(0);
+    hit_phi.push_back(0);
+    hit_bend.push_back(0);
+
+
+    size_t i_hits = 1;
+
     for (const auto& hit : l1muhits)
     {    
         if ((hit.Station() != 1) || (hit.Neighbor() != 0) || (hit.Subsystem() == 0)) continue;
@@ -84,8 +97,9 @@ void HLTTau3MuSonicFilter::acquire(edm::Event const& iEvent, edm::EventSetup con
     }
 
     size_t i_edges = 0;
+    // starting both loops at zero ensures that the graph is undirected and has self-loops
     for (size_t index1 = 0; index1 < i_hits; index1++){
-        for (size_t index2 = index1+1; index2 < i_hits; index2++){
+        for (size_t index2 = 0; index2 < i_hits; index2++){
 
             if (deltaR(hit_eta.at(index1),hit_phi.at(index1),hit_eta.at(index2),hit_phi.at(index2)) > 1.0) continue;
             vEdgeIndexData.push_back(index1);            
