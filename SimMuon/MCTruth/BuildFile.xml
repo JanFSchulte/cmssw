@@ -12,6 +12,7 @@
 <use name="DataFormats/TrackReco"/>
 <use name="DataFormats/MuonReco"/>
 <use name="DataFormats/TrackerCommon"/>
+<use name="DataFormats/L1TMuon"/>
 <use name="SimDataFormats/Track"/>
 <use name="SimDataFormats/TrackingHit"/>
 <use name="SimDataFormats/TrackerDigiSimLink"/>

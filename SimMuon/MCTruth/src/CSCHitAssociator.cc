@@ -20,6 +20,7 @@ void CSCHitAssociator::initEvent(const edm::Event &event, const edm::EventSetup 
   theDigiSimLinks = &event.get(theConfig.linksToken_);
 
   // get CSC Geometry to use CSCLayer methods
+  std::cout << "init geom" << std::endl;
   cscgeom = &setup.getData(theConfig.geomToken_);
 }
 
@@ -54,6 +55,25 @@ std::vector<CSCHitAssociator::SimHitIdpr> CSCHitAssociator::associateCSCHitId(co
 
   return simtrackids;
 }
+
+int CSCHitAssociator::associateEMTFHitId(const EMTFHit &emtfHit) const {
+  CSCDetId cscDetId = emtfHit.CSC_DetId();
+  unsigned int theDetId = cscDetId.rawId();
+
+  const CSCLayer* csclayer = cscgeom->layer(cscDetId);
+  const CSCChamber *chamber = csclayer->chamber();
+  const CSCLayerGeometry *laygeom = csclayer->geometry();
+
+  int istrip = emtfHit.Strip();
+  unsigned int channel = laygeom->channel(istrip);
+
+  DigiSimLinks::const_iterator layerLinks = theDigiSimLinks->find(theDetId);
+  for (long unsigned int i =0; i < (*layerLinks).size(); i++){
+       if (channel == (*layerLinks)[i].channel()) return (*layerLinks)[i].SimTrackId();
+  }
+  return -1;
+}
+
 
 std::vector<CSCHitAssociator::SimHitIdpr> CSCHitAssociator::associateHitId(const TrackingRecHit &hit) const {
   std::vector<SimHitIdpr> simtrackids;

@@ -6,6 +6,7 @@
 #include "DataFormats/CSCDigi/interface/CSCStripDigi.h"
 #include "DataFormats/CSCDigi/interface/CSCWireDigi.h"
 #include "DataFormats/CSCRecHit/interface/CSCRecHit2D.h"
+#include "DataFormats/L1TMuon/interface/EMTFHit.h"
 #include "DataFormats/Common/interface/DetSetVector.h"
 #include "DataFormats/TrackingRecHit/interface/TrackingRecHit.h"
 #include "FWCore/Framework/interface/ConsumesCollector.h"
@@ -15,11 +16,14 @@
 #include "FWCore/Utilities/interface/InputTag.h"
 #include "Geometry/CSCGeometry/interface/CSCGeometry.h"
 #include "Geometry/CSCGeometry/interface/CSCLayerGeometry.h"
+#include "Geometry/CSCGeometry/interface/CSCChamber.h"
 #include "SimDataFormats/CrossingFrame/interface/CrossingFrame.h"
 #include "SimDataFormats/CrossingFrame/interface/MixCollection.h"
 #include "SimDataFormats/Track/interface/SimTrackContainer.h"
 #include "SimDataFormats/TrackerDigiSimLink/interface/StripDigiSimLink.h"
 #include "SimDataFormats/TrackingHit/interface/PSimHitContainer.h"
+
+using namespace l1t;
 
 class MuonGeometryRecord;
 
@@ -45,6 +49,7 @@ public:
 
   std::vector<SimHitIdpr> associateHitId(const TrackingRecHit &) const;
   std::vector<SimHitIdpr> associateCSCHitId(const CSCRecHit2D *) const;
+  int associateEMTFHitId(const EMTFHit &) const;
 
 private:
   void initEvent(const edm::Event &, const edm::EventSetup &);
