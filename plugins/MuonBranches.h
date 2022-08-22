@@ -394,16 +394,20 @@ inline void FillPairBranches(const MUOTT &muon, const TRKTT &trk, NtupleContent 
   nt.pair_dz = muon.first.vz() - trk.first.vz();
   nt.pair_dR = deltaR(muon.first.eta(), muon.first.phi(), trk.first.eta(), trk.first.phi());
 
-  FreeTrajectoryState trajectory_state_muon = muon.second.impactPointTSCP().theState();
-  FreeTrajectoryState trajectory_state_trk = trk.second.impactPointTSCP().theState();
+if ( muon.second.impactPointStateAvailable () && trk.second.impactPointStateAvailable () ){
+    FreeTrajectoryState trajectory_state_muon = muon.second.impactPointTSCP().theState();
+    FreeTrajectoryState trajectory_state_trk = trk.second.impactPointTSCP().theState();
 
-  TrajectoryStateOnSurface prop1_M1 = prop1_.extrapolate(trajectory_state_muon);
-  TrajectoryStateOnSurface prop2_M1 = prop1_.extrapolate(trajectory_state_trk);
+    TrajectoryStateOnSurface prop1_M1 = prop1_.extrapolate(trajectory_state_muon);
+    TrajectoryStateOnSurface prop2_M1 = prop1_.extrapolate(trajectory_state_trk);
 
-  if (prop1_M1.isValid() && prop2_M1.isValid()) {
-    float dphiM1 = deltaPhi<float>(prop1_M1.globalPosition().phi(), prop2_M1.globalPosition().phi());
-    nt.pair_drM1 = hypot(dphiM1, std::abs<float>(prop1_M1.globalPosition().eta() - prop2_M1.globalPosition().eta()));
-  }
+    if (prop1_M1.isValid() && prop2_M1.isValid()) {
+      float dphiM1 = deltaPhi<float>(prop1_M1.globalPosition().phi(), prop2_M1.globalPosition().phi());
+      nt.pair_drM1 = hypot(dphiM1, std::abs<float>(prop1_M1.globalPosition().eta() - prop2_M1.globalPosition().eta()));
+    } else
+      nt.pair_drM1 =1000;
+  } else
+    nt.pair_drM1 =1000;
 }
 
 template <typename MUO, typename TRK>
