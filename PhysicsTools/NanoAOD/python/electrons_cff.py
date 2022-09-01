@@ -164,6 +164,13 @@ calibratedPatElectronsNano = RecoEgamma.EgammaTools.calibratedEgammas_cff.calibr
     produceCalibratedObjs = False,
     src = "electronsWithVariables"
 )
+for modifier in run2_miniAOD_80XLegacy,run2_nanoAOD_94XMiniAODv1,run2_nanoAOD_94XMiniAODv2,run2_nanoAOD_94X2016,run2_nanoAOD_102Xv1,run2_nanoAOD_106Xv1:
+    modifier.toModify(bitmapVIDForEle, src = "slimmedElectronsUpdated")
+    modifier.toModify(isoForEle, src = "slimmedElectronsUpdated")
+    modifier.toModify(ptRatioRelForEle, srcLep = "slimmedElectronsUpdated")
+    modifier.toModify(seedGainEle, src = "slimmedElectronsUpdated")
+    modifier.toModify(calibratedPatElectronsNano, src = "slimmedElectronsUpdated")
+
 
 #the second part is introduced to protect v8 since (run2_nanoAOD_106Xv1 & ~run2_nanoAOD_devel) is the v8 condition
 (run2_egamma_2016 & tracker_apv_vfp30_2016 & ~(run2_nanoAOD_106Xv1 & ~run2_nanoAOD_devel)).toModify(calibratedPatElectronsNano,
