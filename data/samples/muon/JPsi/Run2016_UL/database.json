@@ -37,6 +37,18 @@
             "Run2016H": {
                 "dataset": "/SingleMuon/Run2016H-21Feb2020_UL2016-v1/MINIAOD",
                 "globalTag": "106X_dataRun2_v32"
+            },
+            "Run2016F_DM": {
+                "dataset": "/DoubleMuon/Run2016F-21Feb2020_UL2016-v1/MINIAOD",
+                "globalTag": "106X_dataRun2_v32"
+            },
+            "Run2016G_DM": {
+                "dataset": "/DoubleMuon/Run2016G-21Feb2020_UL2016-v1/MINIAOD",
+                "globalTag": "106X_dataRun2_v32"
+            },
+            "Run2016H_DM": {
+                "dataset": "/DoubleMuon/Run2016H-21Feb2020_UL2016-v1/MINIAOD",
+                "globalTag": "106X_dataRun2_v32"
             }
         }
     }
