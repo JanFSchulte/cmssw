@@ -45,7 +45,24 @@
             "Run2018D": {
                 "dataset": "/SingleMuon/Run2018D-UL2018_MiniAODv2_GT36-v1/MINIAOD",
                 "globalTag": "106X_dataRun2_v33"
+            },
+            "Run2018A_DM": {
+                "dataset": "/DoubleMuon/Run2018A-UL2018_MiniAODv2_GT36-v1/MINIAOD",
+                "globalTag": "106X_dataRun2_v32"
+            },
+            "Run2018B_DM": {
+                "dataset": "/DoubleMuon/Run2018B-UL2018_MiniAODv2_GT36-v1/MINIAOD",
+                "globalTag": "106X_dataRun2_v32"
+            },
+            "Run2018C_DM": {
+                "dataset": "/DoubleMuon/Run2018C-UL2018_MiniAODv2_GT36-v1/MINIAOD",
+                "globalTag": "106X_dataRun2_v32"
+            },
+            "Run2018D_DM": {
+                "dataset": "/DoubleMuon/Run2018D-UL2018_MiniAODv2_GT36-v1/MINIAOD",
+                "globalTag": "106X_dataRun2_v32"
             }
+
         }
     }
 }
