@@ -3,8 +3,8 @@ import FWCore.ParameterSet.Config as cms
 hltPhase2L3FromL1TkMuonPixelTracksTrackingRegions = cms.EDProducer("CandidateSeededTrackingRegionsEDProducer",
     RegionPSet = cms.PSet(
         beamSpot = cms.InputTag("offlineBeamSpot"),
-        deltaEta = cms.double(0.035),
-        deltaPhi = cms.double(0.02),
+        deltaEta = cms.double(0.035*5),
+        deltaPhi = cms.double(0.02*5),
         input = cms.InputTag("hltL1TkMuons"),
         maxNRegions = cms.int32(10000),
         maxNVertices = cms.int32(1),

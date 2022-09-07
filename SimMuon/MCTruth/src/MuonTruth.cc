@@ -172,6 +172,29 @@ void MuonTruth::analyze(const CSCRecHit2D &recHit) {
   }
 }
 
+int MuonTruth::analyze(const EMTFHit &emtfHit) {
+
+  CSCDetId cscDetId = emtfHit.CSC_DetId();
+  theDetId = cscDetId.rawId();
+
+//  int nchannels = 1;
+  const CSCLayerGeometry *laygeom = cscgeom->layer(cscDetId)->geometry();
+
+    int istrip = emtfHit.Strip();
+    unsigned int channel = laygeom->channel(istrip);
+
+    DigiSimLinks::const_iterator layerLinks = theDigiSimLinks->find(theDetId);
+    for (long unsigned int i =0; i < (*layerLinks).size(); i++){
+         if (channel == (*layerLinks)[i].channel()) return (*layerLinks)[i].SimTrackId();
+    }
+    //if (layerLinks != theDigiSimLinks->end()) {
+    //  return true;
+    //}
+    return -1;
+//  }
+}
+
+
 void MuonTruth::analyze(const CSCStripDigi &stripDigi, int rawDetIdCorrespondingToCSCLayer) {
   theDetId = rawDetIdCorrespondingToCSCLayer;
   theChargeMap.clear();

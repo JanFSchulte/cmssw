@@ -60,6 +60,8 @@ int CSCHitAssociator::associateEMTFHitId(const EMTFHit &emtfHit) const {
   CSCDetId cscDetId = emtfHit.CSC_DetId();
   unsigned int theDetId = cscDetId.rawId();
 
+  std::cout << "layerName: " << cscDetId.layerName() << " endcap: " << cscDetId.endcap() << " station: " << cscDetId.station() << " ring: " << cscDetId.ring() << " chamber: " << cscDetId.chamber() << " layer: " << cscDetId.layer() << std::endl;
+
   const CSCLayer* csclayer = cscgeom->layer(cscDetId);
   const CSCChamber *chamber = csclayer->chamber();
   const CSCLayerGeometry *laygeom = csclayer->geometry();

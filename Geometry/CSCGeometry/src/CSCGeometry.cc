@@ -90,6 +90,7 @@ const GeomDet* CSCGeometry::idToDetUnit(DetId id) const { return dynamic_cast<co
 
 const GeomDet* CSCGeometry::idToDet(DetId id) const {
   CSCDetMap::const_iterator i = theMap.find(id);
+  //std::cout << "did we find it? " << (i != theMap.end()) << std::endl;
   return (i != theMap.end()) ? i->second : nullptr;
 }
 
@@ -99,10 +100,15 @@ const CSCGeometry::LayerContainer& CSCGeometry::layers() const { return theLayer
 
 const CSCChamber* CSCGeometry::chamber(CSCDetId id) const {
   CSCDetId id1(id.endcap(), id.station(), id.ring(), id.chamber(), 0);
+  //std::cout << "build new DetId" << std::endl;
   return dynamic_cast<const CSCChamber*>(idToDet(id1));
 }
 
-const CSCLayer* CSCGeometry::layer(CSCDetId id) const { return dynamic_cast<const CSCLayer*>(idToDetUnit(id)); }
+const CSCLayer* CSCGeometry::layer(CSCDetId id) const { 
+ //std::cout << "got DetUnit from CSCDetId: " << idToDetUnit(id) << std::endl;
+return dynamic_cast<const CSCLayer*>(idToDetUnit(id)); 
+
+}
 
 void CSCGeometry::queryModelling() const {
   // Dump user-selected overall modelling parameters.

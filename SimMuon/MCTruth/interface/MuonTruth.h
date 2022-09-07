@@ -6,6 +6,7 @@
 #include "DataFormats/CSCDigi/interface/CSCStripDigi.h"
 #include "DataFormats/CSCDigi/interface/CSCWireDigi.h"
 #include "DataFormats/CSCRecHit/interface/CSCRecHit2D.h"
+#include "DataFormats/L1TMuon/interface/EMTFHit.h"
 #include "DataFormats/Common/interface/DetSetVector.h"
 #include "DataFormats/TrackingRecHit/interface/TrackingRecHit.h"
 #include "FWCore/Framework/interface/ConsumesCollector.h"
@@ -22,6 +23,8 @@
 #include "SimDataFormats/TrackerDigiSimLink/interface/StripDigiSimLink.h"
 #include "SimDataFormats/TrackingHit/interface/PSimHitContainer.h"
 
+using namespace l1t;
+
 class MuonTruth {
 public:
   typedef edm::DetSetVector<StripDigiSimLink> DigiSimLinks;
@@ -35,6 +38,7 @@ public:
   void initEvent(const edm::Event &, const edm::EventSetup &);
 
   void analyze(const CSCRecHit2D &recHit);
+  int analyze(const EMTFHit &emtfHit);
   void analyze(const CSCStripDigi &stripDigi, int rawDetIdCorrespondingToCSCLayer);
   void analyze(const CSCWireDigi &wireDigi, int rawDetIdCorrespondingToCSCLayer);
 
