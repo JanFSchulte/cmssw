@@ -20,4 +20,5 @@
 <use name="FWCore/Utilities"/>
 <use name="HLTrigger/HLTcore"/>
 <use name="L1Trigger/L1TMuon"/>
+<use name="HeterogeneousCore/SonicTriton"/>
 <flags EDM_PLUGIN="1"/>

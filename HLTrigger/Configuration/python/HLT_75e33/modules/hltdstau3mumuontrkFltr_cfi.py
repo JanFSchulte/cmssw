@@ -1,0 +1,30 @@
+import FWCore.ParameterSet.Config as cms
+
+hltdstau3mumuontrkFltr = cms.EDFilter( "HLTMuonTrkFilter", 
+    saveTags = cms.bool( True ), 
+    inputMuonCollection = cms.InputTag( "hltGlbTrkMuonsLowPt" ), 
+    inputCandCollection = cms.InputTag( "hltPhase2L3MuonCandidatesLowPt" ), 
+    previousCandTag = cms.InputTag( "" ), 
+    minTrkHits = cms.int32( -1 ), 
+    minMuonHits = cms.int32( -1 ), 
+    minMuonStations = cms.int32( -1 ), 
+    maxNormalizedChi2 = cms.double( 1.0E99 ), 
+    allowedTypeMask = cms.uint32( 255 ), 
+    requiredTypeMask = cms.uint32( 0 ), 
+    trkMuonId = cms.uint32( 0 ), 
+    minPt = cms.double( 1.2 ), 
+    minN = cms.uint32( 3 ), 
+    maxAbsEta = cms.double( 1.0E99 ), 
+    L1MatchingdR = cms.double( 0.3 ), 
+    useSimpleGeometry = cms.bool( True ), 
+    useStation2 = cms.bool( True ), 
+    fallbackToME1 = cms.bool( False ), 
+    cosmicPropagationHypothesis = cms.bool( False ), 
+    useMB2InOverlap = cms.bool( False ), 
+    useTrack = cms.string( "tracker" ), 
+    useState = cms.string( "atVertex" ), 
+    propagatorAlong = cms.ESInputTag( "","hltESPSteppingHelixPropagatorAlong" ), 
+    propagatorAny = cms.ESInputTag( "","SteppingHelixPropagatorAny" ), 
+    propagatorOpposite = cms.ESInputTag( "","hltESPSteppingHelixPropagatorOpposite" ) 
+)
+
