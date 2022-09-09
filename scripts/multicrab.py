@@ -294,7 +294,7 @@ def main():
                     elif '2017' in era:
                         config.Data.lumiMask = LM_prefix + '17/13TeV/Legacy_2017/Cert_294927-306462_13TeV_UL2017_Collisions17_GoldenJSON.txt'
                     elif '2016' in era:
-                        config.Data.lumiMask = LM_prefic + '16/13TeV/Legacy_2016/Cert_271036-284044_13TeV_Legacy2016_Collisions16_JSON.txt'
+                        config.Data.lumiMask = LM_prefix + '16/13TeV/Legacy_2016/Cert_271036-284044_13TeV_Legacy2016_Collisions16_JSON.txt'
                 else:
                     if '2018' in era:
                         config.Data.lumiMask = LM_prefix + '18/13TeV/ReReco/Cert_314472-325175_13TeV_17SeptEarlyReReco2018ABC_PromptEraD_Collisions18_JSON.txt'
@@ -305,23 +305,12 @@ def main():
 
                 #config.Data.splitting = 'Automatic' # Not working after rucio transition
 
-                config.Data.splitting = 'FileBased'
-                config.Data.unitsPerJob = 2
-                config.Data.totalUnits = 5
-
-
+                config.Data.splitting = options.splittingData
+                config.Data.unitsPerJob = options.unitsPerJobData
 
             else:
-                config.Data.splitting = 'FileBased'
-                config.Data.unitsPerJob = 2
-                config.Data.totalUnits = 5
-
-            #     config.Data.splitting = options.splittingData
-            #     config.Data.unitsPerJob = options.unitsPerJobData
-
-            # else:
-            #     config.Data.splitting = options.splittingMC
-            #     config.Data.unitsPerJob = options.unitsPerJobMC
+                config.Data.splitting = options.splittingMC
+                config.Data.unitsPerJob = options.unitsPerJobMC
 
             config.JobType.pyCfgParams = [
                     'resonance={}'.format(resonance),
