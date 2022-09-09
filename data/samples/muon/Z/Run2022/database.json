@@ -29,9 +29,17 @@
                 "globalTag": "124X_dataRun3_Prompt_v4"
             }        },
         "AOD": {
+            "DY_madgraph": {
+                "dataset": "/DYJetsToLL_M-50_TuneCP5_13p6TeV-madgraphMLM-pythia8/Run3Winter22DRPremix-122X_mcRun3_2021_realistic_v9_ext2-v2/AODSIM",
+                "globalTag": "122X_mcRun3_2021_realistic_v9"
+            },
             "Run2022B" : {
                 "dataset": "/SingleMuon/Run2022B-PromptReco-v1/AOD",
                 "globalTag": "123X_dataRun3_Prompt_v12"
+            },
+            "Run2022D" : {
+                "dataset": "/Muon/Run2022D-PromptReco-v2/AOD",
+                "globalTag": "124X_dataRun3_Prompt_v4"
             }
         }
     }

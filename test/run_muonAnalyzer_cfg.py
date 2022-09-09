@@ -82,9 +82,9 @@ if len(options.inputFiles) == 0:
     if options.resonance == 'Z':
         if options.isFullAOD:
             if options.isMC:
-                options.inputFiles.append('/store/mc/Run3Winter22DRPremix/DYJetsToLL_M-50_TuneCP5_13p6TeV-madgraphMLM-pythia8/AODSIM/122X_mcRun3_2021_realistic_v9_ext2-v2/40000/ffe1bde9-3e26-4ca0-8896-5e18325fdcab.root')
+                options.inputFiles.append('/store/mc/Run3Winter22DRPremix/DYJetsToLL_M-50_TuneCP5_13p6TeV-madgraphMLM-pythia8/AODSIM/122X_mcRun3_2021_realistic_v9_ext2-v2/40000/0027e0ac-873f-4f49-884b-4c5b67c85724.root')
             else:
-                options.inputFiles.append('/store/data/Run2018C/SingleMuon/AOD/12Nov2019_UL2018-v3/100000/0500CC1B-D885-8C48-B565-D96ECE355BC3.root')
+                options.inputFiles.append('/store/data/Run2022D/Muon/AOD/PromptReco-v2/000/357/734/00000/011a59b3-42bc-493c-bc2b-73cbddcb0e79.root')
         else:
             if options.isMC:
                 options.inputFiles.append('/store/mc/Run3Winter22MiniAOD/DYJetsToLL_M-50_TuneCP5_13p6TeV-madgraphMLM-pythia8/MINIAODSIM/122X_mcRun3_2021_realistic_v9_ext2-v2/40000/ff8f64b6-9dd6-4080-8bad-20c78f1c9e39.root')

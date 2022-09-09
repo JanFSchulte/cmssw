@@ -359,10 +359,12 @@ inline void FillProbeBranchesdgl(const TRK &trk, NtupleContent &nt, bool passdgl
     // [Adapted from displaced dimuon analysis]
     // Number of DT+CSC segments
     unsigned int nsegments = 0;
-    for (auto & hit : trk.recHits()) {
-      if (!hit->isValid()) continue;
+    for (auto &hit : trk.recHits()) {
+      if (!hit->isValid())
+        continue;
       DetId id = hit->geographicalId();
-      if (id.det() != DetId::Muon) continue;
+      if (id.det() != DetId::Muon)
+        continue;
       if (id.subdetId() == MuonSubdetId::DT || id.subdetId() == MuonSubdetId::CSC)
         nsegments++;
     }
@@ -395,7 +397,7 @@ inline void FillPairBranches(const MUOTT &muon, const TRKTT &trk, NtupleContent 
   nt.pair_dz = muon.first.vz() - trk.first.vz();
   nt.pair_dR = deltaR(muon.first.eta(), muon.first.phi(), trk.first.eta(), trk.first.phi());
 
-if ( muon.second.impactPointStateAvailable () && trk.second.impactPointStateAvailable () ){
+  if (muon.second.impactPointStateAvailable() && trk.second.impactPointStateAvailable()) {
     FreeTrajectoryState trajectory_state_muon = muon.second.impactPointTSCP().theState();
     FreeTrajectoryState trajectory_state_trk = trk.second.impactPointTSCP().theState();
 
@@ -406,9 +408,9 @@ if ( muon.second.impactPointStateAvailable () && trk.second.impactPointStateAvai
       float dphiM1 = deltaPhi<float>(prop1_M1.globalPosition().phi(), prop2_M1.globalPosition().phi());
       nt.pair_drM1 = hypot(dphiM1, std::abs(prop1_M1.globalPosition().eta() - prop2_M1.globalPosition().eta()));
     } else
-      nt.pair_drM1 =1000;
+      nt.pair_drM1 = 1000;
   } else
-    nt.pair_drM1 =1000;
+    nt.pair_drM1 = 1000;
 }
 
 template <typename MUO, typename TRK>

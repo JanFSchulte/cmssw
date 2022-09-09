@@ -246,9 +246,7 @@ MuonMiniAODAnalyzer::MuonMiniAODAnalyzer(const edm::ParameterSet& iConfig)
       propSetup1_(iConfig, consumesCollector()),
       isMC_(iConfig.getParameter<bool>("isMC")),
       includeJets_(iConfig.getParameter<bool>("includeJets")),
-      era_(iConfig.getParameter<std::string>("era")) 
-      {
-
+      era_(iConfig.getParameter<std::string>("era")) {
   edm::ConsumesCollector iC = consumesCollector();
   magfieldToken_ = iC.esConsumes<MagneticField, IdealMagneticFieldRecord>();
 
@@ -675,12 +673,12 @@ void MuonMiniAODAnalyzer::analyze(const edm::Event& iEvent, const edm::EventSetu
   // this is necessary to use tag-probe pair with highest "quality" later on in spark_tnp
   using t_pair_prob = std::pair<std::pair<int, int>, float>;
   std::vector<t_pair_prob> pair_vtx_probs;
-  std::map<int,int> map_tagIdx_nprobes;
+  std::map<int, int> map_tagIdx_nprobes;
   int nprobes;
   // loop over tags
   for (const auto& tag : tag_muon_ttrack) {
     auto tag_idx = &tag - &tag_muon_ttrack[0];
-    nprobes=0;
+    nprobes = 0;
     // loop over probes
     for (const auto& probe : tracks) {
       auto probe_idx = &probe - &tracks[0];
@@ -699,10 +697,10 @@ void MuonMiniAODAnalyzer::analyze(const edm::Event& iEvent, const edm::EventSetu
       KlFitter vtx(trk_pair);
       if (RequireVtxCreation_ && !vtx.status())
         continue;
-      if (minSVtxProb_ > 0){
-      	if (vtx.prob() < minSVtxProb_){
-      	  continue;
-      	}
+      if (minSVtxProb_ > 0) {
+        if (vtx.prob() < minSVtxProb_) {
+          continue;
+        }
       }
 
       auto it = std::find(trk_muon_map.first.begin(), trk_muon_map.first.end(), &probe - &tracks[0]);
@@ -710,14 +708,14 @@ void MuonMiniAODAnalyzer::analyze(const edm::Event& iEvent, const edm::EventSetu
         continue;
 
       // save vtx prob to sort later
-      if (RequireVtxCreation_){
-      	pair_vtx_probs.emplace_back(std::make_pair(std::make_pair(tag_idx, probe_idx), vtx.prob()));
-      }else{
-      	pair_vtx_probs.emplace_back(std::make_pair(std::make_pair(-1, -1), 0.));
+      if (RequireVtxCreation_) {
+        pair_vtx_probs.emplace_back(std::make_pair(std::make_pair(tag_idx, probe_idx), vtx.prob()));
+      } else {
+        pair_vtx_probs.emplace_back(std::make_pair(std::make_pair(-1, -1), 0.));
       }
       nprobes++;
     }
-    map_tagIdx_nprobes.insert(std::pair<int,int>(tag_idx,nprobes));
+    map_tagIdx_nprobes.insert(std::pair<int, int>(tag_idx, nprobes));
   }
   nt.npairs = pair_vtx_probs.size();
 
@@ -735,7 +733,6 @@ void MuonMiniAODAnalyzer::analyze(const edm::Event& iEvent, const edm::EventSetu
     auto tag_idx = &tag - &tag_muon_ttrack[0];
     // loop over probe tracks
     for (const auto& probe : tracks) {
-      
       // apply cuts on pairs
       if (tag.first.charge() == probe.charge())
         continue;
@@ -750,9 +747,9 @@ void MuonMiniAODAnalyzer::analyze(const edm::Event& iEvent, const edm::EventSetu
       KlFitter vtx(trk_pair);
       if (RequireVtxCreation_ && !vtx.status())
         continue;
-      if (minSVtxProb_ > 0){
-      	if (vtx.prob() < minSVtxProb_)
-      	  continue;
+      if (minSVtxProb_ > 0) {
+        if (vtx.prob() < minSVtxProb_)
+          continue;
       }
 
       auto it = std::find(trk_muon_map.first.begin(), trk_muon_map.first.end(), &probe - &tracks[0]);
@@ -801,7 +798,8 @@ void MuonMiniAODAnalyzer::analyze(const edm::Event& iEvent, const edm::EventSetu
         unsigned idx = std::distance(trk_muon_map.first.begin(), it);
         FillProbeBranches<pat::Muon, reco::Track>(muons->at(trk_muon_map.second[idx]), tracks, nt, true, *pv);
         FillProbeBranchesSelector<pat::Muon>(muons->at(trk_muon_map.second[idx]), nt, probeSelectorBits_, true);
-        FillMiniIso<pat::Muon, pat::PackedCandidate>(*pfcands, muons->at(trk_muon_map.second[idx]), *rhoJetsNC, nt, false);
+        FillMiniIso<pat::Muon, pat::PackedCandidate>(
+            *pfcands, muons->at(trk_muon_map.second[idx]), *rhoJetsNC, nt, false);
         if (includeJets_)
           FindJetProbePair<pat::Jet, pat::Muon>(*jets, muons->at(trk_muon_map.second[idx]), nt);
 
@@ -882,7 +880,7 @@ void MuonMiniAODAnalyzer::analyze(const edm::Event& iEvent, const edm::EventSetu
       }
 
       TrackAndTransientTrk probe_pair = std::make_pair(probe, reco::TransientTrack(probe, &(*bField)));
-      
+
       FillPairBranches<PatMuonAndTransientTrk, TrackAndTransientTrk>(tag, probe_pair, nt, prop1_);
 
       vtx.fillNtuple(nt);
@@ -893,9 +891,11 @@ void MuonMiniAODAnalyzer::analyze(const edm::Event& iEvent, const edm::EventSetu
       nt.iprobe++;
       nt.pair_rank_vtx_prob = pair_rank_vtx_prob[{&tag - &tag_muon_ttrack[0], &probe - &tracks[0]}];
       nt.probe_isHighPurity = probe.quality(reco::TrackBase::highPurity);
-      
-      for(auto it=map_tagIdx_nprobes.begin(); it!=map_tagIdx_nprobes.end(); ++it){
-	if(it->first == tag_idx){nt.pair_probeMultiplicity = it->second;}
+
+      for (auto it = map_tagIdx_nprobes.begin(); it != map_tagIdx_nprobes.end(); ++it) {
+        if (it->first == tag_idx) {
+          nt.pair_probeMultiplicity = it->second;
+        }
       }
 
       t1->Fill();

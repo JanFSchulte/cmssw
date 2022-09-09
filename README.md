@@ -2,12 +2,12 @@
 
 Package to run tag/probe ntuples for Muon POG on both AOD and miniAOD format.
 
-Requires CMSSW_10_6_X or higher.
+Requires CMSSW_12_4_8 or higher.
 
 ## Setup
 ```bash
-$ cmsrel CMSSW_10_6_18 
-$ cd CMSSW_10_6_18/src
+$ cmsrel CMSSW_12_4_8 
+$ cd CMSSW_12_4_8/src
 $ cmsenv
 $ git cms-init
 $ git clone https://gitlab.cern.ch/cms-muonPOG/muonanalysis-muonanalyzer.git MuonAnalysis/MuonAnalyzer
