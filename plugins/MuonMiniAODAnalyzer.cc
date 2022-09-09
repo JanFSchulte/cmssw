@@ -41,12 +41,16 @@
 #include "DataFormats/PatCandidates/interface/PackedCandidate.h"
 #include "DataFormats/VertexReco/interface/Vertex.h"
 #include "DataFormats/VertexReco/interface/VertexFwd.h"
+#include "CondFormats/DataRecord/interface/JetResolutionRcd.h"
+#include "CondFormats/DataRecord/interface/JetResolutionScaleFactorRcd.h"
 #include "DataFormats/PatCandidates/interface/Jet.h"
 #include "JetMETCorrections/Modules/interface/JetResolution.h"
 #include "DataFormats/JetReco/interface/GenJet.h"
 
 #include "SimDataFormats/PileupSummaryInfo/interface/PileupSummaryInfo.h"
 #include "SimDataFormats/GeneratorProducts/interface/GenEventInfoProduct.h"
+
+#include "FWCore/Framework/interface/ConsumesCollector.h"
 
 #include "DataFormats/Common/interface/TriggerResults.h"
 #include "FWCore/Common/interface/TriggerNames.h"
@@ -167,10 +171,13 @@ private:
   const unsigned momPdgId_;
   const double genRecoDrMatch_;
   PropagateToMuon prop1_;
+  PropagateToMuonSetup propSetup1_;
 
   edm::Service<TFileService> fs;
   TTree* t1;
   NtupleContent nt;
+
+  edm::ESGetToken<MagneticField, IdealMagneticFieldRecord> magfieldToken_;
 
   std::mt19937 m_random_generator = std::mt19937(37428479);
   const bool isMC_, includeJets_;
@@ -236,12 +243,14 @@ MuonMiniAODAnalyzer::MuonMiniAODAnalyzer(const edm::ParameterSet& iConfig)
       maxdr_trk_mu_(iConfig.getParameter<double>("maxDRProbeTrkMuon")),
       momPdgId_(iConfig.getParameter<unsigned>("momPdgId")),
       genRecoDrMatch_(iConfig.getParameter<double>("genRecoDrMatch")),
-      prop1_(iConfig.getParameter<edm::ParameterSet>("propM1")),
+      propSetup1_(iConfig, consumesCollector()),
       isMC_(iConfig.getParameter<bool>("isMC")),
       includeJets_(iConfig.getParameter<bool>("includeJets")),
-      era_(iConfig.getParameter<std::string>("era")) {
-  //  edm::ParameterSet
-  //  runParameters=iConfig.getParameter<edm::ParameterSet>("RunParameters");
+      era_(iConfig.getParameter<std::string>("era")) 
+      {
+
+  edm::ConsumesCollector iC = consumesCollector();
+  magfieldToken_ = iC.esConsumes<MagneticField, IdealMagneticFieldRecord>();
 
   if (probeSelectorNames_.size() != probeSelectorBits_.size()) {
     throw cms::Exception("ParameterError")
@@ -346,7 +355,7 @@ void MuonMiniAODAnalyzer::embedTriggerMatching(const edm::Event& iEvent,
 // ------------ method called for each event  ------------
 
 void MuonMiniAODAnalyzer::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetup) {
-  prop1_.init(iSetup);
+  prop1_ = propSetup1_.init(iSetup);
 
   edm::Handle<reco::BeamSpot> theBeamSpot;
   iEvent.getByToken(beamSpotToken_, theBeamSpot);
@@ -364,19 +373,30 @@ void MuonMiniAODAnalyzer::analyze(const edm::Event& iEvent, const edm::EventSetu
   iEvent.getByToken(PFCands_, pfcands);
   edm::Handle<std::vector<pat::PackedCandidate>> lostTracks;
   iEvent.getByToken(LostTracks_, lostTracks);
+
   edm::ESHandle<MagneticField> bField;
-  iSetup.get<IdealMagneticFieldRecord>().get(bField);
+  bField = iSetup.getHandle(magfieldToken_);
+
   edm::Handle<double> rhoJetsNC;
   iEvent.getByToken(rhoJetsNC_, rhoJetsNC);
   edm::Handle<std::vector<pat::Jet>> jets;
   iEvent.getByToken(jetsToken_, jets);
-  iSetup.get<IdealMagneticFieldRecord>().get(bField);
   edm::Handle<std::vector<reco::GenJet>> genJets;
   iEvent.getByToken(genJetsToken_, genJets);
+
   JME::JetResolution resolution;
-  resolution = JME::JetResolution::get(iSetup, "AK4PFchs_pt");
   JME::JetResolutionScaleFactor resolution_sf;
-  resolution_sf = JME::JetResolutionScaleFactor::get(iSetup, "AK4PFchs");
+
+  if (includeJets_) {
+    edm::ESGetToken<JME::JetResolutionObject, JetResolutionScaleFactorRcd> t_jet_resolution_token;
+    edm::ESGetToken<JME::JetResolutionObject, JetResolutionRcd> t_jet_resolutionSF_token;
+
+    t_jet_resolution_token = esConsumes(edm::ESInputTag("", "AK4PFchs_pt"));
+    t_jet_resolutionSF_token = esConsumes(edm::ESInputTag("", "AK4PFchs"));
+
+    resolution = iSetup.getData(t_jet_resolution_token);
+    resolution_sf = iSetup.getData(t_jet_resolutionSF_token);
+  }
 
   edm::Handle<edm::TriggerResults> trigResults;
   iEvent.getByToken(trgresultsToken_, trigResults);

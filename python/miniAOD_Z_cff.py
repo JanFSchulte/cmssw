@@ -23,7 +23,6 @@ muon = cms.EDAnalyzer('MuonMiniAODAnalyzer',
            PFCands=cms.InputTag("packedPFCandidates"),
            lostTracks=cms.InputTag("lostTracks"),
            gen = cms.InputTag("prunedGenParticles"),
-           #rhoJetsNC = cms.InputTag("fixedGridRhoFastjetCentralNeutral"),
            rhoJetsNC = cms.InputTag("fixedGridRhoFastjetAll"),
            jets = cms.InputTag("slimmedJets"),
            genJets = cms.InputTag("slimmedGenJets"),
@@ -33,27 +32,25 @@ muon = cms.EDAnalyzer('MuonMiniAODAnalyzer',
            probeSelectorNames=cms.vstring(), # updated in run_muonAnalyzer_cfg.py
            probeSelectorBits=cms.vuint32(), # updated in run_muonAnalyzer_cfg.py
            tagQuality = cms.uint32(0), # quality of tag muon following muonSelector convention
-           tagSelection = cms.string("pt()>15 && passed('CutBasedIdTight')"), # string to pass cuts on tag
+           tagSelection = cms.string("pt() > 15 && passed('CutBasedIdTight')"), # string to pass cuts on tag
            ProbeHPurity = cms.bool(False), # skips non High purity probes
            probeSelection = cms.string("bestTrack.pt()>5 && abs(bestTrack.eta())<2.4 "), #string for probe
            muonOnly = cms.bool(False), # allow only reco or pat Muon for probes
-           probeMuonSelection = cms.string("pt()>0"), #string for probe (reco or pat Muon)
+           probeMuonSelection = cms.string("pt()>15"), #string for probe (reco or pat Muon)
            pairMassMin = cms.double(60.0), # min mass of mu pair
-           pairMassMax = cms.double(9999.0), # max mss of mu pair (9999.0 for high mass C&C)
-           pairDz = cms.double(4), #max Dz of mu1,mu2
+           pairMassMax = cms.double(150.0), # max mss of mu pair (9999.0 for high mass C&C)
+           pairDz = cms.double(1.e9), #max Dz of mu1,mu2
            RequireVtxCreation = cms.bool(False), # if true kills pairs w/o vtx
-           minSVtxProb = cms.double(0.), # min prob of mu pair
+           minSVtxProb = cms.double(-1.), # min prob of mu pair
            maxDzProbeTrkMuon = cms.double(0.01), # max Dz(mu1,mu2)
            maxRelPtProbeTrkMuon = cms.double(1.0),# max [pt(mu)-pt(trk)]/pt(trk) for probe/offline
            maxDRProbeTrkMuon =  cms.double(0.03), # max DR for probe/offline
            momPdgId = cms.uint32(23),
-           genRecoDrMatch= cms.double(0.03),
-           propM1 = cms.PSet(
-               useStation2 = cms.bool(False),
-               useTrack = cms.string("tracker"),
-               useState = cms.string("atVertex"),  # in AOD
-               useSimpleGeometry = cms.bool(True), # use just one cylinder and two planes, not all the fancy chambers  
-           ),
+           genRecoDrMatch= cms.double(0.1),
+           useStation2 = cms.bool(False),
+           useTrack = cms.string("tracker"),
+           useState = cms.string("atVertex"),  # in AOD
+           useSimpleGeometry = cms.bool(True), # use just one cylinder and two planes, not all the fancy chambers  
 
 )
 

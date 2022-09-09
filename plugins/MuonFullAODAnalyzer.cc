@@ -50,6 +50,8 @@
 #include "CommonTools/UtilAlgos/interface/TFileService.h"
 #include "FWCore/ServiceRegistry/interface/Service.h"
 
+#include "FWCore/Framework/interface/ConsumesCollector.h"
+
 #include "DataFormats/HLTReco/interface/TriggerEvent.h"
 #include "DataFormats/HLTReco/interface/TriggerObject.h"
 #include "DataFormats/L1Trigger/interface/Muon.h"
@@ -70,6 +72,8 @@
 #include "DataFormats/TrackReco/interface/Track.h"
 #include "DataFormats/ParticleFlowCandidate/interface/PFCandidate.h"
 #include "DataFormats/JetReco/interface/PFJet.h"
+#include "CondFormats/DataRecord/interface/JetResolutionRcd.h"
+#include "CondFormats/DataRecord/interface/JetResolutionScaleFactorRcd.h"
 #include "JetMETCorrections/Modules/interface/JetResolution.h"
 #include "JetMETCorrections/JetCorrector/interface/JetCorrector.h"
 #include "JetMETCorrections/Objects/interface/JetCorrectionsRecord.h"
@@ -171,6 +175,7 @@ private:
   //  edm::EDGetToken deepFlavProbbToken_;
   //  edm::EDGetToken deepFlavProbbbToken_;
   edm::EDGetTokenT<edm::ValueMap<reco::MuonSimInfo>> simInfoToken_;
+  edm::ESGetToken<MagneticField, IdealMagneticFieldRecord> magfieldToken_;
 
   std::vector<std::string> HLTPaths_;      // trigger fired
   std::vector<std::string> tagFilters_;    // tag-trigger matching
@@ -202,6 +207,7 @@ private:
   const double genRecoDrMatch_;
   const int debug_;
   PropagateToMuon prop1_;
+  PropagateToMuonSetup propSetup1_;
 
   edm::Service<TFileService> fs;
   TTree* t1;
@@ -279,9 +285,11 @@ MuonFullAODAnalyzer::MuonFullAODAnalyzer(const edm::ParameterSet& iConfig)
       momPdgId_(iConfig.getParameter<unsigned>("momPdgId")),
       genRecoDrMatch_(iConfig.getParameter<double>("genRecoDrMatch")),
       debug_(iConfig.getParameter<int>("debug")),
-      prop1_(iConfig.getParameter<edm::ParameterSet>("propM1")) {
-  //  edm::ParameterSet
-  //  runParameters=iConfig.getParameter<edm::ParameterSet>("RunParameters");
+      propSetup1_(iConfig, consumesCollector()) 
+      {
+
+  edm::ConsumesCollector iC = consumesCollector();
+  magfieldToken_ = iC.esConsumes<MagneticField, IdealMagneticFieldRecord>();
 
   if (probeSelectorNames_.size() != probeSelectorBits_.size()) {
     throw cms::Exception("ParameterError")
@@ -412,7 +420,7 @@ void MuonFullAODAnalyzer::analyze(const edm::Event& iEvent, const edm::EventSetu
   using namespace reco;
   using namespace trigger;
 
-  prop1_.init(iSetup);
+  prop1_ = propSetup1_.init(iSetup);
 
   // Get data
   edm::Handle<reco::BeamSpot> theBeamSpot;
@@ -436,6 +444,10 @@ void MuonFullAODAnalyzer::analyze(const edm::Event& iEvent, const edm::EventSetu
   iEvent.getByToken(dglToken_, dGlmuons);
   edm::Handle<std::vector<reco::Track>> staCosmic;
   iEvent.getByToken(cosmicToken_, staCosmic);
+
+  edm::ESHandle<MagneticField> bField;
+  bField = iSetup.getHandle(magfieldToken_);
+
   // mini isolation
   edm::Handle<std::vector<reco::PFCandidate>> pfcands;
   iEvent.getByToken(PFCands_, pfcands);
@@ -453,15 +465,16 @@ void MuonFullAODAnalyzer::analyze(const edm::Event& iEvent, const edm::EventSetu
     iEvent.getByToken(jetCorrectorToken_, jetCorrector);
     iEvent.getByToken(deepCSVProbbToken_, deepCSVProbb);
     iEvent.getByToken(deepCSVProbbbToken_, deepCSVProbbb);
-    //  edm::Handle<reco::JetTagCollection> deepFlavProbb;
-    //  iEvent.getByToken(deepFlavProbbToken_, deepFlavProbb);
-    //  edm::Handle<reco::JetTagCollection> deepFlavProbbb;
-    //  iEvent.getByToken(deepFlavProbbbToken_, deepFlavProbbb);
-    resolution = JME::JetResolution::get(iSetup, "AK4PFchs_pt");
-    resolution_sf = JME::JetResolutionScaleFactor::get(iSetup, "AK4PFchs");
+
+    edm::ESGetToken<JME::JetResolutionObject, JetResolutionScaleFactorRcd> t_jet_resolution_token;
+    edm::ESGetToken<JME::JetResolutionObject, JetResolutionRcd> t_jet_resolutionSF_token;
+
+    t_jet_resolution_token = esConsumes(edm::ESInputTag("", "AK4PFchs_pt"));
+    t_jet_resolutionSF_token = esConsumes(edm::ESInputTag("", "AK4PFchs"));
+
+    resolution = iSetup.getData(t_jet_resolution_token);
+    resolution_sf = iSetup.getData(t_jet_resolutionSF_token);
   }
-  edm::ESHandle<MagneticField> bField;
-  iSetup.get<IdealMagneticFieldRecord>().get(bField);
 
   edm::Handle<trigger::TriggerEvent> triggerObjects;
   iEvent.getByToken(trigobjectsToken_, triggerObjects);
@@ -608,7 +621,7 @@ void MuonFullAODAnalyzer::analyze(const edm::Event& iEvent, const edm::EventSetu
   std::vector<bool> genmatched_tag;
   for (const auto& mu : *muons) {
     if (mu.selectors() != 0) {  // Only 9_4_X and later have selector bits
-      if (!mu.passed(pow(2, tagQual_)))
+      if (!mu.passed(static_cast<uint64_t>(pow(2, tagQual_))))
         continue;
     } else {  // For 2016, assume loose ID on the tag (can be tightened at spark level)
       if (!muon::isLooseMuon(mu))
@@ -1092,12 +1105,12 @@ void MuonFullAODAnalyzer::analyze(const edm::Event& iEvent, const edm::EventSetu
       // save quantities to ordered heap
       auto pair_idx = std::make_pair(tag_idx, probe_idx);
       if (RequireVtxCreation_){
-	pair_vtx_probs.push(std::make_pair(vtx.prob(), pair_idx));
-	pair_dz_PV_SV.push(std::make_pair(vtx.dz_PV_SV(nt.pv_z), pair_idx));
+      	pair_vtx_probs.push(std::make_pair(vtx.prob(), pair_idx));
+      	pair_dz_PV_SV.push(std::make_pair(vtx.dz_PV_SV(nt.pv_z), pair_idx));
       }
       else{
-	pair_vtx_probs.push(std::make_pair(0., std::make_pair(-1,-1)));
-	pair_dz_PV_SV.push(std::make_pair(0., std::make_pair(-1,-1)));
+      	pair_vtx_probs.push(std::make_pair(0., std::make_pair(-1,-1)));
+      	pair_dz_PV_SV.push(std::make_pair(0., std::make_pair(-1,-1)));
       }
       pair_dPhi_muons.push(std::make_pair(dPhi_muons, pair_idx));
       pair_dM_Z_Mmumu.push(std::make_pair(dM_Z_Mmumu, pair_idx));
