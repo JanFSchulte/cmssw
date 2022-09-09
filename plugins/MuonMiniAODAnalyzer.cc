@@ -499,7 +499,7 @@ void MuonMiniAODAnalyzer::analyze(const edm::Event& iEvent, const edm::EventSetu
   std::vector<bool> genmatched_tag;
   for (const pat::Muon& mu : *muons) {
     if (mu.selectors() != 0) {  // Only 9_4_X and later have selector bits
-      if (!mu.passed(pow(2, tagQual_)))
+      if (!mu.passed(static_cast<uint64_t>(pow(2, tagQual_))))
         continue;
     } else {  // For 2016, assume loose ID on the tag (can be tightened at spark level)
       if (!muon::isLooseMuon(mu))
@@ -700,9 +700,9 @@ void MuonMiniAODAnalyzer::analyze(const edm::Event& iEvent, const edm::EventSetu
       if (RequireVtxCreation_ && !vtx.status())
         continue;
       if (minSVtxProb_ > 0){
-	if (vtx.prob() < minSVtxProb_){
-	  continue;
-	}
+      	if (vtx.prob() < minSVtxProb_){
+      	  continue;
+      	}
       }
 
       auto it = std::find(trk_muon_map.first.begin(), trk_muon_map.first.end(), &probe - &tracks[0]);
@@ -711,9 +711,9 @@ void MuonMiniAODAnalyzer::analyze(const edm::Event& iEvent, const edm::EventSetu
 
       // save vtx prob to sort later
       if (RequireVtxCreation_){
-	pair_vtx_probs.emplace_back(std::make_pair(std::make_pair(tag_idx, probe_idx), vtx.prob()));
+      	pair_vtx_probs.emplace_back(std::make_pair(std::make_pair(tag_idx, probe_idx), vtx.prob()));
       }else{
-	pair_vtx_probs.emplace_back(std::make_pair(std::make_pair(-1, -1), 0.));
+      	pair_vtx_probs.emplace_back(std::make_pair(std::make_pair(-1, -1), 0.));
       }
       nprobes++;
     }
@@ -751,8 +751,8 @@ void MuonMiniAODAnalyzer::analyze(const edm::Event& iEvent, const edm::EventSetu
       if (RequireVtxCreation_ && !vtx.status())
         continue;
       if (minSVtxProb_ > 0){
-	if (vtx.prob() < minSVtxProb_)
-	  continue;
+      	if (vtx.prob() < minSVtxProb_)
+      	  continue;
       }
 
       auto it = std::find(trk_muon_map.first.begin(), trk_muon_map.first.end(), &probe - &tracks[0]);
