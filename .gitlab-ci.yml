@@ -1,5 +1,5 @@
 variables:
-  CMSSW_RELEASE: CMSSW_12_4_8
+  CMSSW_RELEASE: CMSSW_12_4_5
   CMSSW_SCRAM_ARCH: slc7_amd64_gcc10
 
 image: gitlab-registry.cern.ch/ci-tools/ci-worker:cc7
