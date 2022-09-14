@@ -1,5 +1,5 @@
 variables:
-  CMSSW_RELEASE: CMSSW_12_4_5
+  CMSSW_RELEASE: CMSSW_12_4_8
   CMSSW_SCRAM_ARCH: slc7_amd64_gcc10
 
 image: gitlab-registry.cern.ch/ci-tools/ci-worker:cc7
@@ -12,7 +12,7 @@ build:
         - master
     script:
         - export SCRAM_ARCH=$CMSSW_SCRAM_ARCH
-        - set +e && source /cvmfs/cms.cern.ch/cmsset_default.sh; set -e
+        - source /cvmfs/cms.cern.ch/cmsset_default.sh
         - shopt -s extglob
         - scramv1 project CMSSW $CMSSW_RELEASE
         - mkdir -p $CMSSW_RELEASE/src/MuonAnalysis/MuonAnalyzer/
