@@ -145,6 +145,8 @@ fragment.load("HLTrigger/Configuration/HLT_75e33/paths/MC_Photon100EB_TightID_Ti
 fragment.load("HLTrigger/Configuration/HLT_75e33/paths/MC_Photon100EB_TightID_TightIso_Open_Unseeded_cfi")
 fragment.load("HLTrigger/Configuration/HLT_75e33/paths/MC_Photon100_Open_L1Seeded_cfi")
 fragment.load("HLTrigger/Configuration/HLT_75e33/paths/MC_Photon100_Open_Unseeded_cfi")
+fragment.load("HLTrigger/Configuration/HLT_75e33/paths/HLT_DoubleMu3_TkMu_DsTau3Mu_cfi")
+fragment.load("HLTrigger/Configuration/HLT_75e33/paths/HLT_DoubleMu3_L1GNN_TkMu_DsTau3Mu_cfi")
 fragment.load("HLTrigger/Configuration/HLT_75e33/paths/l1tReconstructionPath_cfi")
 fragment.load("HLTrigger/Configuration/HLT_75e33/psets/CkfBaseTrajectoryFilter_block_cfi")
 fragment.load("HLTrigger/Configuration/HLT_75e33/psets/ckfBaseTrajectoryFilterP5_cfi")
@@ -267,6 +269,9 @@ fragment.schedule = cms.Schedule(*[
     fragment.HLT_Mu37_Mu27_FromL1TkMuon,
     fragment.HLT_Mu17_TrkIsoVVL_Mu8_TrkIsoVVL_DZ_FromL1TkMuon,
     fragment.HLT_TriMu_10_5_5_DZ_FromL1TkMuon,
+#    fragment.HLT_DoubleMu3_TkMu_DsTau3Mu,
+    fragment.HLT_DoubleMu3_L1GNN_TkMu_DsTau3Mu,
+
 
     fragment.L1T_TkEm51,
     fragment.L1T_TkEle36,
