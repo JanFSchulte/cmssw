@@ -4,9 +4,15 @@ from PhysicsTools.NanoAOD.nano_eras_cff import *
 from PhysicsTools.NanoAOD.common_cff import *
 import PhysicsTools.PatAlgos.producersLayer1.muonProducer_cfi
 
+muonWithVariables = cms.EDProducer("PATHighPtMuonResultEmbedder",
+    src = cms.InputTag("slimmedMuons"),
+    vtx_src = cms.InputTag('offlineSlimmedPrimaryVertices'),
+    rho = cms.InputTag("fixedGridRhoFastjetAll"),
+)
+
 # this below is used only in some eras
 slimmedMuonsUpdated = cms.EDProducer("PATMuonUpdater",
-    src = cms.InputTag("slimmedMuons"),
+    src = cms.InputTag("muonWithVariables"),
     vertices = cms.InputTag("offlineSlimmedPrimaryVertices"),
     computeMiniIso = cms.bool(False),
     fixDxySign = cms.bool(True),
@@ -106,7 +112,13 @@ muonTable = cms.EDProducer("SimpleCandidateFlatTableProducer",
         sip3d = Var("abs(dB('PV3D')/edB('PV3D'))",float,doc="3D impact parameter significance wrt first PV",precision=10),
         segmentComp   = Var("segmentCompatibility()", float, doc = "muon segment compatibility", precision=14), # keep higher precision since people have cuts with 3 digits on this
         nStations = Var("numberOfMatchedStations", int, doc = "number of matched stations with default arbitration (segment & track)"),
+        nStationsExpected = Var("expectedNnumberOfMatchedStations", int, doc = "expected number of matched stations with default arbitration (segment & track)"),
+        nMatchedRPCLayers = Var("numberOfMatchedRPCLayers", int, doc = "number of matched RPC layers"),
+        stationMask = Var("stationMask", int, doc = "stationMask"),
         nTrackerLayers = Var("?track.isNonnull?innerTrack().hitPattern().trackerLayersWithMeasurement():0", int, doc = "number of layers in the tracker"),
+        nPixelHits = Var("?track.isNonnull?innerTrack().hitPattern().numberOfValidPixelHits():0", int, doc = "number of pixel hits"),
+        validMuonHits = Var("?globalTrack.isNonnull?globalTrack().hitPattern().numberOfValidMuonHits():0", int, doc = "number of valid muon hits on global track"),
+        validMuonHitsTuneP = Var("?tunePMuonBestTrack.isNonnull?tunePMuonBestTrack().hitPattern().numberOfValidMuonHits():0", int, doc = "number of valid muon hits on on TuneP track"),
         highPurity = Var("?track.isNonnull?innerTrack().quality('highPurity'):0", bool, doc = "inner track is high purity"),
         jetIdx = Var("?hasUserCand('jet')?userCand('jet').key():-1", int, doc="index of the associated jet (-1 if none)"),
         tkRelIso = Var("isolationR03().sumPt/tunePMuonBestTrack().pt",float,doc="Tracker-based relative isolation dR=0.3 for highPt, trkIso/tunePpt",precision=6),
@@ -130,6 +142,13 @@ muonTable = cms.EDProducer("SimpleCandidateFlatTableProducer",
         softMvaId = Var("passed('SoftMvaId')",bool,doc="soft MVA ID"),
         softMva = Var("softMvaValue()",float,doc="soft MVA ID score",precision=6),
         highPtId = Var("?passed('CutBasedIdGlobalHighPt')?2:passed('CutBasedIdTrkHighPt')","uint8",doc="high-pT cut-based ID (1 = tracker high pT, 2 = global high pT, which includes tracker high pT)"),
+        passDXY = Var("userInt('passDXY')",bool,doc="passes dxy cut of high-pT muon ID"),
+        passTrkIso = Var("userInt('passTrkIso')",bool,doc="passes tracker isolation cut of high-pT muon ID"),
+        passTrackerLayers = Var("userInt('passTrackerLayers')",bool,doc="passes tracker layers cut of high-pT muon ID"),
+        passPixelHits = Var("userInt('passPixelHits')",bool,doc="passes pixel hits cut of high-pT muon ID"),
+        passValidMuonHits = Var("userInt('passValidMuonHits')",bool,doc="passes valid muon hits cut of high-pT muon ID"),
+        passMatchedStations = Var("userInt('passMatchedStations')",bool,doc="passes matched stations cut of high-pT muon ID"),
+        passDPtOverPt = Var("userInt('passDPtOverPt')",bool,doc="passes dPt over pt cut of high-pT muon ID"), 
         pfIsoId = Var("passed('PFIsoVeryLoose')+passed('PFIsoLoose')+passed('PFIsoMedium')+passed('PFIsoTight')+passed('PFIsoVeryTight')+passed('PFIsoVeryVeryTight')","uint8",doc="PFIso ID from miniAOD selector (1=PFIsoVeryLoose, 2=PFIsoLoose, 3=PFIsoMedium, 4=PFIsoTight, 5=PFIsoVeryTight, 6=PFIsoVeryVeryTight)"),
         tkIsoId = Var("?passed('TkIsoTight')?2:passed('TkIsoLoose')","uint8",doc="TkIso ID (1=TkIsoLoose, 2=TkIsoTight)"),
         mvaId = Var("passed('MvaLoose')+passed('MvaMedium')+passed('MvaTight')+passed('MvaVTight')+passed('MvaVVTight')","uint8",doc="Mva ID from miniAOD selector (1=MvaLoose, 2=MvaMedium, 3=MvaTight, 4=MvaVTight, 5=MvaVVTight)"),
@@ -179,6 +198,6 @@ muonMCTable = cms.EDProducer("CandMCMatchTableProducer",
     docString = cms.string("MC matching to status==1 muons"),
 )
 
-muonTask = cms.Task(slimmedMuonsUpdated,isoForMu,ptRatioRelForMu,slimmedMuonsWithUserData,finalMuons,finalLooseMuons )
+muonTask = cms.Task(muonWithVariables,slimmedMuonsUpdated,isoForMu,ptRatioRelForMu,slimmedMuonsWithUserData,finalMuons,finalLooseMuons )
 muonMCTask = cms.Task(muonsMCMatchForTable,muonMCTable)
 muonTablesTask = cms.Task(muonMVATTH,muonMVALowPt,muonTable)

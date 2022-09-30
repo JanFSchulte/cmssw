@@ -28,6 +28,7 @@ from PhysicsTools.NanoAOD.btagWeightTable_cff import *
 from PhysicsTools.NanoAOD.NanoAODEDMEventContent_cff import *
 from PhysicsTools.NanoAOD.fsrPhotons_cff import *
 from PhysicsTools.NanoAOD.softActivity_cff import *
+from PhysicsTools.NanoAOD.dimuons_cff import *
 
 nanoMetadata = cms.EDProducer("UniqueStringProducer",
     strings = cms.PSet(
@@ -75,7 +76,7 @@ lhcInfoTable = cms.EDProducer("LHCInfoProducer",
 nanoTableTaskCommon = cms.Task(
     cms.Task(nanoMetadata), 
     jetPuppiTask, jetPuppiForMETTask, jetAK8Task,
-    extraFlagsProducersTask, muonTask, tauTask, boostedTauTask,
+    extraFlagsProducersTask, muonTask, cms.Task(DiMuonVertex), tauTask, boostedTauTask,
     electronTask , lowPtElectronTask, photonTask,
     vertexTask, isoTrackTask, jetAK8LepTask,  # must be after all the leptons
     softActivityTask,
@@ -228,8 +229,8 @@ def nanoAOD_activateVID(process):
     electronTask_.add(electronTask.copy())
     process.electronTask = electronTask_.copy()
     for modifier in run2_miniAOD_80XLegacy,run2_nanoAOD_94XMiniAODv1,run2_nanoAOD_94XMiniAODv2,run2_nanoAOD_94X2016,run2_nanoAOD_102Xv1,run2_nanoAOD_106Xv1:
-        modifier.toModify(process.electronMVAValueMapProducer, src = "slimmedElectronsUpdated")
-        modifier.toModify(process.egmGsfElectronIDs, physicsObjectSrc = "slimmedElectronsUpdated")
+        modifier.toModify(process.electronMVAValueMapProducer, src = "electronsWithVariables")
+        modifier.toModify(process.egmGsfElectronIDs, physicsObjectSrc = "electronsWithVariables")
 
     switchOnVIDPhotonIdProducer(process,DataFormat.MiniAOD,photonTask) # do not call this to avoid resetting photon IDs in VID, if called before inside makePuppiesFromMiniAOD
     for modname in photon_id_modules_WorkingPoints_nanoAOD.modules:

@@ -23,7 +23,8 @@ namespace pat {
           vertices_(consumes<std::vector<reco::Vertex>>(iConfig.getParameter<edm::InputTag>("vertices"))),
           beamLineToken_(consumes<reco::BeamSpot>(iConfig.getParameter<edm::InputTag>("beamspot"))),
           computeMiniIso_(iConfig.getParameter<bool>("computeMiniIso")),
-          fixDxySign_(iConfig.getParameter<bool>("fixDxySign")) {
+          fixDxySign_(iConfig.getParameter<bool>("fixDxySign")),
+          addIDVariables_(iConfig.getParameter<bool>("addIDVariables")) {
       //for mini-isolation calculation
       if (computeMiniIso_) {
         readMiniIsoParams(iConfig);
@@ -46,6 +47,7 @@ namespace pat {
       desc.add<edm::InputTag>("beamspot", edm::InputTag("offlineBeamSpot"))->setComment("Beam spot");
       desc.add<bool>("computeMiniIso", false)->setComment("Recompute miniIsolation");
       desc.add<bool>("fixDxySign", false)->setComment("Fix the IP sign");
+      desc.add<bool>("addIDVariables", false)->setComment("Add UserInts for outcome of HEEP or high-pT muon ID cuts");
       desc.addOptional<edm::InputTag>("pfCandsForMiniIso", edm::InputTag("packedPFCandidates"))
           ->setComment("PackedCandidate collection used for miniIso");
       if (typeid(T) == typeid(pat::Muon)) {
@@ -65,6 +67,8 @@ namespace pat {
 
     void setDZ(T &lep, const reco::Vertex &pv) const {}
 
+    void setIDVariables(T &lep) const {}
+
     void readMiniIsoParams(const edm::ParameterSet &iConfig) {
       miniIsoParams_[0] = iConfig.getParameter<std::vector<double>>("miniIsoParams");
       if (miniIsoParams_[0].size() != 9)
@@ -81,6 +85,7 @@ namespace pat {
     edm::EDGetTokenT<reco::BeamSpot> beamLineToken_;
     bool computeMiniIso_;
     bool fixDxySign_;
+    bool addIDVariables_;
     bool recomputeMuonBasicSelectors_;
     std::vector<double> miniIsoParams_[2];
     edm::EDGetTokenT<pat::PackedCandidateCollection> pcToken_;
@@ -100,6 +105,14 @@ namespace pat {
     aMuon.setDB(track->dz(pv.position()), std::hypot(track->dzError(), pv.zError()), pat::Muon::PVDZ);
   }
 
+  template <>
+  void LeptonUpdater<pat::Electron>::setIDVariables(pat::Electron &anElectron) const {
+      anElectron.addUserInt("passHEEPDEta", fabs(anElectron.superCluster()->eta()) < 1.442 ? fabs(anElectron.deltaEtaSeedClusterTrackAtVtx()) < 0.004 : fabs(anElectron.deltaEtaSeedClusterTrackAtVtx()) < 0.006 );
+  }
+
+  template <>
+  void LeptonUpdater<pat::Muon>::setIDVariables(pat::Muon &aMuon) const {
+  }
   template <>
   void LeptonUpdater<pat::Electron>::readMiniIsoParams(const edm::ParameterSet &iConfig) {
     miniIsoParams_[0] = iConfig.getParameter<std::vector<double>>("miniIsoParamsB");
@@ -193,6 +206,10 @@ void pat::LeptonUpdater<T>::produce(edm::StreamID, edm::Event &iEvent, edm::Even
         signPV = copysign(1., lep.bestTrack()->dxy(pv.position()));
       lep.setDB(abs(lep.dB(T::PV2D)) * signPV, lep.edB(T::PV2D), T::PV2D);
       lep.setDB(abs(lep.dB(T::BS2D)) * signBS, lep.edB(T::BS2D), T::BS2D);
+    }
+   if (addIDVariables_){
+      std::cout << "doing it!" << std::endl;
+      setIDVariables(lep);
     }
   }
 

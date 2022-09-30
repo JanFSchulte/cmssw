@@ -14,9 +14,16 @@ ele9X105XUpdateModifier=egamma9X105XUpdateModifier.clone(
     phoChargedHadWorstVtxConeVetoIso = "",
     phoChargedHadPFPVIso = ""
 )
+
+electronsWithVariables = cms.EDProducer("PATHEEPIDResultEmbedder",
+    src = cms.InputTag("slimmedElectrons"),
+    vtx_src = cms.InputTag('offlineSlimmedPrimaryVertices'),
+    rho = cms.InputTag("fixedGridRhoFastjetAll"),
+)
+
 #we have dataformat changes to 106X so to read older releases we use egamma updators
 slimmedElectronsTo106X = cms.EDProducer("ModifiedElectronProducer",
-    src = cms.InputTag("slimmedElectrons"),
+    src = cms.InputTag("electronsWithVariables"),
     modifierConfig = cms.PSet( modifications = cms.VPSet(ele9X105XUpdateModifier) )
 )
 #might as well fix 80X while we're at it although the differences are not so relavent for nano
@@ -24,10 +31,11 @@ run2_miniAOD_80XLegacy.toModify( slimmedElectronsTo106X.modifierConfig.modificat
 
 # this below is used only in some eras
 slimmedElectronsUpdated = cms.EDProducer("PATElectronUpdater",
-    src = cms.InputTag("slimmedElectrons"),
+    src = cms.InputTag("electronsWithVariables"),
     vertices = cms.InputTag("offlineSlimmedPrimaryVertices"),
     computeMiniIso = cms.bool(False),
     fixDxySign = cms.bool(True),
+    addIDVariables = cms.bool(True),
     pfCandsForMiniIso = cms.InputTag("packedPFCandidates"),
     miniIsoParamsB = PhysicsTools.PatAlgos.producersLayer1.electronProducer_cfi.patElectrons.miniIsoParamsB, # so they're in sync
     miniIsoParamsE = PhysicsTools.PatAlgos.producersLayer1.electronProducer_cfi.patElectrons.miniIsoParamsE, # so they're in sync
@@ -93,8 +101,8 @@ def _get_bitmapVIDForEle_docstring(modules,WorkingPoints):
     return docstring
 
 bitmapVIDForEle = cms.EDProducer("EleVIDNestedWPBitmapProducer",
-    src = cms.InputTag("slimmedElectrons"),
-    srcForID = cms.InputTag("reducedEgamma","reducedGedGsfElectrons"),
+    src = cms.InputTag("electronsWithVariables"),
+    srcForID = cms.InputTag("slimmedElectrons"),
     WorkingPoints = electron_id_modules_WorkingPoints_nanoAOD.WorkingPoints,
 )
 _bitmapVIDForEle_docstring = _get_bitmapVIDForEle_docstring(electron_id_modules_WorkingPoints_nanoAOD.modules,bitmapVIDForEle.WorkingPoints)
@@ -128,7 +136,7 @@ _bitmapVIDForEleHEEP_docstring = _get_bitmapVIDForEle_docstring(electron_id_modu
 #######################ISO ELE defn(in principle should be an import####################
 ##PhysicsTools/NanoAOD/python/EleIsoValueMapProducer_cfi.py
 isoForEle = cms.EDProducer("EleIsoValueMapProducer",
-    src = cms.InputTag("slimmedElectrons"),
+    src = cms.InputTag("electronsWithVariables"),
     relative = cms.bool(False),
     rho_MiniIso = cms.InputTag("fixedGridRhoFastjetAll"),
     rho_PFIso = cms.InputTag("fixedGridRhoFastjetAll"),
@@ -146,12 +154,12 @@ run2_nanoAOD_94X2016.toModify(isoForEle,
 ###import from hysicsTools/NanoAOD/pythonElectronJetVarProducer_cfi.py
 ptRatioRelForEle = cms.EDProducer("ElectronJetVarProducer",
     srcJet = cms.InputTag("updatedJetsPuppi"),
-    srcLep = cms.InputTag("slimmedElectrons"),
+    srcLep = cms.InputTag("electronsWithVariables"),
     srcVtx = cms.InputTag("offlineSlimmedPrimaryVertices"),
 )
 ######################################ptRatioForEle#####################################
 #############3###################seedGailEle#############################
-seedGainEle = cms.EDProducer("ElectronSeedGainProducer", src = cms.InputTag("slimmedElectrons"))
+seedGainEle = cms.EDProducer("ElectronSeedGainProducer", src = cms.InputTag("electronsWithVariables"))
 ############################################seed gainELE
 ############################calibratedPatElectrons##############
 ##this is a special one, so we leave the era modifications here#####
@@ -159,8 +167,16 @@ import RecoEgamma.EgammaTools.calibratedEgammas_cff
 
 calibratedPatElectronsNano = RecoEgamma.EgammaTools.calibratedEgammas_cff.calibratedPatElectrons.clone(
     produceCalibratedObjs = False,
-    src = "slimmedElectrons"
+    src = "electronsWithVariables"
 )
+
+
+for modifier in run2_miniAOD_80XLegacy,run2_nanoAOD_94XMiniAODv1,run2_nanoAOD_94XMiniAODv2,run2_nanoAOD_94X2016,run2_nanoAOD_102Xv1,run2_nanoAOD_106Xv1:
+    modifier.toModify(bitmapVIDForEle, src = "slimmedElectronsUpdated")
+    modifier.toModify(isoForEle, src = "slimmedElectronsUpdated")
+    modifier.toModify(ptRatioRelForEle, srcLep = "slimmedElectronsUpdated")
+    modifier.toModify(seedGainEle, src = "slimmedElectronsUpdated")
+    modifier.toModify(calibratedPatElectronsNano, src = "slimmedElectronsUpdated")
 
 (run2_egamma_2016 & tracker_apv_vfp30_2016).toModify(calibratedPatElectronsNano,
     correctionFile = "EgammaAnalysis/ElectronTools/data/ScalesSmearings/Run2016_UltraLegacy_preVFP_RunFineEtaR9Gain"
@@ -194,8 +210,8 @@ run2_nanoAOD_102Xv1.toModify(calibratedPatElectronsNano,
 #####################Start slimmedElectronsWithUserData###############################3
 ##import from PhysicsTools/PatAlgos/python/electronsWithUserData_cfi.py
 slimmedElectronsWithUserData = cms.EDProducer("PATElectronUserDataEmbedder",
-    src = cms.InputTag("slimmedElectrons"),
-    parentSrcs = cms.VInputTag("reducedEgamma:reducedGedGsfElectrons"),
+    src = cms.InputTag("electronsWithVariables"),
+    parentSrcs = cms.VInputTag("slimmedElectrons"),
     userFloats = cms.PSet(
         mvaFall17V1Iso = cms.InputTag("electronMVAValueMapProducer:ElectronMVAEstimatorRun2Fall17IsoV1Values"),
         mvaFall17V1noIso = cms.InputTag("electronMVAValueMapProducer:ElectronMVAEstimatorRun2Fall17NoIsoV1Values"),
@@ -377,6 +393,31 @@ electronTable = cms.EDProducer("SimpleCandidateFlatTableProducer",
         eInvMinusPInv = Var("(1-eSuperClusterOverP())/ecalEnergy()",float,doc="1/E_SC - 1/p_trk",precision=10),
         scEtOverPt = Var("(superCluster().energy()/(pt*cosh(superCluster().eta())))-1",float,doc="(supercluster transverse energy)/pt-1",precision=8),
 
+	#special variables for HEEP ID
+       	deltaPhiIn = Var("deltaPhiSuperClusterTrackAtVtx()",float,doc="delta phi between super cluster and track at vertex",precision=10),
+       	deltaEtaIn = Var("deltaEtaSuperClusterTrackAtVtx()",float,doc="delta eta between super cluster and track at vertex",precision=10),
+       	eta_SC = Var("superCluster().eta()",float,doc="supercluster eta",precision=10),
+       	eta_SCSeed = Var("superCluster().seed().eta()",float,doc="supercluster seed eta",precision=10),
+       	full5x5E1x5 = Var("full5x5_e1x5()",float,doc="supercluster 1x5 energy",precision=10),
+       	full5x5E5x5 = Var("full5x5_e5x5()",float,doc="supercluster 5x5 energy",precision=10),
+       	full5x5E2x5Max = Var("full5x5_e2x5Max()",float,doc="supercluster 2x5 max energy",precision=10),
+       	isECALDriven = Var("ecalDrivenSeed()",float,doc="isEcalDriven",precision=10),
+
+       	passHEEPEmHadIso = Var("userInt('passHEEPEmHadIso')",bool,doc="passes HEEP ID cut on calo isolation",precision=10),
+       	passHEEPEmHadIso2018 = Var("userInt('passHEEPEmHadIso2018')",bool,doc="passes HEEP ID cut on calo isolation (2018 version)",precision=10),
+       	passHEEPHOverE = Var("userInt('passHEEPHOverE')",bool,doc="passes HEEP ID cut on calo HoverE",precision=10),
+       	passHEEPHOverE2018 = Var("userInt('passHEEPHOverE2018')",bool,doc="passes HEEP ID cut on calo HoverE (2018 version)",precision=10),
+       	passHEEPShowershape = Var("userInt('passHEEPShowershape')",bool,doc="passes HEEP ID cut on the ECAL shower shape",precision=10),
+       	passHEEPSieie = Var("userInt('passHEEPSieie')",bool,doc="passes HEEP ID cut on Sieie",precision=10),
+       	passHEEPEcalDriven = Var("userInt('passHEEPEcalDriven')",bool,doc="passes HEEP ID cut on isEcalDriven",precision=10),
+       	passHEEPDeltaEtaIn = Var("userInt('passHEEPDEta')",bool,doc="passes HEEP ID cut on delta eta between super cluster and track at vertex",precision=10),
+       	passHEEPDeltaPhiIn= Var("userInt('passHEEPDPhi')",bool,doc="passes HEEP ID cut on delta phi between super cluster and track at vertex",precision=10),
+       	passHEEPTrackIso= Var("userInt('passHEEPTrackIso')",bool,doc="passes HEEP ID cut on tracker isolation",precision=10),
+       	passHEEPMissingHits= Var("userInt('passHEEPMissingHits')",bool,doc="passes HEEP ID cut on missing pixel hits",precision=10),
+       	passHEEPDxy= Var("userInt('passHEEPDXY')",bool,doc="passes HEEP ID cut on transverse impact parameter",precision=10),
+       	passHEEPID = Var("userInt('passHEEPID')",bool,doc="passes HEEP ID (recomputed by hand)",precision=10),
+       	passHEEPID2018 = Var("userInt('passHEEPID')",bool,doc="passes HEEP ID 2018 (recomputed by hand)",precision=10),
+
         mvaIso = Var("userFloat('mvaIso')",float,doc="MVA Iso ID V2 score"),
         mvaIso_WP80 = Var("userInt('mvaIso_WP80')",bool,doc="MVA Iso ID V2 WP80"),
         mvaIso_WP90 = Var("userInt('mvaIso_WP90')",bool,doc="MVA Iso ID V2 WP90"),
@@ -492,16 +533,22 @@ run2_miniAOD_80XLegacy.toModify(electronTable.variables,
     vidNestedWPBitmapSum16 = Var("userInt('VIDNestedWPBitmapSum16')",int,doc=_bitmapVIDForEleSum16_docstring),
 
 )
+
+from PhysicsTools.NanoAOD.particlelevel_cff import particleLevel
+particleLevelForMatching = particleLevel.clone(
+    lepMinPt    = cms.double(3.),
+    phoMinPt = cms.double(3),
+)
 #############electron Table END#####################
 # Depends on particlelevel producer run in particlelevel_cff
 tautaggerForMatching = cms.EDProducer("GenJetTauTaggerProducer",
-                                      src = cms.InputTag('particleLevel:leptons')
+                                      src = cms.InputTag('particleLevelForMatching:leptons')
 )
  ##PhysicsTools/NanoAOD/plugins/GenJetGenPartMerger.cc##this class misses fillDescription#TODO
 matchingElecPhoton = cms.EDProducer("GenJetGenPartMerger",
-                                    srcJet =cms.InputTag("particleLevel:leptons"),
-                                    srcPart=cms.InputTag("particleLevel:photons"),
-                                    cut = cms.string("pt > 3"),
+                                    srcJet =cms.InputTag("particleLevelForMatching:leptons"),
+                                    srcPart=cms.InputTag("particleLevelForMatching:photons"),
+                                    cut = cms.string(""),
                                     hasTauAnc=cms.InputTag("tautaggerForMatching"),
 )
 electronsMCMatchForTableAlt = cms.EDProducer("GenJetMatcherDRPtByDR",  # cut on deltaR, deltaPt/Pt; pick best by deltaR
@@ -539,9 +586,9 @@ electronMCTable = cms.EDProducer("CandMCMatchTableProducer",
     genparticles     = cms.InputTag("finalGenParticles"), 
 )
 
-electronTask = cms.Task(bitmapVIDForEle,bitmapVIDForEleHEEP,isoForEle,ptRatioRelForEle,seedGainEle,calibratedPatElectronsNano,slimmedElectronsWithUserData,finalElectrons)
+electronTask = cms.Task(electronsWithVariables,bitmapVIDForEle,bitmapVIDForEleHEEP,isoForEle,ptRatioRelForEle,seedGainEle,calibratedPatElectronsNano,slimmedElectronsWithUserData,finalElectrons)
 electronTablesTask = cms.Task(electronMVATTH, electronTable)
-electronMCTask = cms.Task(tautaggerForMatching, matchingElecPhoton, electronsMCMatchForTable, electronsMCMatchForTableAlt, electronMCTable)
+electronMCTask = cms.Task(particleLevelForMatching, tautaggerForMatching, matchingElecPhoton, electronsMCMatchForTable, electronsMCMatchForTableAlt, electronMCTable)
 
 # Revert back to AK4 CHS jets for Run 2
 run2_nanoAOD_ANY.toModify(ptRatioRelForEle,srcJet="updatedJets")

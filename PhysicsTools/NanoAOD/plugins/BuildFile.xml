@@ -21,6 +21,8 @@
 <use name="DataFormats/ProtonReco"/>
 <use name="CondFormats/RunInfo"/>
 <use name="CondFormats/DataRecord"/>
+<use name="RecoVertex/KalmanVertexFit"/>
+<use name="MagneticField/Records"/>
 <use name="fastjet"/>
 <use name="fastjet-contrib"/>
 <library file="*.cc" name="PhysicsToolsNanoAODPlugins">
