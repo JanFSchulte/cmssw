@@ -28,8 +28,7 @@ build:
             - build.tar.gz
 
 
-
-run-aod:
+run-data-aod:
     tags: [ cvmfs ] 
     stage: run
     only:
@@ -41,18 +40,18 @@ run-aod:
         - shopt -s extglob
         - source ci/untar_cmssw.sh
         - printf $USER_PASS | base64 -d | kinit $USER_NAME
-        - xrdcp  root://eosuser.cern.ch//eos/user/c/cmsmupog/www/MuonPOG_CI/04D2156E-EFB0-A54B-BA65-B9A39B30F0DB.root $PWD/
-        - cmsRun MuonAnalysis/MuonAnalyzer/test/run_muonAnalyzer_cfg.py inputFiles=file:04D2156E-EFB0-A54B-BA65-B9A39B30F0DB.root globalTag=106X_upgrade2018_realistic_v11_L1v1   isFullAOD=True isMC=True outputFile=output_aod.root
-        - mv output_aod.root ../../
+        - xrdcp  root://eosuser.cern.ch//eos/user/c/cmsmupog/www/MuonPOG_CI/21147607-7fc1-47ac-911f-1cdf3725fdb5.root $PWD/
+        - cmsRun MuonAnalysis/MuonAnalyzer/test/run_muonAnalyzer_cfg.py inputFiles=file:21147607-7fc1-47ac-911f-1cdf3725fdb5.root globalTag=124X_dataRun3_Prompt_v4 isFullAOD=True isMC=False outputFile=output_data_aod.root
+        - mv output_data_aod.root ../../
 
 
     artifacts:
         when: on_success
         expire_in: 5 days
         paths: 
-            - output_aod.root
+            - output_data_aod.root
 
-run-miniaod:
+run-data-miniaod:
     tags: [ cvmfs ] 
     stage: run
     only:
@@ -64,18 +63,65 @@ run-miniaod:
         - shopt -s extglob
         - source ci/untar_cmssw.sh
         - printf $USER_PASS | base64 -d | kinit $USER_NAME
-        - xrdcp  root://eosuser.cern.ch//eos/user/c/cmsmupog/www/MuonPOG_CI/DD0D06EF-5C77-8147-84F2-779DEB3E0F52.root $PWD/
-        - cmsRun MuonAnalysis/MuonAnalyzer/test/run_muonAnalyzer_cfg.py inputFiles=file:DD0D06EF-5C77-8147-84F2-779DEB3E0F52.root globalTag=106X_upgrade2018_realistic_v11_L1v1   isFullAOD=False isMC=True outputFile=output_miniaod.root
-        - mv output_miniaod.root ../../
+        - xrdcp  root://eosuser.cern.ch//eos/user/c/cmsmupog/www/MuonPOG_CI/5d747e5f-b9d1-4b47-b730-e260990681ce.root $PWD/
+        - cmsRun MuonAnalysis/MuonAnalyzer/test/run_muonAnalyzer_cfg.py inputFiles=file:5d747e5f-b9d1-4b47-b730-e260990681ce.root globalTag=124X_dataRun3_Prompt_v4 isFullAOD=False isMC=False outputFile=output_data_miniaod.root
+        - mv output_data_miniaod.root ../../
 
 
     artifacts:
         when: on_success
         expire_in: 5 days
         paths: 
-            - output_miniaod.root
+            - output_data_miniaod.root
 
-compare-aod:
+run-mc-aod:
+    tags: [ cvmfs ] 
+    stage: run
+    only:
+        - merge_requests
+        - master
+    script:
+        - export SCRAM_ARCH=$CMSSW_SCRAM_ARCH
+        - set +e && source /cvmfs/cms.cern.ch/cmsset_default.sh; set -e
+        - shopt -s extglob
+        - source ci/untar_cmssw.sh
+        - printf $USER_PASS | base64 -d | kinit $USER_NAME
+        - xrdcp  root://eosuser.cern.ch//eos/user/c/cmsmupog/www/MuonPOG_CI/0243215b-f3c2-47ce-b2f4-c5243aec53c9.root $PWD/
+        - cmsRun MuonAnalysis/MuonAnalyzer/test/run_muonAnalyzer_cfg.py inputFiles=file:0243215b-f3c2-47ce-b2f4-c5243aec53c9.root globalTag=122X_mcRun3_2021_realistic_v9 isFullAOD=True isMC=True outputFile=output_mc_aod.root
+        - mv output_mc_aod.root ../../
+
+
+    artifacts:
+        when: on_success
+        expire_in: 5 days
+        paths: 
+            - output_mc_aod.root
+
+run-mc-miniaod:
+    tags: [ cvmfs ] 
+    stage: run
+    only:
+        - merge_requests
+        - master
+    script:
+        - export SCRAM_ARCH=$CMSSW_SCRAM_ARCH
+        - set +e && source /cvmfs/cms.cern.ch/cmsset_default.sh; set -e
+        - shopt -s extglob
+        - source ci/untar_cmssw.sh
+        - printf $USER_PASS | base64 -d | kinit $USER_NAME
+        - xrdcp  root://eosuser.cern.ch//eos/user/c/cmsmupog/www/MuonPOG_CI/004dd361-f49c-43fe-8344-f18aa036e286.root $PWD/
+        - cmsRun MuonAnalysis/MuonAnalyzer/test/run_muonAnalyzer_cfg.py inputFiles=file:004dd361-f49c-43fe-8344-f18aa036e286.root globalTag=122X_mcRun3_2021_realistic_v9 isFullAOD=False isMC=True outputFile=output_mc_miniaod.root
+        - mv output_mc_miniaod.root ../../
+
+
+    artifacts:
+        when: on_success
+        expire_in: 5 days
+        paths: 
+            - output_mc_miniaod.root
+
+
+compare-data-aod:
     tags: [ cvmfs ] 
     stage: compare
     only:
@@ -87,15 +133,15 @@ compare-aod:
         - shopt -s extglob
         - source ci/untar_cmssw.sh
         - printf $USER_PASS | base64 -d | kinit $USER_NAME
-        - xrdcp  root://eosuser.cern.ch//eos/user/c/cmsmupog/www/MuonPOG_CI/reference.root $PWD/
-        - python ../../ci/compare_with_reference.py reference.root ../../output_aod.root _aod
+        - xrdcp  root://eosuser.cern.ch//eos/user/c/cmsmupog/www/MuonPOG_CI/reference_run3_aod_data.root $PWD/
+        - python ../../ci/compare_with_reference.py reference_run3_aod_data.root ../../output_data_aod.root _data_aod
     artifacts:
         expire_in: 20 days
         when: always
         paths: 
-            - residuals_aod.pdf
+            - residuals_data_aod.pdf
 
-compare-miniaod:
+compare-data-miniaod:
     tags: [ cvmfs ] 
     stage: compare
     only:
@@ -107,13 +153,53 @@ compare-miniaod:
         - shopt -s extglob
         - source ci/untar_cmssw.sh
         - printf $USER_PASS | base64 -d | kinit $USER_NAME
-        - xrdcp  root://eosuser.cern.ch//eos/user/c/cmsmupog/www/MuonPOG_CI/reference_miniaod.root $PWD/
-        - python ../../ci/compare_with_reference.py reference_miniaod.root ../../output_miniaod.root _miniaod
+        - xrdcp  root://eosuser.cern.ch//eos/user/c/cmsmupog/www/MuonPOG_CI/reference_run3_miniaod_data.root $PWD/
+        - python ../../ci/compare_with_reference.py reference_run3_miniaod_data.root ../../output_data_miniaod.root _data_miniaod
     artifacts:
         expire_in: 20 days
         when: always
         paths: 
-            - residuals_miniaod.pdf
+            - residuals_data_miniaod.pdf
+
+compare-mc-aod:
+    tags: [ cvmfs ] 
+    stage: compare
+    only:
+        - merge_requests
+        - master
+    script:
+        - export SCRAM_ARCH=$CMSSW_SCRAM_ARCH
+        - set +e && source /cvmfs/cms.cern.ch/cmsset_default.sh; set -e
+        - shopt -s extglob
+        - source ci/untar_cmssw.sh
+        - printf $USER_PASS | base64 -d | kinit $USER_NAME
+        - xrdcp  root://eosuser.cern.ch//eos/user/c/cmsmupog/www/MuonPOG_CI/reference_run3_aod.root $PWD/
+        - python ../../ci/compare_with_reference.py reference_run3_aod.root ../../output_mc_aod.root _mc_aod
+    artifacts:
+        expire_in: 20 days
+        when: always
+        paths: 
+            - residuals_mc_aod.pdf
+
+compare-mc-miniaod:
+    tags: [ cvmfs ] 
+    stage: compare
+    only:
+        - merge_requests
+        - master
+    script:
+        - export SCRAM_ARCH=$CMSSW_SCRAM_ARCH
+        - set +e && source /cvmfs/cms.cern.ch/cmsset_default.sh; set -e
+        - shopt -s extglob
+        - source ci/untar_cmssw.sh
+        - printf $USER_PASS | base64 -d | kinit $USER_NAME
+        - xrdcp  root://eosuser.cern.ch//eos/user/c/cmsmupog/www/MuonPOG_CI/reference_run3_miniaod.root $PWD/
+        - python ../../ci/compare_with_reference.py reference_run3_miniaod.root ../../output_mc_miniaod.root _mc_miniaod
+    artifacts:
+        expire_in: 20 days
+        when: always
+        paths: 
+            - residuals_mc_miniaod.pdf
 
 stages:
   - build
