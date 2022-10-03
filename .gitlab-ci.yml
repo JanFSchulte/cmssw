@@ -1,8 +1,8 @@
 variables:
   CMSSW_RELEASE: CMSSW_12_4_8
-  CMSSW_SCRAM_ARCH: slc7_amd64_gcc10
+  CMSSW_SCRAM_ARCH: el8_amd64_gcc10
 
-image: gitlab-registry.cern.ch/ci-tools/ci-worker:cc7
+image: gitlab-registry.cern.ch/ci-tools/ci-worker:cs8
   
 build:
     tags: [cvmfs]
