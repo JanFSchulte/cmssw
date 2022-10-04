@@ -134,7 +134,7 @@ compare-data-aod:
         - source ci/untar_cmssw.sh
         - printf $USER_PASS | base64 -d | kinit $USER_NAME
         - xrdcp  root://eosuser.cern.ch//eos/user/c/cmsmupog/www/MuonPOG_CI/reference_run3_aod_data.root $PWD/
-        - python ../../ci/compare_with_reference.py reference_run3_aod_data.root ../../output_data_aod.root _data_aod
+        - python3 ../../ci/compare_with_reference.py reference_run3_aod_data.root ../../output_data_aod.root _data_aod
     artifacts:
         expire_in: 20 days
         when: always
@@ -154,7 +154,7 @@ compare-data-miniaod:
         - source ci/untar_cmssw.sh
         - printf $USER_PASS | base64 -d | kinit $USER_NAME
         - xrdcp  root://eosuser.cern.ch//eos/user/c/cmsmupog/www/MuonPOG_CI/reference_run3_miniaod_data.root $PWD/
-        - python ../../ci/compare_with_reference.py reference_run3_miniaod_data.root ../../output_data_miniaod.root _data_miniaod
+        - python3 ../../ci/compare_with_reference.py reference_run3_miniaod_data.root ../../output_data_miniaod.root _data_miniaod
     artifacts:
         expire_in: 20 days
         when: always
@@ -174,7 +174,7 @@ compare-mc-aod:
         - source ci/untar_cmssw.sh
         - printf $USER_PASS | base64 -d | kinit $USER_NAME
         - xrdcp  root://eosuser.cern.ch//eos/user/c/cmsmupog/www/MuonPOG_CI/reference_run3_aod.root $PWD/
-        - python ../../ci/compare_with_reference.py reference_run3_aod.root ../../output_mc_aod.root _mc_aod
+        - python3 ../../ci/compare_with_reference.py reference_run3_aod.root ../../output_mc_aod.root _mc_aod
     artifacts:
         expire_in: 20 days
         when: always
@@ -194,7 +194,7 @@ compare-mc-miniaod:
         - source ci/untar_cmssw.sh
         - printf $USER_PASS | base64 -d | kinit $USER_NAME
         - xrdcp  root://eosuser.cern.ch//eos/user/c/cmsmupog/www/MuonPOG_CI/reference_run3_miniaod.root $PWD/
-        - python ../../ci/compare_with_reference.py reference_run3_miniaod.root ../../output_mc_miniaod.root _mc_miniaod
+        - python3 ../../ci/compare_with_reference.py reference_run3_miniaod.root ../../output_mc_miniaod.root _mc_miniaod
     artifacts:
         expire_in: 20 days
         when: always
