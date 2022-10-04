@@ -17,7 +17,6 @@
 #include "DataFormats/TrackReco/interface/Track.h"
 #include "DataFormats/Math/interface/deltaR.h"
 
-
 #include <type_traits>
 #include "NtupleContent.h"
 #include "helper.h"
@@ -45,17 +44,17 @@ inline float miniIsoDr(const reco::Candidate::PolarLorentzVector &p4, float mind
 
 // Adapted from PhysicsTools/PatUtils/src/MiniIsolation.cc
 template <typename PFCANDS>
-pat::PFIsolation getMiniPFIsolation(const std::vector<PFCANDS> & pfcands,
-                                const reco::Candidate::PolarLorentzVector &p4,
-                                float mindr = 0.05,
-                                float maxdr = 0.2,
-                                float kt_scale = 10.0,
-                                float ptthresh = 0.5,
-                                float deadcone_ch = 0.0001,
-                                float deadcone_pu = 0.01,
-                                float deadcone_ph = 0.01,
-                                float deadcone_nh = 0.01,
-                                float dZ_cut = 0.0) {
+pat::PFIsolation getMiniPFIsolation(const std::vector<PFCANDS> &pfcands,
+                                    const reco::Candidate::PolarLorentzVector &p4,
+                                    float mindr = 0.05,
+                                    float maxdr = 0.2,
+                                    float kt_scale = 10.0,
+                                    float ptthresh = 0.5,
+                                    float deadcone_ch = 0.0001,
+                                    float deadcone_pu = 0.01,
+                                    float deadcone_ph = 0.01,
+                                    float deadcone_nh = 0.01,
+                                    float dZ_cut = 0.0) {
   float chiso = 0, nhiso = 0, phiso = 0, puiso = 0;
   float drcut = miniIsoDr(p4, mindr, maxdr, kt_scale);
   for (auto const pc : pfcands) {
@@ -88,14 +87,8 @@ pat::PFIsolation getMiniPFIsolation(const std::vector<PFCANDS> & pfcands,
 // Adapted from implementation from Daniel Li (Brown)
 template <typename MUON, typename PFCANDS>
 inline void FillMiniIso(
-  const std::vector<PFCANDS> & pfcands, 
-  const MUON &mu,
-  const double rho,
-  NtupleContent &nt,
-  bool isTag  
-) {
-  
-  double Aeff_Fall17[5] = { 0.0566, 0.0562, 0.0363, 0.0119, 0.0064 };
+    const std::vector<PFCANDS> &pfcands, const MUON &mu, const double rho, NtupleContent &nt, bool isTag) {
+  double Aeff_Fall17[5] = {0.0566, 0.0562, 0.0363, 0.0119, 0.0064};
   double EA;
 
   auto iso = getMiniPFIsolation<PFCANDS>(pfcands, mu.polarP4());
@@ -103,25 +96,29 @@ inline void FillMiniIso(
   auto chg = iso.chargedHadronIso();
   auto neu = iso.neutralHadronIso();
   auto pho = iso.photonIso();
-    
-  if( TMath::Abs(mu.eta()) < 0.8 ) EA = Aeff_Fall17[0];
-  else if( TMath::Abs(mu.eta()) < 1.3 ) EA = Aeff_Fall17[1];
-  else if( TMath::Abs(mu.eta()) < 2.0 ) EA = Aeff_Fall17[2];
-  else if( TMath::Abs(mu.eta()) < 2.2 ) EA = Aeff_Fall17[3];
-  else EA = Aeff_Fall17[4];
 
-  float R = 10.0 / std::min( std::max( mu.pt(), 50.0 ), 200.0 );
-  EA *= std::pow( R / 0.3, 2 );
-    
-  float miniIso = ( chg + TMath::Max( 0.0, neu + pho - (rho) * EA ) ) / mu.pt();
+  if (TMath::Abs(mu.eta()) < 0.8)
+    EA = Aeff_Fall17[0];
+  else if (TMath::Abs(mu.eta()) < 1.3)
+    EA = Aeff_Fall17[1];
+  else if (TMath::Abs(mu.eta()) < 2.0)
+    EA = Aeff_Fall17[2];
+  else if (TMath::Abs(mu.eta()) < 2.2)
+    EA = Aeff_Fall17[3];
+  else
+    EA = Aeff_Fall17[4];
 
-  if( isTag ){
+  float R = 10.0 / std::min(std::max(mu.pt(), 50.0), 200.0);
+  EA *= std::pow(R / 0.3, 2);
+
+  float miniIso = (chg + TMath::Max(0.0, neu + pho - (rho)*EA)) / mu.pt();
+
+  if (isTag) {
     nt.tag_miniIso = miniIso;
     nt.tag_miniIsoCharged = chg / mu.pt();
     nt.tag_miniIsoPhotons = pho / mu.pt();
     nt.tag_miniIsoNeutrals = neu / mu.pt();
-  }
-  else {
+  } else {
     nt.probe_miniIso = miniIso;
     nt.probe_miniIsoCharged = chg / mu.pt();
     nt.probe_miniIsoPhotons = pho / mu.pt();

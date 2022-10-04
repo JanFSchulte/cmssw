@@ -23,7 +23,6 @@ muon = cms.EDAnalyzer('MuonMiniAODAnalyzer',
            PFCands=cms.InputTag("packedPFCandidates"),
            lostTracks=cms.InputTag("lostTracks"),
            gen = cms.InputTag("prunedGenParticles"),
-           #rhoJetsNC = cms.InputTag("fixedGridRhoFastjetCentralNeutral"),
            rhoJetsNC = cms.InputTag("fixedGridRhoFastjetAll"),
            jets = cms.InputTag("slimmedJets"),
            genJets = cms.InputTag("slimmedGenJets"),
@@ -33,7 +32,7 @@ muon = cms.EDAnalyzer('MuonMiniAODAnalyzer',
            probeSelectorNames=cms.vstring(), # updated in run_muonAnalyzer_cfg.py
            probeSelectorBits=cms.vuint32(), # updated in run_muonAnalyzer_cfg.py
            tagQuality = cms.uint32(0), # quality of tag muon following muonSelector convention
-           tagSelection = cms.string("pt()>15 && passed('CutBasedIdTight')"), # string to pass cuts on tag
+           tagSelection = cms.string("pt() > 15 && passed('CutBasedIdTight')"), # string to pass cuts on tag
            ProbeHPurity = cms.bool(False), # skips non High purity probes
            probeSelection = cms.string("bestTrack.pt()>5 && abs(bestTrack.eta())<2.4 "), #string for probe
            muonOnly = cms.bool(False), # allow only reco or pat Muon for probes
@@ -48,12 +47,10 @@ muon = cms.EDAnalyzer('MuonMiniAODAnalyzer',
            maxDRProbeTrkMuon =  cms.double(0.03), # max DR for probe/offline
            momPdgId = cms.uint32(23),
            genRecoDrMatch= cms.double(0.03),
-           propM1 = cms.PSet(
-               useStation2 = cms.bool(False),
-               useTrack = cms.string("tracker"),
-               useState = cms.string("atVertex"),  # in AOD
-               useSimpleGeometry = cms.bool(True), # use just one cylinder and two planes, not all the fancy chambers  
-           ),
+           useStation2 = cms.bool(False),
+           useTrack = cms.string("tracker"),
+           useState = cms.string("atVertex"),  # in AOD
+           useSimpleGeometry = cms.bool(True), # use just one cylinder and two planes, not all the fancy chambers  
 
 )
 

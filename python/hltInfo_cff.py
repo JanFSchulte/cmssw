@@ -386,6 +386,137 @@ hltInfoAll = {
         'hltL2DoubleMu23NoVertexL2Filtered2Cha',
         'hltL2fL1sMuORL1f0DoubleL2NoVtx23Q2ChaCosmicSeed',
       ]
+    },
+    'Run2022': {
+      'triggerPaths': [
+        "HLT_Dimuon0_Jpsi3p5_Muon2_v", 
+        "HLT_DoubleMu4_JpsiTrk_Displaced_v", 
+        "HLT_IsoMu24_v",
+        "HLT_Mu17_TrkIsoVVL_Mu8_TrkIsoVVL_DZ_Mass3p8_v",
+        "HLT_Mu50_v",
+        "HLT_OldMu100_v",
+        "HLT_TkMu100_v",
+        "HLT_Mu17_TrkIsoVVL_v",
+        "HLT_Mu17_v",
+        "HLT_Mu8_v",
+        "HLT_Mu8_TrkIsoVVL_v",
+        "HLT_Mu12_v",
+        "HLT_Mu15_v",
+        "HLT_Mu19_v",
+        "HLT_Mu20_v",
+
+        # dSA (AOD only)
+        "HLT_L2Mu23NoVtx_2Cha_v",
+        "HLT_L2Mu23NoVtx_2Cha_CosmicSeed_v",
+        "HLT_DoubleL2Mu23NoVtx_2Cha_v",
+        "HLT_DoubleL2Mu23NoVtx_2Cha_CosmicSeed_v",
+      ],
+      'tagFilters': [
+        'HLT_Dimuon0_Jpsi3p5_Muon2_v',
+        'hltTripleMuonL2PreFiltered0', 
+        'hltTripleMuL3PreFiltered222', 
+        'hltJpsiMuonL3Filtered3p5',
+        'hltVertexmumuFilterJpsiMuon3p5', 
+        'HLT_DoubleMu4_JpsiTrk_Displaced_v', 
+        'hltL2fL1sDoubleMu0er15OSIorDoubleMu0er14OSIorDoubleMu4OSIorDoubleMu4p5OSL1Filtered0', 
+        'hltDoubleMu4JpsiDisplacedL3Filtered',
+        'hltDisplacedmumuFilterDoubleMu4Jpsi', 
+        'hltJpsiTkVertexFilter', 
+        'HLT_IsoMu24_v',
+        'hltL3fL1sSingleMu22L1f0L2f10QL3Filtered24Q',
+        'hltL3crIsoL1sSingleMu22L1f0L2f10QL3f24QL3trkIsoFiltered0p07',
+        'hltL3crIsoL1sSingleMu22L1f0L2f10QL3f24QL3trkIsoFiltered0p08',
+        'HLT_Mu17_TrkIsoVVL_Mu8_TrkIsoVVL_DZ_Mass3p8_v',
+        'hltL3fL1DoubleMu155fPreFiltered8',
+        'hltL3fL1DoubleMu155fFiltered17',
+        'hltDiMuon178RelTrkIsoFiltered0p4',
+        'hltDiMuon178RelTrkIsoFiltered0p4DzFiltered0p2',
+        'hltDiMuon178Mass3p8Filtered',
+        'HLT_Mu50_v',
+        'hltL3fL1sMu22Or25L1f0L2f10QL3Filtered50Q',
+        'HLT_OldMu100_v',
+        'hltL2fOldL1sMu22or25L1f0L2Filtered10Q',
+        'hltL3fL1sMu22Or25L1f0L2f10QL3Filtered100Q',
+        'HLT_TkMu100_v',
+        'hltL3fL1sMu25f0TkFiltered100Q',
+        'HLT_Mu17_TrkIsoVVL_v',
+        'hltL3fL1sMu15DQlqL1f0L2f10L3Filtered17',
+        'hltL3fL1sMu1lqL1f0L2f10L3Filtered17TkIsoFiltered0p4',
+        'HLT_Mu17_v',
+        # 'hltL3fL1sMu15DQlqL1f0L2f10L3Filtered17',
+        "HLT_Mu8_v",
+        "hltL3fL1sMu5L1f0L2f5L3Filtered8",
+        "HLT_Mu8_TrkIsoVVL_v",
+        "hltL3fL1sMu5L1f0L2f5L3Filtered8TkIsoFiltered0p4",
+        "HLT_Mu12_v",
+        "hltL3fL1sMu15DQlqL1f0L2f10L3Filtered12",
+        "HLT_Mu15_v",
+        "hltL3fL1sMu15DQlqL1f0L2f10L3Filtered15",
+        "HLT_Mu19_v",
+        "hltL3fL1sMu15DQlqL1f0L2f10L3Filtered19",
+        "HLT_Mu20_v",
+        "hltL3fL1sMu18L1f0L2f10QL3Filtered20Q",
+
+        # dSA (AOD only)
+        'hltL2fL1sMuORL1f0L2NoVtx23Q2Cha',
+        'hltL2fL1sMuORL1f0L2NoVtx23Q2ChaCosmicSeed',
+        'hltL2fL1sMuORL1f0DoubleL2NoVtx23Q',
+        'hltL2DoubleMu23NoVertexL2Filtered2Cha',
+        'hltL2fL1sMuORL1f0DoubleL2NoVtx23Q2ChaCosmicSeed',
+      ],
+      'probeFilters': [
+        'HLT_Dimuon0_Jpsi3p5_Muon2_v',
+        'hltTripleMuonL2PreFiltered0', 
+        'hltTripleMuL3PreFiltered222', 
+        'hltJpsiMuonL3Filtered3p5',
+        'hltVertexmumuFilterJpsiMuon3p5', 
+        'HLT_DoubleMu4_JpsiTrk_Displaced_v', 
+        'hltL2fL1sDoubleMu0er15OSIorDoubleMu0er14OSIorDoubleMu4OSIorDoubleMu4p5OSL1Filtered0', 
+        'hltDoubleMu4JpsiDisplacedL3Filtered',
+        'hltDisplacedmumuFilterDoubleMu4Jpsi', 
+        'hltJpsiTkVertexFilter', 
+        'HLT_IsoMu24_v',
+        'hltL3fL1sSingleMu22L1f0L2f10QL3Filtered24Q',
+        'hltL3crIsoL1sSingleMu22L1f0L2f10QL3f24QL3trkIsoFiltered0p07',
+        'hltL3crIsoL1sSingleMu22L1f0L2f10QL3f24QL3trkIsoFiltered0p08',
+        'HLT_Mu17_TrkIsoVVL_Mu8_TrkIsoVVL_DZ_Mass3p8_v',
+        'hltL3fL1DoubleMu155fPreFiltered8',
+        'hltL3fL1DoubleMu155fFiltered17',
+        'hltDiMuon178RelTrkIsoFiltered0p4',
+        'hltDiMuon178RelTrkIsoFiltered0p4DzFiltered0p2',
+        'hltDiMuon178Mass3p8Filtered',
+        'HLT_Mu50_v',
+        'hltL3fL1sMu22Or25L1f0L2f10QL3Filtered50Q',
+        'HLT_OldMu100_v',
+        'hltL2fOldL1sMu22or25L1f0L2Filtered10Q',
+        'hltL3fL1sMu22Or25L1f0L2f10QL3Filtered100Q',
+        'HLT_TkMu100_v',
+        'hltL3fL1sMu25f0TkFiltered100Q',
+        'HLT_Mu17_TrkIsoVVL_v',
+        'hltL3fL1sMu15DQlqL1f0L2f10L3Filtered17',
+        'hltL3fL1sMu1lqL1f0L2f10L3Filtered17TkIsoFiltered0p4',
+        'HLT_Mu17_v',
+        # 'hltL3fL1sMu15DQlqL1f0L2f10L3Filtered17',
+        "HLT_Mu8_v",
+        "hltL3fL1sMu5L1f0L2f5L3Filtered8",
+        "HLT_Mu8_TrkIsoVVL_v",
+        "hltL3fL1sMu5L1f0L2f5L3Filtered8TkIsoFiltered0p4",
+        "HLT_Mu12_v",
+        "hltL3fL1sMu15DQlqL1f0L2f10L3Filtered12",
+        "HLT_Mu15_v",
+        "hltL3fL1sMu15DQlqL1f0L2f10L3Filtered15",
+        "HLT_Mu19_v",
+        "hltL3fL1sMu15DQlqL1f0L2f10L3Filtered19",
+        "HLT_Mu20_v",
+        "hltL3fL1sMu18L1f0L2f10QL3Filtered20Q",
+
+        # dSA (AOD only)
+        'hltL2fL1sMuORL1f0L2NoVtx23Q2Cha',
+        'hltL2fL1sMuORL1f0L2NoVtx23Q2ChaCosmicSeed',
+        'hltL2fL1sMuORL1f0DoubleL2NoVtx23Q',
+        'hltL2DoubleMu23NoVertexL2Filtered2Cha',
+        'hltL2fL1sMuORL1f0DoubleL2NoVtx23Q2ChaCosmicSeed',
+      ]
     }
   },
   'JPsi': {
@@ -834,9 +965,9 @@ def check_size(info, max_size = 100, keys = []):
     else:
       if len(v) > max_size:
         loc = '|'.join(keys)
-        print "WARNING either put less than {} paths/filters in hltInfoAll|{}|{}, or increase the quota from NtupleContent.h/.cc".format(max_size+1, loc, k)
+        print ("WARNING either put less than {} paths/filters in hltInfoAll|{}|{}, or increase the quota from NtupleContent.h/.cc".format(max_size+1, loc, k))
         exit()
-    if len(keys) > 0 and k == info.keys()[-1]:
+    if len(keys) > 0 and k == list(info.keys())[-1]:
       keys.pop()
 
 def getShortEraForHLT(era):
@@ -844,8 +975,12 @@ def getShortEraForHLT(era):
     return 'Run2016'
   elif 'Run2017' in era:
     return 'Run2017'
-  else:  # any other era will use the trigger list for Run2018
+  elif 'Run2018' in era:
     return 'Run2018'
+  elif 'Run2022' in era:
+    return 'Run2022'    
+  else:  # any other era will use the trigger list for Run2018
+    return 'Run2022'
 
 def selectTriggers(trgList, keepPaths = True, keepFilters = True, excludeDSA = False):
   assert (keepFilters or keepPaths)

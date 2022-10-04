@@ -1,0 +1,71 @@
+{
+    "particle": "muon",
+    "resonance": "Z",
+    "era": "Run2022",
+    "suberas": {
+        "MINIAOD": {
+            "DY_madgraph": {
+                "dataset": "/DYJetsToLL_M-50_TuneCP5_13p6TeV-madgraphMLM-pythia8/Run3Winter22MiniAOD-122X_mcRun3_2021_realistic_v9_ext2-v2/MINIAODSIM",
+                "globalTag": "122X_mcRun3_2021_realistic_v9"
+            },
+            "DY_amcatnlo": {
+                "dataset": "/DYtoLL_NoTau_CP5_13p6TeV_amcatnloFXFX-pythia8/Run3Winter22MiniAOD-122X_mcRun3_2021_realistic_v9-v2/MINIAODSIM",
+                "globalTag": "122X_mcRun3_2021_realistic_v9"
+            },
+            "Run2022B" : {
+                "dataset": "/SingleMuon/Run2022B-PromptReco-v1/MINIAOD",
+                "globalTag": "123X_dataRun3_Prompt_v12"
+            },
+            "Run2022C1": {
+                "dataset": "/SingleMuon/Run2022C-PromptReco-v1/MINIAOD",
+                "globalTag": "124X_dataRun3_Prompt_v4"
+            },
+            "Run2022C2": {
+                "dataset": "/Muon/Run2022C-PromptReco-v1/MINIAOD",
+                "globalTag": "124X_dataRun3_Prompt_v4"
+            },
+            "Run2022D1": {
+                "dataset": "/Muon/Run2022D-PromptReco-v1/MINIAOD",
+                "globalTag": "124X_dataRun3_Prompt_v4"
+            },
+            "Run2022D2": {
+                "dataset": "/Muon/Run2022D-PromptReco-v2/MINIAOD",
+                "globalTag": "124X_dataRun3_Prompt_v4"
+            },
+            "Run2022D3": {
+                "dataset": "/Muon/Run2022D-PromptReco-v3/MINIAOD",
+                "globalTag": "124X_dataRun3_Prompt_v4"
+            }
+        },
+        "AOD": {
+            "DY_madgraph": {
+                "dataset": "/DYJetsToLL_M-50_TuneCP5_13p6TeV-madgraphMLM-pythia8/Run3Winter22DRPremix-122X_mcRun3_2021_realistic_v9_ext2-v2/AODSIM",
+                "globalTag": "122X_mcRun3_2021_realistic_v9"
+            },
+            "Run2022B" : {
+                "dataset": "/SingleMuon/Run2022B-PromptReco-v1/AOD",
+                "globalTag": "123X_dataRun3_Prompt_v12"
+            },
+            "Run2022C1": {
+                "dataset": "/SingleMuon/Run2022C-PromptReco-v1/AOD",
+                "globalTag": "124X_dataRun3_Prompt_v4"
+            },
+            "Run2022C2": {
+                "dataset": "/Muon/Run2022C-PromptReco-v1/AOD",
+                "globalTag": "124X_dataRun3_Prompt_v4"
+            },
+            "Run2022D1": {
+                "dataset": "/Muon/Run2022D-PromptReco-v1/AOD",
+                "globalTag": "124X_dataRun3_Prompt_v4"
+            },
+            "Run2022D2": {
+                "dataset": "/Muon/Run2022D-PromptReco-v2/AOD",
+                "globalTag": "124X_dataRun3_Prompt_v4"
+            },
+            "Run2022D3": {
+                "dataset": "/Muon/Run2022D-PromptReco-v3/AOD",
+                "globalTag": "124X_dataRun3_Prompt_v4"
+            }
+        }
+    }
+}

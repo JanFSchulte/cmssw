@@ -1,4 +1,4 @@
-#!/usr/bin/env python
+#!/usr/bin/env python3
 
 """
 This is a small script that does the equivalent of multicrab.
@@ -13,7 +13,7 @@ from multiprocessing import Process
 
 from CRABAPI.RawCommand import crabCommand
 from CRABClient.ClientExceptions import ClientException
-from httplib import HTTPException
+import http.client as httplib
 
 
 def merge_dicts(*dict_args):
@@ -198,7 +198,7 @@ def main():
         # This is the base config:
         #--------------------------------------------------------
 
-        from CRABClient.UserUtilities import config, getUsername
+        from CRABClient.UserUtilities import config, getUsernameFromCRIC
         config = config()
 
         config.General.workArea = workArea
@@ -217,15 +217,15 @@ def main():
         if storageSite == 'FNAL':
             # Requires write access to FNAL EOS space
             config.Site.storageSite = 'T3_US_FNALLPC'
-            config.Data.outLFNDirBase = '/store/user/%s/TnP_ntuples/%s/%s/%s/%s' % (getUsername(), particle, resonance, era, dataTier)
+            config.Data.outLFNDirBase = '/store/user/%s/TnP_ntuples/%s/%s/%s/%s' % (getUsernameFromCRIC(), particle, resonance, era, dataTier)
         elif storageSite == 'CERN': # default option
             # Requires write access to Muon POG EOS space at CERN
             config.Site.storageSite = 'T2_CH_CERN'
-            config.Data.outLFNDirBase = '/store/group/phys_muon/%s/TnP_ntuples/%s/%s/%s/%s' % (getUsername(), particle, resonance, era, dataTier)
+            config.Data.outLFNDirBase = '/store/group/phys_muon/%s/TnP_ntuples/%s/%s/%s/%s' % (getUsernameFromCRIC(), particle, resonance, era, dataTier)
         elif storageSite == 'CERNBOX':
             # See https://twiki.cern.ch/twiki/bin/view/CMSPublic/CRAB3FAQ#Can_I_send_CRAB_output_to_CERNBO
             config.Site.storageSite = 'T3_CH_CERNBOX'
-            config.Data.outLFNDirBase = '/store/user/%s/TnP_ntuples/%s/%s/%s/%s' % (getUsername(), particle, resonance, era, dataTier)
+            config.Data.outLFNDirBase = '/store/user/%s/TnP_ntuples/%s/%s/%s/%s' % (getUsernameFromCRIC(), particle, resonance, era, dataTier)
 
         #config.Site.ignoreGlobalBlacklist = True
         #config.Data.ignoreLocality = True
@@ -236,7 +236,7 @@ def main():
 
         if options.eraDB != '':
             if not os.path.isfile(options.eraDB):
-                print 'Error!! database file "{}" does not exist. Please check argument.'.format(options.eraDB)
+                print ('Error!! database file "{}" does not exist. Please check argument.'.format(options.eraDB))
             else:
                 sample_db = options.eraDB
         else:
@@ -254,21 +254,21 @@ def main():
                 else:
                     samples = dict({subEra: suberas[subEra]})
             except:
-                print "Error!! Requested era+sub-era is likely not valid. Please check argument."
+                print ("Error!! Requested era+sub-era is likely not valid. Please check argument.")
                 sys.exit()
 
         for subera_name, subera_cfg in samples.items():
 
             if subera_cfg.pop('include_by_default', '') == 'no' and subEra != subera_name:
                 continue
-            
+
             isData = 'Run' in subera_name
             globalTag = subera_cfg['globalTag'] if 'globalTag' in subera_cfg else ''
             input_dataset = subera_cfg['dataset']
             datatier = input_dataset.split('/')[-1]
-            if 'AOD' not in datatier or 'NANOAOD' in datatier:
-                print 'Input dataset is not AOD(SIM) or MINIAOD(SIM). Ignoring...'
-                continue
+            # if 'AOD' not in datatier or 'NANOAOD' in datatier:
+            #     print ('Input dataset is not AOD(SIM) or MINIAOD(SIM). Ignoring...')
+            #     continue
             isFullAOD = False if 'MINIAOD' in datatier else True
 
             if isData and not doData: continue
@@ -286,7 +286,9 @@ def main():
              
             config.Data.lumiMask = ''
             if isData:
-                if 'UL' in era:
+                if 'Run2022' in era:
+                    config.Data.lumiMask = 'https://cms-service-dqmdc.web.cern.ch/CAF/certification/Collisions22/Cert_Collisions2022_355100_357900_Golden.json'
+                elif 'UL' in era:
                     if '2018' in era:
                         config.Data.lumiMask = LM_prefix + '18/13TeV/Legacy_2018/Cert_314472-325175_13TeV_Legacy2018_Collisions18_JSON.txt'
                     elif '2017' in era:
@@ -302,6 +304,7 @@ def main():
                         config.Data.lumiMask = LM_prefix + '16/13TeV/ReReco/Cert_271036-284044_13TeV_ReReco_07Aug2017_Collisions16_JSON.txt'
 
                 #config.Data.splitting = 'Automatic' # Not working after rucio transition
+
                 config.Data.splitting = options.splittingData
                 config.Data.unitsPerJob = options.unitsPerJobData
 
@@ -332,16 +335,16 @@ def main():
             # Submit.
             def submit(config, options):
                 try:
-                    print "Submitting for input dataset %s with options %s" % (input_dataset, options.crabCmdOpts)
+                    print ("Submitting for input dataset %s with options %s" % (input_dataset, options.crabCmdOpts))
                     if options.dryrun:
-                        print '-'*50
-                        print config
+                        print ('-'*50)
+                        print (config)
                     else:
                         crabCommand(options.crabCmd, config = config, *options.crabCmdOpts.split())
                 except HTTPException as hte:
-                    print "Submission for input dataset %s failed: %s" % (input_dataset, hte.headers)
+                    print ("Submission for input dataset %s failed: %s" % (input_dataset, hte.headers))
                 except ClientException as cle:
-                    print "Submission for input dataset %s failed: %s" % (input_dataset, cle)
+                    print ("Submission for input dataset %s failed: %s" % (input_dataset, cle))
 
             # Need to submit using multiprocessing module because of CRAB issue with different configs
             p = Process(target=submit, args=(config,options,))
@@ -357,15 +360,16 @@ def main():
                 continue
             # Execute the crab command.
             msg = "Executing (the equivalent of): crab %s --dir %s %s" % (crabCmd, projDir, crabCmdOpts)
-            print "-"*len(msg)
-            print msg
-            print "-"*len(msg)
+            print ("-"*len(msg))
+            print (msg)
+            print ("-"*len(msg))
             try:
                 crabCommand(crabCmd, dir = projDir, *crabCmdOpts.split())
             except HTTPException as hte:
-                print "Failed executing command %s for task %s: %s" % (crabCmd, projDir, hte.headers)
+                print ("Failed executing command %s for task %s: %s" % (crabCmd, projDir, hte.headers))
             except ClientException as cle:
-                print "Failed executing command %s for task %s: %s" % (crabCmd, projDir, cle)
+                print ("Failed executing command %s for task %s: %s" % (crabCmd, projDir, cle))
 
 if __name__ == '__main__':
     main()
+

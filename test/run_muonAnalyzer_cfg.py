@@ -4,6 +4,10 @@ Modified by Andre Frankenthal (a.franken@cern.ch) -- September 2020
 usage: cmsRun run_muonAnalyzer_cfg.py option1=value1 option2=value2
 '''
 
+# cmsRun run_muonAnalyzer_cfg.py resonance=Z isFullAOD=False isMC=True globalTag=124X_mcRun3_2022_realistic_v5 era=Run2022 includeJets=False maxEvents=1000
+# cmsRun run_muonAnalyzer_cfg.py resonance=Z isFullAOD=True isMC=True globalTag=124X_mcRun3_2022_realistic_v5 era=Run2022 includeJets=False maxEvents=1000
+# cmsRun run_muonAnalyzer_cfg.py isFullAOD=False isMC=True globalTag=122X_mcRun3_2021_realistic_v9 era=Run2022 maxEvents=102
+
 from FWCore.ParameterSet.VarParsing import VarParsing
 import FWCore.ParameterSet.Config as cms
 
@@ -78,14 +82,14 @@ if len(options.inputFiles) == 0:
     if options.resonance == 'Z':
         if options.isFullAOD:
             if options.isMC:
-                options.inputFiles.append('/store/mc/RunIIAutumn18DRPremix/DYJetsToLL_M-50_TuneCP5_13TeV-madgraphMLM-pythia8/AODSIM/102X_upgrade2018_realistic_v15-v1/80002/FF9AF238-78B6-CF48-BC7C-05025D85A45C.root')
+                options.inputFiles.append('/store/mc/Run3Winter22DRPremix/DYJetsToLL_M-50_TuneCP5_13p6TeV-madgraphMLM-pythia8/AODSIM/122X_mcRun3_2021_realistic_v9_ext2-v2/40000/0027e0ac-873f-4f49-884b-4c5b67c85724.root')
             else:
-                options.inputFiles.append('/store/data/Run2018C/SingleMuon/AOD/12Nov2019_UL2018-v3/100000/0500CC1B-D885-8C48-B565-D96ECE355BC3.root')
+                options.inputFiles.append('/store/data/Run2022D/Muon/AOD/PromptReco-v2/000/357/734/00000/011a59b3-42bc-493c-bc2b-73cbddcb0e79.root')
         else:
             if options.isMC:
-                options.inputFiles.append('/store/mc/RunIIAutumn18MiniAOD/DYJetsToLL_M-50_Zpt-150toInf_TuneCP5_13TeV-madgraphMLM-pythia8/MINIAODSIM/102X_upgrade2018_realistic_v15-v1/100000/FAACE9E0-1D0E-204E-9960-078F095EA34C.root')
+                options.inputFiles.append('/store/mc/Run3Winter22MiniAOD/DYJetsToLL_M-50_TuneCP5_13p6TeV-madgraphMLM-pythia8/MINIAODSIM/122X_mcRun3_2021_realistic_v9_ext2-v2/40000/ff8f64b6-9dd6-4080-8bad-20c78f1c9e39.root')
             else:
-                options.inputFiles.append('/store/data/Run2018D/SingleMuon/MINIAOD/PromptReco-v2/000/325/159/00000/BE9BB28C-8AEC-1B4B-A7BD-AD1C9A0D67A8.root')
+                options.inputFiles.append('/store/data/Run2022D/Muon/MINIAOD/PromptReco-v2/000/357/734/00000/0326173e-e2c7-4efc-8fdd-466a81844cbd.root')
     elif options.resonance == 'JPsi':
         if options.isFullAOD:
             if options.isMC:
@@ -180,7 +184,14 @@ process.muonL1Info = _muonL1Match.clone(
     useMB2InOverlap = cms.bool(True),
     useStage2L1 = cms.bool(True),
     preselection = cms.string(""),
-    matched = cms.InputTag("gmtStage2Digis:Muon:")
+    matched = cms.InputTag("gmtStage2Digis:Muon:"),
+
+    useStation2 = cms.bool(True),
+    cosmicPropagationHypothesis = cms.bool(False),
+    propagatorAlong = cms.ESInputTag("", "SteppingHelixPropagatorAlong"),
+    propagatorAny = cms.ESInputTag("", "SteppingHelixPropagatorAny"),
+    propagatorOpposite = cms.ESInputTag("", "SteppingHelixPropagatorOpposite"),
+    fallbackToME1 = cms.bool(False)
 )
 process.muonL1InfoByQ = process.muonL1Info.clone(
     sortBy = cms.string("quality"),
@@ -189,6 +200,13 @@ process.muonL1InfoByQ = process.muonL1Info.clone(
     sortByDeltaEta = cms.bool(False),
     sortByPt       = cms.bool(False)
 )
+
+process.muon.fallbackToME1 = cms.bool(False)
+process.muon.cosmicPropagationHypothesis = cms.bool(False)
+process.muon.useMB2InOverlap = cms.bool(True)
+process.muon.propagatorAlong = cms.ESInputTag("", "SteppingHelixPropagatorAlong")
+process.muon.propagatorAny = cms.ESInputTag("", "SteppingHelixPropagatorAny")
+process.muon.propagatorOpposite = cms.ESInputTag("", "SteppingHelixPropagatorOpposite")
 
 from MuonAnalysis.MuonAnalyzer.hltInfo_cff import getHLTInfo, selectTriggers
 hltInfo = getHLTInfo(options.resonance, options.era)
@@ -230,12 +248,9 @@ process.TFileService = cms.Service("TFileService",
 )
 process.endjob_step = cms.EndPath(process.endOfProcess)
 
-# process.fevt = cms.OutputModule("PoolOutputModule",
-#     outputCommands = cms.untracked.vstring(),
-#     fileName = cms.untracked.string("edm_output.root")
-# )
 
 process.schedule = cms.Schedule(process.analysis_step, process.endjob_step)
 
 from Configuration.StandardSequences.earlyDeleteSettings_cff import customiseEarlyDelete
 process = customiseEarlyDelete(process)
+

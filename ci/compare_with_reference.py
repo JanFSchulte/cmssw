@@ -84,6 +84,10 @@ for ref_ev in ref_events:
         for br in allBranches:
             if br in branchesToSkip: continue # so its no so verbose
             try:
+                if "cppyy.gbl.std.vector" in str(type(tar_ev[br])) or "cppyy.gbl.std.vector" in str(type(ref_ev[br])):
+                    branchesToSkip.append(br)
+                    continue
+                
                 residuals[br].append( tar_ev[br] - ref_ev[br] )
             except TypeError:
                 print(bcolors.FAIL, '[WARNING]: Branches of type ', type(tar_ev[br]),'like', br, 'not supported for event by event comparison', bcolors.ENDC)
