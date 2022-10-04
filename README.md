@@ -10,7 +10,7 @@ $ cmsrel CMSSW_12_4_8
 $ cd CMSSW_12_4_8/src
 $ cmsenv
 $ git cms-init
-$ git clone https://gitlab.cern.ch/cms-muonPOG/muonanalysis-muonanalyzer.git MuonAnalysis/MuonAnalyzer
+$ git clone https://gitlab.cern.ch/cms-muonPOG/muonanalysis-muonanalyzer.git MuonAnalysis/MuonAnalyzer -b 12_4_X
 $ scram b -j 8
 ```
 
