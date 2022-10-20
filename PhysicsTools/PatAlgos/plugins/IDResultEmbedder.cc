@@ -175,7 +175,6 @@ void IDResultEmbedder<T>::produce(edm::Event & iEvent, const edm::EventSetup& iS
     for (unsigned int i = 0, n = src->size(); i < n; ++i) {
         T &lep = (*out)[i]; 
         setIDVariables(lep, *vertices.product(), rho);
-        out->push_back(lep);
     }
 
     iEvent.put(std::move(out));
