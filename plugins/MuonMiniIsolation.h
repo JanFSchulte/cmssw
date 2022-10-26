@@ -43,7 +43,7 @@ pat::PFIsolation getMiniPFIsolation(const pat::PackedCandidateCollection *pfcand
   float chiso = 0, nhiso = 0, phiso = 0, puiso = 0;
   float drcut = miniIsoDr(p4, mindr, maxdr, kt_scale);
 
-  for (auto const pc : pfcands) {
+  for (auto const pc : *pfcands) {
     float dr2 = deltaR2(p4, pc);
     if (dr2 > drcut * drcut)
       continue;
