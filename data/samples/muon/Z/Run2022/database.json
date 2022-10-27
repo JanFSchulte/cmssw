@@ -35,6 +35,10 @@
             "Run2022D3": {
                 "dataset": "/Muon/Run2022D-PromptReco-v3/MINIAOD",
                 "globalTag": "124X_dataRun3_Prompt_v4"
+            },
+            "Run2022E": {
+                "dataset": "/Muon/Run2022E-PromptReco-v1/MINIAOD",
+                "globalTag": "124X_dataRun3_Prompt_v4"
             }
         },
         "AOD": {
@@ -64,6 +68,10 @@
             },
             "Run2022D3": {
                 "dataset": "/Muon/Run2022D-PromptReco-v3/AOD",
+                "globalTag": "124X_dataRun3_Prompt_v4"
+            },
+            "Run2022E": {
+                "dataset": "/Muon/Run2022E-PromptReco-v1/AOD",
                 "globalTag": "124X_dataRun3_Prompt_v4"
             }
         }
