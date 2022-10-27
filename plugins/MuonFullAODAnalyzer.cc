@@ -165,7 +165,7 @@ private:
   edm::EDGetTokenT<edm::ValueMap<int>> l1MatchesByQQualityToken_;
   edm::EDGetTokenT<edm::ValueMap<float>> l1MatchesByQDeltaRToken_;
   edm::EDGetTokenT<edm::View<reco::GenParticle>> genToken_;
-  edm::EDGetToken PFCands_;
+  edm::EDGetToken PATPFCands_;
   edm::EDGetTokenT<double> rhoJetsNC_;
   edm::EDGetToken jetsToken_;
   edm::EDGetToken jetCorrectorToken_;
@@ -250,7 +250,7 @@ MuonFullAODAnalyzer::MuonFullAODAnalyzer(const edm::ParameterSet& iConfig)
       l1MatchesByQDeltaRToken_(
           consumes<edm::ValueMap<float>>(iConfig.getParameter<edm::InputTag>("l1MatchesByQDeltaR"))),
       genToken_(consumes<edm::View<reco::GenParticle>>(iConfig.getParameter<edm::InputTag>("gen"))),
-      PFCands_(consumes<std::vector<reco::PFCandidate>>(iConfig.getParameter<edm::InputTag>("PFCands"))),
+      PATPFCands_(consumes<pat::PackedCandidateCollection>(iConfig.getParameter<edm::InputTag>("PATPFCands"))),
       rhoJetsNC_(consumes<double>(iConfig.getParameter<edm::InputTag>("rhoJetsNC"))),
       jetsToken_(consumes<std::vector<reco::PFJet>>(iConfig.getParameter<edm::InputTag>("jets"))),
       jetCorrectorToken_(consumes<reco::JetCorrector>(iConfig.getParameter<edm::InputTag>("jetCorrector"))),
@@ -447,8 +447,8 @@ void MuonFullAODAnalyzer::analyze(const edm::Event& iEvent, const edm::EventSetu
   bField = iSetup.getHandle(magfieldToken_);
 
   // mini isolation
-  edm::Handle<std::vector<reco::PFCandidate>> pfcands;
-  iEvent.getByToken(PFCands_, pfcands);
+  edm::Handle<pat::PackedCandidateCollection> patpfcands;
+  iEvent.getByToken(PATPFCands_, patpfcands);
   edm::Handle<double> rhoJetsNC;
   iEvent.getByToken(rhoJetsNC_, rhoJetsNC);
   // jets
@@ -1202,7 +1202,7 @@ void MuonFullAODAnalyzer::analyze(const edm::Event& iEvent, const edm::EventSetu
       nt.tag_isMatchedGen = genmatched_tag[&tag - &tag_trkttrk[0]];
 
       FillTagBranches<reco::Muon, reco::Track>(tag.first, *tracks, nt, *pv);
-      FillMiniIso<reco::Muon, reco::PFCandidate>(*pfcands, tag.first, *rhoJetsNC, nt, true);
+      FillMiniIso<reco::Muon, pat::PackedCandidate>(patpfcands.product(), tag.first, *rhoJetsNC, nt, true);
 
       // Tag-trigger matching
       auto tagRef = muonsView->refAt(tag_muon_map[&tag - &tag_trkttrk[0]]);
@@ -1249,7 +1249,7 @@ void MuonFullAODAnalyzer::analyze(const edm::Event& iEvent, const edm::EventSetu
         fakeMuon.setCharge(probe.charge());
         FillProbeBranches<reco::Muon, reco::Track>(fakeMuon, *tracks, nt, false, *pv);
         FillProbeBranchesSelector<reco::Muon>(fakeMuon, nt, probeSelectorBits_, false);
-        FillMiniIso<reco::Muon, reco::PFCandidate>(*pfcands, fakeMuon, *rhoJetsNC, nt, false);
+        FillMiniIso<reco::Muon, pat::PackedCandidate>(patpfcands.product(), fakeMuon, *rhoJetsNC, nt, false);
         if (includeJets_)
           FindJetProbePair<reco::PFJet, reco::Muon>(corrJets, fakeMuon, nt);
 
@@ -1279,8 +1279,8 @@ void MuonFullAODAnalyzer::analyze(const edm::Event& iEvent, const edm::EventSetu
                     << std::endl;
         FillProbeBranches<reco::Muon, reco::Track>(muons->at(trk_muon_map.second[idx]), *tracks, nt, true, *pv);
         FillProbeBranchesSelector<reco::Muon>(muons->at(trk_muon_map.second[idx]), nt, probeSelectorBits_, true);
-        FillMiniIso<reco::Muon, reco::PFCandidate>(
-            *pfcands, muons->at(trk_muon_map.second[idx]), *rhoJetsNC, nt, false);
+        FillMiniIso<reco::Muon, pat::PackedCandidate>(
+            patpfcands.product(), muons->at(trk_muon_map.second[idx]), *rhoJetsNC, nt, false);
         if (includeJets_)
           FindJetProbePair<reco::PFJet, pat::Muon>(corrJets, muons->at(trk_muon_map.second[idx]), nt);
 

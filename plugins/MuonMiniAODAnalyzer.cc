@@ -758,7 +758,7 @@ void MuonMiniAODAnalyzer::analyze(const edm::Event& iEvent, const edm::EventSetu
 
       FillTagBranches<pat::Muon, reco::Track>(tag.first, tracks, nt, *pv);
       nt.tag_isMatchedGen = genmatched_tag[&tag - &tag_muon_ttrack[0]];
-      FillMiniIso<pat::Muon, pat::PackedCandidate>(*pfcands, tag.first, *rhoJetsNC, nt, true);
+      FillMiniIsov2<pat::Muon>(tag.first, *rhoJetsNC, nt, true);
 
       // Tag-trigger matching
       auto tagRef = muonsView->refAt(tag_muon_map[&tag - &tag_muon_ttrack[0]]);
@@ -798,8 +798,8 @@ void MuonMiniAODAnalyzer::analyze(const edm::Event& iEvent, const edm::EventSetu
         unsigned idx = std::distance(trk_muon_map.first.begin(), it);
         FillProbeBranches<pat::Muon, reco::Track>(muons->at(trk_muon_map.second[idx]), tracks, nt, true, *pv);
         FillProbeBranchesSelector<pat::Muon>(muons->at(trk_muon_map.second[idx]), nt, probeSelectorBits_, true);
-        FillMiniIso<pat::Muon, pat::PackedCandidate>(
-            *pfcands, muons->at(trk_muon_map.second[idx]), *rhoJetsNC, nt, false);
+        FillMiniIsov2<pat::Muon>(
+            muons->at(trk_muon_map.second[idx]), *rhoJetsNC, nt, false);
         if (includeJets_)
           FindJetProbePair<pat::Jet, pat::Muon>(*jets, muons->at(trk_muon_map.second[idx]), nt);
 
@@ -855,7 +855,7 @@ void MuonMiniAODAnalyzer::analyze(const edm::Event& iEvent, const edm::EventSetu
         fakeMuon.setCharge(probe.charge());
         FillProbeBranches<reco::Muon, reco::Track>(fakeMuon, tracks, nt, false, *pv);
         FillProbeBranchesSelector<reco::Muon>(fakeMuon, nt, probeSelectorBits_, false);
-        FillMiniIso<pat::Muon, pat::PackedCandidate>(*pfcands, fakeMuon, *rhoJetsNC, nt, false);
+        FillMiniIsov2<pat::Muon>(fakeMuon, *rhoJetsNC, nt, false);
         if (includeJets_)
           FindJetProbePair<pat::Jet, pat::Muon>(*jets, fakeMuon, nt);
 

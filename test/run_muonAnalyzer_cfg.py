@@ -152,6 +152,17 @@ if options.includeJets:
     process.load("RecoBTag.Combined.deepFlavour_cff")
     process.load("JetMETCorrections.Configuration.JetCorrectors_cff")
 
+# Include pat:packedCandidateCollection in AOD for miniPFIsolation
+if options.isFullAOD:   
+    process.load("TrackingTools.TransientTrack.TransientTrackBuilder_cfi")
+    process.load("CommonTools.RecoAlgos.primaryVertexAssociation_cfi")
+    process.load("PhysicsTools.PatAlgos.slimming.offlineSlimmedPrimaryVertices_cfi")
+    process.load("PhysicsTools.PatAlgos.slimming.packedPFCandidates_cfi")
+    from PhysicsTools.PatAlgos.slimming.packedPFCandidates_cfi import packedPFCandidates
+    process.packedCandsForMuons = packedPFCandidates.clone()
+    process.packedCandsForMuons.PuppiSrc=cms.InputTag("")
+    process.packedCandsForMuons.PuppiNoLepSrc=cms.InputTag("")
+
 process.options = cms.untracked.PSet(
     wantSummary = cms.untracked.bool(True),
     numberOfThreads = cms.untracked.uint32(options.numThreads)
@@ -221,27 +232,61 @@ selectorNames, selectorBits = getSelectorNamesAndBits(options.era, options.isFul
 process.muon.probeSelectorNames = cms.vstring(selectorNames)
 process.muon.probeSelectorBits = cms.vuint32(selectorBits)
 
-if options.includeJets:
-    if not options.isMC:
+if options.isFullAOD:
+    if options.includeJets:
+        if not options.isMC:
+	        process.analysis_step = cms.Path(
+                process.primaryVertexAssociation +
+                process.offlineSlimmedPrimaryVertices +
+                process.packedCandsForMuons +
+                process.muonL1Info +
+                process.muonL1InfoByQ +
+                process.ak4PFCHSL1FastL2L3ResidualCorrectorChain +
+                process.muSequence
+            )
+        else:
+            process.analysis_step = cms.Path(
+                process.primaryVertexAssociation +
+                process.offlineSlimmedPrimaryVertices +
+                process.packedCandsForMuons +
+                process.muonL1Info +
+                process.muonL1InfoByQ +
+                process.ak4PFCHSL1FastL2L3CorrectorChain +
+                process.muSequence
+	    )
+    else:
         process.analysis_step = cms.Path(
+            process.primaryVertexAssociation +
+            process.offlineSlimmedPrimaryVertices +
+            process.packedCandsForMuons +
             process.muonL1Info +
-            process.muonL1InfoByQ +
-            process.ak4PFCHSL1FastL2L3ResidualCorrectorChain +
+	        process.muonL1InfoByQ +
             process.muSequence
         )
+else:
+    if options.includeJets:
+        if not options.isMC:
+            process.analysis_step = cms.Path(
+                process.muonL1Info +
+                process.muonL1InfoByQ +
+                process.ak4PFCHSL1FastL2L3ResidualCorrectorChain +
+                process.muSequence
+            )
+        else:
+            process.analysis_step = cms.Path(
+                process.muonL1Info +
+                process.muonL1InfoByQ +
+                process.ak4PFCHSL1FastL2L3CorrectorChain +
+                process.muSequence
+            )
     else:
         process.analysis_step = cms.Path(
             process.muonL1Info +
             process.muonL1InfoByQ +
-            process.ak4PFCHSL1FastL2L3CorrectorChain +
             process.muSequence
         )
-else:
-    process.analysis_step = cms.Path(
-        process.muonL1Info +
-        process.muonL1InfoByQ +
-        process.muSequence
-    )
+
+
 
 process.TFileService = cms.Service("TFileService",
         fileName = cms.string(options.outputFile)
