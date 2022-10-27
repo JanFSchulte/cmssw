@@ -287,7 +287,7 @@ def main():
             config.Data.lumiMask = ''
             if isData:
                 if 'Run2022' in era:
-                    config.Data.lumiMask = 'https://cms-service-dqmdc.web.cern.ch/CAF/certification/Collisions22/Cert_Collisions2022_355100_357900_Golden.json'
+                    config.Data.lumiMask = 'https://cms-service-dqmdc.web.cern.ch/CAF/certification/Collisions22/Cert_Collisions2022_355100_360491_Golden.json'
                 elif 'UL' in era:
                     if '2018' in era:
                         config.Data.lumiMask = LM_prefix + '18/13TeV/Legacy_2018/Cert_314472-325175_13TeV_Legacy2018_Collisions18_JSON.txt'
