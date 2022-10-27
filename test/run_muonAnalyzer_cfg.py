@@ -155,7 +155,7 @@ if options.includeJets:
 # Include pat:packedCandidateCollection in AOD for miniPFIsolation
 if options.isFullAOD:   
     process.load("TrackingTools.TransientTrack.TransientTrackBuilder_cfi")
-    process.load("PhysicsTools.PatAlgos.slimming.primaryVertexAssociation_cfi")
+    process.load("CommonTools.RecoAlgos.primaryVertexAssociation_cfi")
     process.load("PhysicsTools.PatAlgos.slimming.offlineSlimmedPrimaryVertices_cfi")
     process.load("PhysicsTools.PatAlgos.slimming.packedPFCandidates_cfi")
     from PhysicsTools.PatAlgos.slimming.packedPFCandidates_cfi import packedPFCandidates
