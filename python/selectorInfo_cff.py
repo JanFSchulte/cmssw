@@ -75,7 +75,7 @@ def getSelectorNamesAndBits(era, isFullAOD):
         pass
     elif era == 'Run2018_UL':
         pass
-    elif era == 'Run2022':
+    elif 'Run2022' in era:
         pass
     else:
         print ('getSelectorNamesAndBits: undefined era "{}" -> return empty lists'.format(era))

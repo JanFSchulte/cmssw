@@ -69,7 +69,7 @@ def getOptions():
     parser.add_option('-e', '--era',
                       dest = 'era',
                       default = 'Run2018',
-                      help = "Era to run samples over. Options are 'Run2018'/'Run2017'/'Run2016'/'Run2018_UL'/'Run2017_UL'/'Run2016_UL'/'Run2016_UL_HIPM'. Default is 'Run2018'.",
+                      help = "Era to run samples over. Options are 'Run2022/Run2022EE/Run2018'/'Run2017'/'Run2016'/'Run2018_UL'/'Run2017_UL'/'Run2016_UL'/'Run2016_UL_HIPM'. Default is 'Run2018'.",
                       metavar = 'ERA')
 
     parser.add_option('-s', '--subEra',
@@ -145,6 +145,12 @@ def getOptions():
                       default = 100,
                       help = "unitsPerJob option for MC",
                       metavar = 'UNIT_PER_JOB_MC')
+
+    parser.add_option('--inputDBS',
+                      dest = 'inputDBS',
+                      default = 'global',
+                      help = "global/phys01/phys02/phys03",
+                      metavar = 'INPUT_DBS')
 
     parser.add_option('--dryrun',
                       dest = 'dryrun',
@@ -257,6 +263,8 @@ def main():
                 print ("Error!! Requested era+sub-era is likely not valid. Please check argument.")
                 sys.exit()
 
+        isFullAOD = False if dataTier=='MINIAOD' else True
+
         for subera_name, subera_cfg in samples.items():
 
             if subera_cfg.pop('include_by_default', '') == 'no' and subEra != subera_name:
@@ -266,10 +274,7 @@ def main():
             globalTag = subera_cfg['globalTag'] if 'globalTag' in subera_cfg else ''
             input_dataset = subera_cfg['dataset']
             datatier = input_dataset.split('/')[-1]
-            # if 'AOD' not in datatier or 'NANOAOD' in datatier:
-            #     print ('Input dataset is not AOD(SIM) or MINIAOD(SIM). Ignoring...')
-            #     continue
-            isFullAOD = False if 'MINIAOD' in datatier else True
+            #isFullAOD = False if 'MINIAOD' in datatier else True
 
             if isData and not doData: continue
             if not isData and not doMC: continue
@@ -287,7 +292,7 @@ def main():
             config.Data.lumiMask = ''
             if isData:
                 if 'Run2022' in era:
-                    config.Data.lumiMask = 'https://cms-service-dqmdc.web.cern.ch/CAF/certification/Collisions22/Cert_Collisions2022_355100_360491_Golden.json'
+                    config.Data.lumiMask = 'https://cms-service-dqmdc.web.cern.ch/CAF/certification/Collisions22/Cert_Collisions2022_355100_362760_Golden.json'
                 elif 'UL' in era:
                     if '2018' in era:
                         config.Data.lumiMask = LM_prefix + '18/13TeV/Legacy_2018/Cert_314472-325175_13TeV_Legacy2018_Collisions18_JSON.txt'
@@ -311,6 +316,8 @@ def main():
             else:
                 config.Data.splitting = options.splittingMC
                 config.Data.unitsPerJob = options.unitsPerJobMC
+
+            config.Data.inputDBS = options.inputDBS
 
             config.JobType.pyCfgParams = [
                     'resonance={}'.format(resonance),
