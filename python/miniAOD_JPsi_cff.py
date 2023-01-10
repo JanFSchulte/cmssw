@@ -48,12 +48,10 @@ muon = cms.EDAnalyzer('MuonMiniAODAnalyzer',
            maxDRProbeTrkMuon =  cms.double(0.06), # max DR for probe/offline
            momPdgId = cms.uint32(443),
            genRecoDrMatch= cms.double(0.03),
-           propM1 = cms.PSet(
-               useStation2 = cms.bool(False),
-               useTrack = cms.string("tracker"),
-               useState = cms.string("atVertex"),  # in AOD
-               useSimpleGeometry = cms.bool(True), # use just one cylinder and two planes, not all the fancy chambers  
-           ),
+           useStation2 = cms.bool(False),
+           useTrack = cms.string("tracker"),
+           useState = cms.string("atVertex"),  # in AOD
+           useSimpleGeometry = cms.bool(True), # use just one cylinder and two planes, not all the fancy chambers  
 
 )
 

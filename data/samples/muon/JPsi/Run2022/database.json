@@ -27,10 +27,6 @@
             "Run2022D2": {
                 "dataset": "/Muon/Run2022D-PromptReco-v2/MINIAOD",
                 "globalTag": "124X_dataRun3_Prompt_v4"
-            },
-            "Run2022D3": {
-                "dataset": "/Muon/Run2022D-PromptReco-v3/MINIAOD",
-                "globalTag": "124X_dataRun3_Prompt_v4"
             }
         }
     }
