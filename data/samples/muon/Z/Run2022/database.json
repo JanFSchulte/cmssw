@@ -5,8 +5,8 @@
     "suberas": {
         "MINIAOD": {
             "DY_madgraph": {
-                "dataset": "/DYJetsToLL_M-50_TuneCP5_13p6TeV-madgraphMLM-pythia8/Run3Winter22MiniAOD-122X_mcRun3_2021_realistic_v9_ext2-v2/MINIAODSIM",
-                "globalTag": "122X_mcRun3_2021_realistic_v9"
+                "dataset": "/DYJetsToLL_M-50_TuneCP5_13p6TeV-madgraphMLM-pythia8/Run3Summer22MiniAODv3-forPOG_124X_mcRun3_2022_realistic_v12-v4/MINIAODSIM",
+                "globalTag": "124X_mcRun3_2022_realistic_v12"
             },
             "DY_amcatnlo": {
                 "dataset": "/DYtoLL_NoTau_CP5_13p6TeV_amcatnloFXFX-pythia8/Run3Winter22MiniAOD-122X_mcRun3_2021_realistic_v9-v2/MINIAODSIM",
@@ -34,10 +34,6 @@
             },
             "Run2022D3": {
                 "dataset": "/Muon/Run2022D-PromptReco-v3/MINIAOD",
-                "globalTag": "124X_dataRun3_Prompt_v4"
-            },
-            "Run2022E": {
-                "dataset": "/Muon/Run2022E-PromptReco-v1/MINIAOD",
                 "globalTag": "124X_dataRun3_Prompt_v4"
             }
         },
@@ -68,10 +64,6 @@
             },
             "Run2022D3": {
                 "dataset": "/Muon/Run2022D-PromptReco-v3/AOD",
-                "globalTag": "124X_dataRun3_Prompt_v4"
-            },
-            "Run2022E": {
-                "dataset": "/Muon/Run2022E-PromptReco-v1/AOD",
                 "globalTag": "124X_dataRun3_Prompt_v4"
             }
         }
