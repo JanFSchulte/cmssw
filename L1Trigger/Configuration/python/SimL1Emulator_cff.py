@@ -154,8 +154,8 @@ from L1Trigger.L1TTrackMatch.l1tTrackerHTMiss_cfi import *
 l1tTrackJets.L1PVertexCollection  = ("l1tVertexFinder", "l1vertices")
 l1tTrackFastJets.L1PrimaryVertexTag  = ("l1tVertexFinder", "l1vertices")
 l1tTrackJetsExtended.L1PVertexCollection  = ("l1tVertexFinder", "l1vertices")
-#l1tTrackerEtMiss.L1VertexInputTag = ("l1tVertexFinder", "l1vertices")
-#l1tTrackerEtMissExtended.L1VertexInputTag = ("l1tVertexFinder", "l1vertices")
+l1tTrackerEtMiss.L1VertexInputTag = ("l1tVertexFinder", "l1vertices")
+l1tTrackerEtMissExtended.L1VertexInputTag = ("l1tVertexFinder", "l1vertices")
 
 from L1Trigger.L1TTrackMatch.l1tTrackSelectionProducer_cfi import *
 _phase2_siml1emulator.add(l1tTrackSelectionProducer)
@@ -182,14 +182,14 @@ _phase2_siml1emulator.add(l1tTrackerEmuHTMissExtended)
 
 # Tracker Objects
 # ########################################################################
-from L1Trigger.L1TTrackMatch.L1TrackJetProducer_cfi import *
-from L1Trigger.L1TTrackMatch.L1TrackFastJetProducer_cfi import *
-from L1Trigger.L1TTrackMatch.L1TrackerEtMissProducer_cfi import *
-from L1Trigger.L1TTrackMatch.L1TkHTMissProducer_cfi import *
-_phase2_siml1emulator.add(L1TrackJets)
-_phase2_siml1emulator.add(L1TrackFastJets)
-_phase2_siml1emulator.add(L1TrackerEtMiss)
-_phase2_siml1emulator.add(L1TrackerHTMiss)
+#from L1Trigger.L1TTrackMatch.L1TrackJetProducer_cfi import *
+#from L1Trigger.L1TTrackMatch.L1TrackFastJetProducer_cfi import *
+#from L1Trigger.L1TTrackMatch.L1TrackerEtMissProducer_cfi import *
+#from L1Trigger.L1TTrackMatch.L1TkHTMissProducer_cfi import *
+#_phase2_siml1emulator.add(L1TrackJets)
+#_phase2_siml1emulator.add(L1TrackFastJets)
+#_phase2_siml1emulator.add(L1TrackerEtMiss)
+#_phase2_siml1emulator.add(L1TrackerHTMiss)
 
 # PF Candidates
 # ########################################################################
