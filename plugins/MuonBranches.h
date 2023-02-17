@@ -44,17 +44,19 @@ inline void FillTagBranches(const MUON &muon,
   nt.tag_isTight = muon::isTightMuon(muon, vertex);
   nt.tag_isSoft = muon::isSoftMuon(muon, vertex, false);
   nt.tag_isHighPt = muon::isHighPtMuon(muon, vertex);
-  float iso04 = (TrackerEnergy04<TRK>(muon.eta(), muon.phi(), tracks) - muon.pt()) / muon.pt();
-  nt.tag_relIso04 = (iso04 > 0) ? iso04 : 0;
+  float Trkiso04 = (TrackerEnergy04<TRK>(muon.eta(), muon.phi(), tracks) - muon.pt()) / muon.pt();
+  nt.tag_relTrkIso04 = (Trkiso04 > 0) ? Trkiso04 : 0;
   nt.tag_iso03_sumPt = muon.isolationR03().sumPt;
   nt.tag_pfIso03_charged = muon.pfIsolationR03().sumChargedHadronPt;
   nt.tag_pfIso03_neutral = muon.pfIsolationR03().sumNeutralHadronEt;
   nt.tag_pfIso03_photon = muon.pfIsolationR03().sumPhotonEt;
   nt.tag_pfIso03_sumPU = muon.pfIsolationR03().sumPUPt;
+  nt.tag_combRelIsoPF03dBeta = (muon.pfIsolationR03().sumChargedHadronPt + TMath::Max(muon.pfIsolationR03().sumNeutralHadronEt + muon.pfIsolationR03().sumPhotonEt - muon.pfIsolationR03().sumPUPt/2.0,0.0))/muon.pt();
   nt.tag_pfIso04_charged = muon.pfIsolationR04().sumChargedHadronPt;
   nt.tag_pfIso04_neutral = muon.pfIsolationR04().sumNeutralHadronEt;
   nt.tag_pfIso04_photon = muon.pfIsolationR04().sumPhotonEt;
   nt.tag_pfIso04_sumPU = muon.pfIsolationR04().sumPUPt;
+  nt.tag_combRelIsoPF04dBeta = (muon.pfIsolationR04().sumChargedHadronPt + TMath::Max(muon.pfIsolationR04().sumNeutralHadronEt + muon.pfIsolationR04().sumPhotonEt - muon.pfIsolationR04().sumPUPt/2.0,0.0))/muon.pt();
   if (muon.tunePMuonBestTrack().isNonnull()) {
     nt.tag_tuneP_pt = muon.tunePMuonBestTrack()->pt();
     nt.tag_tuneP_pterr = muon.tunePMuonBestTrack()->ptError();
@@ -80,8 +82,8 @@ inline void FillProbeBranches(
   nt.probe_eta = mu.eta();
   nt.probe_phi = mu.phi();
   nt.probe_charge = mu.charge();
-  float iso04 = (TrackerEnergy04<TRK>(mu.eta(), mu.phi(), tracks) - mu.pt()) / mu.pt();
-  nt.probe_relIso04 = (iso04 > 0) ? iso04 : 0;
+  float Trkiso04 = (TrackerEnergy04<TRK>(mu.eta(), mu.phi(), tracks) - mu.pt()) / mu.pt();
+  nt.probe_relTrkIso04 = (Trkiso04 > 0) ? Trkiso04 : 0;
   // success --> muon obj and track match in dR
   if (success) {
     // Use selectors instead of 'mu.passed' method which is only introduced in CMSSW_9_4_X
