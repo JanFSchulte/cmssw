@@ -80,7 +80,7 @@ void NtupleContent::CreateBranches(const std::vector<std::string> &HLTs,
   t1->Branch("tag_isTight", &tag_isTight);
   t1->Branch("tag_isSoft", &tag_isSoft);
   t1->Branch("tag_isHighPt", &tag_isHighPt);
-  t1->Branch("tag_relIso04", &tag_relIso04);
+  t1->Branch("tag_relTrkIso04", &tag_relTrkIso04);
   t1->Branch("tag_miniIso", &tag_miniIso);
   t1->Branch("tag_miniIsoCharged", &tag_miniIsoCharged);
   t1->Branch("tag_miniIsoPhotons", &tag_miniIsoPhotons);
@@ -93,10 +93,12 @@ void NtupleContent::CreateBranches(const std::vector<std::string> &HLTs,
   t1->Branch("tag_pfIso03_neutral", &tag_pfIso03_neutral);
   t1->Branch("tag_pfIso03_photon", &tag_pfIso03_photon);
   t1->Branch("tag_pfIso03_sumPU", &tag_pfIso03_sumPU);
+  t1->Branch("tag_combRelIsoPF03dBeta", &tag_combRelIsoPF03dBeta);
   t1->Branch("tag_pfIso04_charged", &tag_pfIso04_charged);
   t1->Branch("tag_pfIso04_neutral", &tag_pfIso04_neutral);
   t1->Branch("tag_pfIso04_photon", &tag_pfIso04_photon);
   t1->Branch("tag_pfIso04_sumPU", &tag_pfIso04_sumPU);
+  t1->Branch("tag_combRelIsoPF04dBeta", &tag_combRelIsoPF04dBeta);
   t1->Branch("tag_tuneP_pt", &tag_tuneP_pt);
   t1->Branch("tag_tuneP_pterr", &tag_tuneP_pterr);
   t1->Branch("tag_nsegments", &tag_nsegments);
@@ -154,7 +156,7 @@ void NtupleContent::CreateBranches(const std::vector<std::string> &HLTs,
   t1->Branch("probe_muonHits", &probe_muonHits);
   t1->Branch("probe_DTHits", &probe_DTHits);
   t1->Branch("probe_CSCHits", &probe_CSCHits);
-  t1->Branch("probe_relIso04", &probe_relIso04);
+  t1->Branch("probe_relTrkIso04", &probe_relTrkIso04);
   t1->Branch("probe_miniIso", &probe_miniIso);
   t1->Branch("probe_miniIsoCharged", &probe_miniIsoCharged);
   t1->Branch("probe_miniIsoPhotons", &probe_miniIsoPhotons);
@@ -428,7 +430,7 @@ void NtupleContent::ClearBranches() {
   tag_isTight = false;
   tag_isSoft = false;
   tag_isHighPt = false;
-  tag_relIso04 = -99;
+  tag_relTrkIso04 = -99;
   tag_miniIso = -1.;
   tag_miniIsoCharged = 0.;
   tag_miniIsoPhotons = 0.;
@@ -441,10 +443,12 @@ void NtupleContent::ClearBranches() {
   tag_pfIso03_neutral = -99;
   tag_pfIso03_photon = -99;
   tag_pfIso03_sumPU = -99;
+  tag_combRelIsoPF03dBeta = -99;
   tag_pfIso04_charged = -99;
   tag_pfIso04_neutral = -99;
   tag_pfIso04_photon = -99;
   tag_pfIso04_sumPU = -99;
+  tag_combRelIsoPF04dBeta = -99;
   tag_tuneP_pt = -99;
   tag_tuneP_pterr = -99;
   tag_nsegments = -99;
@@ -502,7 +506,7 @@ void NtupleContent::ClearBranches() {
   probe_pterr = 0;
   probe_dxy = -99;
   probe_dz = -99;
-  probe_relIso04 = -99;
+  probe_relTrkIso04 = -99;
   probe_miniIso = -1.;
   probe_miniIsoCharged = 0.;
   probe_miniIsoPhotons = 0.;

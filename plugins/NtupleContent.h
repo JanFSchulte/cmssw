@@ -150,7 +150,7 @@ public:
   bool tag_isTight;
   bool tag_isSoft;
   bool tag_isHighPt;
-  float tag_relIso04;
+  float tag_relTrkIso04;
   float tag_miniIso;
   float tag_miniIsoCharged;
   float tag_miniIsoPhotons;
@@ -163,10 +163,12 @@ public:
   float tag_pfIso03_neutral;
   float tag_pfIso03_photon;
   float tag_pfIso03_sumPU;
+  float tag_combRelIsoPF03dBeta;
   float tag_pfIso04_charged;
   float tag_pfIso04_neutral;
   float tag_pfIso04_photon;
   float tag_pfIso04_sumPU;
+  float tag_combRelIsoPF04dBeta;
   float tag_tuneP_pt;
   float tag_tuneP_pterr;
   int tag_nsegments;
@@ -210,7 +212,7 @@ public:
   float probe_cosmic_minDR;
   bool probe_isGood;
   bool probe_isHighPurity;
-  float probe_relIso04;
+  float probe_relTrkIso04;
   float probe_miniIso;
   float probe_miniIsoCharged;
   float probe_miniIsoPhotons;
