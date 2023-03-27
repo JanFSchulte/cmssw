@@ -3,6 +3,35 @@ parameters for miniAOD'''
 
 import FWCore.ParameterSet.Config as cms
 
+'''
+from CondCore.DBCommon.CondDBSetup_cfi import *
+
+process.load('Configuration.StandardSequences.Services_cff')
+process.load("JetMETCorrections.Modules.JetResolutionESProducer_cfi")
+
+process.jer = cms.ESSource("PoolDBESSource",
+        CondDBSetup,
+        toGet = cms.VPSet(
+            # Resolution
+            cms.PSet(
+                record = cms.string('JetResolutionRcd'),
+                tag    = cms.string('JR_Winter22Run3_V1_MC_PtResolution_AK4PFPuppi'),
+                label  = cms.untracked.string('AK4PFPuppi_pt')
+                ),
+
+            # Scale factors
+            cms.PSet(
+                record = cms.string('JetResolutionScaleFactorRcd'),
+                tag    = cms.string('JR_Winter22Run3_V1_MC_SF_AK4PFPuppi'),
+                label  = cms.untracked.string('AK4PFchs')
+                ),
+            ),
+        connect = cms.string('sqlite:Winter22Run3_V1_MC.db')
+        )
+
+process.es_prefer_jer = cms.ESPrefer('PoolDBESSource', 'jer')
+'''
+
 muon = cms.EDAnalyzer('MuonMiniAODAnalyzer',
            isMC=cms.bool(False),
            includeJets=cms.bool(False),
@@ -24,8 +53,12 @@ muon = cms.EDAnalyzer('MuonMiniAODAnalyzer',
            lostTracks=cms.InputTag("lostTracks"),
            gen = cms.InputTag("prunedGenParticles"),
            rhoJetsNC = cms.InputTag("fixedGridRhoFastjetAll"),
-           jets = cms.InputTag("slimmedJets"),
+           jets = cms.InputTag("slimmedJetsPuppi"),
            genJets = cms.InputTag("slimmedGenJets"),
+           #resolutionsFile = cms.FileInPath('CondFormats/JetMETObjects/data/Winter22_V1_MC_JER_AK4PFPuppi.txt'),  # Jet resolution SF for Puppi
+           #scaleFactorsFile = cms.FileInPath('CondFormats/JetMETObjects/data/Winter22_V1_MC_JER_SF_AK4PFPuppi.txt'),
+           resolutionsFile = cms.FileInPath('CondFormats/JetMETObjects/data/Summer15_V0_MC_JER_AK4PFchs.txt'),  # Jet resolution SF for Puppi
+           scaleFactorsFile = cms.FileInPath('CondFormats/JetMETObjects/data/Summer12_V1_MC_JER_SF_AK5PFchs.txt'), 
            triggerPaths=cms.vstring(), # updated in run_muonAnalyzer_cfg.py
            tagFilters=cms.vstring(), # updated in run_muonAnalyzer_cfg.py
            probeFilters=cms.vstring(), # updated in run_muonAnalyzer_cfg.py
@@ -41,7 +74,7 @@ muon = cms.EDAnalyzer('MuonMiniAODAnalyzer',
            pairMassMax = cms.double(9999.0), # max mss of mu pair (9999.0 for high mass C&C)
            pairDz = cms.double(4), #max Dz of mu1,mu2
            RequireVtxCreation = cms.bool(False), # if true kills pairs w/o vtx
-           minSVtxProb = cms.double(0.), # min prob of mu pair
+           minSVtxProb = cms.double(-999.), # min prob of mu pair
            maxDzProbeTrkMuon = cms.double(0.4), # max Dz(mu1,mu2)
            maxRelPtProbeTrkMuon = cms.double(1.0),# max [pt(mu)-pt(trk)]/pt(trk) for probe/offline
            maxDRProbeTrkMuon =  cms.double(0.06), # max DR for probe/offline
