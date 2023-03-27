@@ -147,10 +147,6 @@ private:
   edm::EDGetTokenT<double> rhoJetsNC_;
   edm::EDGetToken jetsToken_;
   edm::EDGetToken genJetsToken_;
-  // Jet resolution files
-  JME::JetResolution::Token t_jet_resolution_token;
-  JME::JetResolutionScaleFactor::Token t_jet_resolutionSF_token;
-  
   std::vector<std::string> HLTPaths_;
   std::vector<std::string> tagFilters_;
   std::vector<std::string> probeFilters_;
@@ -253,9 +249,7 @@ MuonMiniAODAnalyzer::MuonMiniAODAnalyzer(const edm::ParameterSet& iConfig)
       era_(iConfig.getParameter<std::string>("era")) {
   edm::ConsumesCollector iC = consumesCollector();
   magfieldToken_ = iC.esConsumes<MagneticField, IdealMagneticFieldRecord>();
-  t_jet_resolution_token = esConsumes(edm::ESInputTag("", "AK4PFPuppi_pt")); // Load jet resolution files
-  t_jet_resolutionSF_token = esConsumes(edm::ESInputTag("", "AK4PFPuppi"));
-  
+
   if (probeSelectorNames_.size() != probeSelectorBits_.size()) {
     throw cms::Exception("ParameterError")
         << "length of probeSelectorNames and probeSelectorBits should be identical\n";
@@ -392,10 +386,14 @@ void MuonMiniAODAnalyzer::analyze(const edm::Event& iEvent, const edm::EventSetu
   JME::JetResolutionScaleFactor resolution_sf;
 
   if (includeJets_) {
+    edm::ESGetToken<JME::JetResolutionObject, JetResolutionScaleFactorRcd> t_jet_resolution_token;
+    edm::ESGetToken<JME::JetResolutionObject, JetResolutionRcd> t_jet_resolutionSF_token;
 
-    resolution = JME::JetResolution::get(iSetup, t_jet_resolution_token);
-    resolution_sf = JME::JetResolutionScaleFactor::get(iSetup, t_jet_resolutionSF_token);
-        
+    t_jet_resolution_token = esConsumes(edm::ESInputTag("", "AK4PFchs_pt"));
+    t_jet_resolutionSF_token = esConsumes(edm::ESInputTag("", "AK4PFchs"));
+
+    resolution = iSetup.getData(t_jet_resolution_token);
+    resolution_sf = iSetup.getData(t_jet_resolutionSF_token);
   }
 
   edm::Handle<edm::TriggerResults> trigResults;
@@ -555,14 +553,7 @@ void MuonMiniAODAnalyzer::analyze(const edm::Event& iEvent, const edm::EventSetu
       matched_track_idx.push_back(reco_match_genmu2.second);
   }
   std::pair<std::vector<unsigned>, std::vector<unsigned>> trk_muon_map;
-  // Muon collection for jet cleaning
-  std::vector<reco::Muon> muForJetCleaning;
   for (const auto& mu : *muons) {
-    // Test
-    if (muon::isLooseMuon(mu)){      
-      muForJetCleaning.push_back(mu);
-    }
-    
     if (muonOnly_ && !probeMuonSelection_(mu))
       continue;
     float minDR = 1000;
@@ -587,12 +578,12 @@ void MuonMiniAODAnalyzer::analyze(const edm::Event& iEvent, const edm::EventSetu
   }
 
   // Muon collection for jet cleaning
-  //std::vector<reco::Muon> muForJetCleaning;
-  //for (const auto& mu : *muons) {
-  //  if (!muon::isLooseMuon(mu))
-  //    continue;
-  //  muForJetCleaning.push_back(mu);
-  //}
+  std::vector<reco::Muon> muForJetCleaning;
+  for (const auto& mu : *muons) {
+    if (!muon::isLooseMuon(mu))
+      continue;
+    muForJetCleaning.push_back(mu);
+  }
 
   std::vector<pat::Jet> corrJets;
   if (includeJets_) {
@@ -680,23 +671,14 @@ void MuonMiniAODAnalyzer::analyze(const edm::Event& iEvent, const edm::EventSetu
 
   // run over tracks and probes once prior to filling tree to determine ordering of pairs
   // this is necessary to use tag-probe pair with highest "quality" later on in spark_tnp
-
-  //using t_pair_prob = std::pair<std::pair<int, int>, float>;
-  using t_pair_prob = std::pair<int, std::vector<std::pair<int, float>>>;
-
+  using t_pair_prob = std::pair<std::pair<int, int>, float>;
   std::vector<t_pair_prob> pair_vtx_probs;
   std::map<int, int> map_tagIdx_nprobes;
-  map<std::pair<int, int>, int> pair_rank_vtx_prob;
   int nprobes;
-  std::vector<std::vector<reco::Track>> probe_tracks;
-  int probe_tracks_idx = 0;
   // loop over tags
-
   for (const auto& tag : tag_muon_ttrack) {
     auto tag_idx = &tag - &tag_muon_ttrack[0];
     nprobes = 0;
-    std::vector<reco::Track> tag_probes;
-    std::vector<std::pair<int, float>> tmp_vtx_probs;
     // loop over probes
     for (const auto& probe : tracks) {
       auto probe_idx = &probe - &tracks[0];
@@ -713,8 +695,8 @@ void MuonMiniAODAnalyzer::analyze(const edm::Event& iEvent, const edm::EventSetu
 
       std::vector<reco::TransientTrack> trk_pair = {tag.second, reco::TransientTrack(probe, &(*bField))};
       KlFitter vtx(trk_pair);
-      //if (RequireVtxCreation_ && !vtx.status())
-      //  continue;
+      if (RequireVtxCreation_ && !vtx.status())
+        continue;
       if (minSVtxProb_ > 0) {
         if (vtx.prob() < minSVtxProb_) {
           continue;
@@ -725,99 +707,32 @@ void MuonMiniAODAnalyzer::analyze(const edm::Event& iEvent, const edm::EventSetu
       if (muonOnly_ && it == trk_muon_map.first.end())
         continue;
 
-      
-      if (RequireVtxCreation_) {
-	if (vtx.prob()>0 && vtx.status()==1){
-	  //pair_vtx_probs.emplace_back(std::make_pair(std::make_pair(tag_idx, probe_idx), vtx.prob()));
-	  //pair_vtx_probs.emplace_back(std::make_pair(tag_idx, std::make_pair(probe_idx, vtx.prob())));
-	  tmp_vtx_probs.emplace_back(std::make_pair(probe_idx, vtx.prob()));
-	}else{
-	  //pair_vtx_probs.emplace_back(std::make_pair(std::make_pair(tag_idx, probe_idx), -1));
-	  //pair_vtx_probs.emplace_back(std::make_pair(tag_idx, std::make_pair(probe_idx, -1)));
-	  tmp_vtx_probs.emplace_back(std::make_pair(probe_idx, -1));
-	}	
-      } else {
-        //pair_vtx_probs.emplace_back(std::make_pair(std::make_pair(tag_idx, probe_idx), 0.));
-	//pair_vtx_probs.emplace_back(std::make_pair(tag_idx, std::make_pair(probe_idx, 0.)));
-	tmp_vtx_probs.emplace_back(std::make_pair(probe_idx, 0.));
-      }
-
       // save vtx prob to sort later
-      //if (RequireVtxCreation_) {
-      //  pair_vtx_probs.emplace_back(std::make_pair(std::make_pair(tag_idx, probe_idx), vtx.prob()));
-      //} else {
-      //  pair_vtx_probs.emplace_back(std::make_pair(std::make_pair(-1, -1), 0.));
-      //}
-      
+      if (RequireVtxCreation_) {
+        pair_vtx_probs.emplace_back(std::make_pair(std::make_pair(tag_idx, probe_idx), vtx.prob()));
+      } else {
+        pair_vtx_probs.emplace_back(std::make_pair(std::make_pair(-1, -1), 0.));
+      }
       nprobes++;
-      //probe_tracks[probe_tracks_idx].emplace_back(probe);
-      //tag_probes.emplace_back(probe);
     }
     map_tagIdx_nprobes.insert(std::pair<int, int>(tag_idx, nprobes));
-    auto compare_vtx = [=](std::pair<int, float>& a, std::pair<int, float>& b) { return a.second > b.second; };
-    std::sort(tmp_vtx_probs.begin(), tmp_vtx_probs.end(), compare_vtx);    
-    pair_vtx_probs.emplace_back(tag_idx, tmp_vtx_probs);
-    
-    for (size_t j = 0; j < tmp_vtx_probs.size(); j++){
-      pair_rank_vtx_prob[std::make_pair(tag_idx, tmp_vtx_probs[j].first)] = j;
-    }
-    //probe_tracks_idx++;
-    //probe_tracks.emplace_back(tag_probes);
   }
   nt.npairs = pair_vtx_probs.size();
 
-
-  //map<std::pair<int, int>, int> pair_rank_vtx_prob;
-  //auto compare_vtx = [=](std::pair<int, float>& a, std::pair<int, float>& b) { return a.second > b.second; };
-  //for (size_t i = 0; i < pair_vtx_probs.size(); i++){
-  //  std::sort(pair_vtx_probs[i].second.begin(), pair_vtx_probs[i].second.end(), compare_vtx);
-  //  for (size_t j = 0; j < pair_vtx_probs[i].second.size(); j++){
-  //    pair_rank_vtx_prob[std::make_pair(pair_vtx_probs[i].first, pair_vtx_probs[i].second[j].first)] = j;
-  //  }
-  //}
-  
-  
-  
-  /**
   // reverse sort vertices by probability
   auto compare_vtx = [=](t_pair_prob& a, t_pair_prob& b) { return a.second > b.second; };
   std::sort(pair_vtx_probs.begin(), pair_vtx_probs.end(), compare_vtx);
   // assign sorted vtx indices to ranking
   map<std::pair<int, int>, int> pair_rank_vtx_prob;
-  for (size_t i = 0; i < pair_vtx_probs.size(); i++){
+  for (size_t i = 0; i < pair_vtx_probs.size(); i++)
     pair_rank_vtx_prob[pair_vtx_probs[i].first] = i;
-  }
 
-  cout << "------------- After sort ---------"	<< endl;
-
-  for (size_t i = 0; i < pair_vtx_probs.size(); i++){
-
-    cout << "Tag ID: " << pair_vtx_probs[i].first.first <<	endl;
-    cout << "Probe ID: " << pair_vtx_probs[i].first.second << endl;
-    cout << "Vertex Prob: " << pair_vtx_probs[i].second  <<     endl;
-
-  }
-  **/
-
-
-  probe_tracks_idx = 0;
-  for (const auto& tag_prob_vtx : pair_vtx_probs){
-    auto& tag = tag_muon_ttrack[tag_prob_vtx.first];
-    auto tag_idx = tag_prob_vtx.first;
-    for (const auto& probe_vtx_vec : tag_prob_vtx.second){
-      auto& probe = tracks[probe_vtx_vec.first];
-
-
-      //    }
-      //}
-  
-      // Final pair selection
-      // loop over tags
-      //  probe_tracks_idx = 0;
-      //for (const auto& tag : tag_muon_ttrack) {
-      //auto tag_idx = &tag - &tag_muon_ttrack[0];
-      // loop over probe tracks
-      //for (const auto& probe : probe_tracks[probe_tracks_idx]) {
+  // Final pair selection
+  // loop over tags
+  for (const auto& tag : tag_muon_ttrack) {
+    auto tag_idx = &tag - &tag_muon_ttrack[0];
+    // loop over probe tracks
+    for (const auto& probe : tracks) {
       // apply cuts on pairs
       if (tag.first.charge() == probe.charge())
         continue;
@@ -983,11 +898,9 @@ void MuonMiniAODAnalyzer::analyze(const edm::Event& iEvent, const edm::EventSetu
         }
       }
 
-      t1->Fill();    
+      t1->Fill();
     }
-    probe_tracks_idx++;
   }
-  
 }
 
 // ------------ method called once each job just before starting event loop
