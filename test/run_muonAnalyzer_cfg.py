@@ -10,9 +10,6 @@ usage: cmsRun run_muonAnalyzer_cfg.py option1=value1 option2=value2
 
 from FWCore.ParameterSet.VarParsing import VarParsing
 import FWCore.ParameterSet.Config as cms
-#from CondCore.DBCommon.CondDBSetup import *
-#from  CondCore.CondDB.CondDB_cfi import *
-import os
 
 options = VarParsing('python')
 
@@ -155,33 +152,6 @@ if options.includeJets:
     process.load("RecoBTag.Combined.deepFlavour_cff")
     process.load("JetMETCorrections.Configuration.JetCorrectors_cff")
 
-    if options.era=="Run2022":
-        jerEra = "Winter22Run3"
-
-    process.load('CondCore.DBCommon.CondDBCommon_cfi')
-    process.CondDBCommon.connect = 'sqlite_file:Winter22Run3_V1_MC.db'
-    
-    #process.jer = cms.ESSource("PoolDBESSource",CondDBSetup,
-    #                           connect = cms.string('sqlite:/afs/cern.ch/work/s/sblancof/private/MuonPOG/Modified/CMSSW_12_4_8/src/Winter22Run3_V1_MC.db'),
-    process.jer = cms.ESSource("PoolDBESSource",process.CondDBCommon,
-                               toGet =  cms.VPSet(
-                                   #######
-                                   ### read the Puppi JER
-                                   cms.PSet(
-                                       record = cms.string('JetResolutionRcd'),
-                                       tag    = cms.string('JR_Winter22Run3_V1_MC_PtResolution_AK4PFPuppi'),
-                                       label  = cms.untracked.string('AK4PFPuppi_pt')
-                                   ),
-                                   cms.PSet(
-                                       record = cms.string('JetResolutionScaleFactorRcd'),
-                                       tag    = cms.string('JR_Winter22Run3_V1_MC_SF_AK4PFPuppi'),
-                                       label  = cms.untracked.string('AK4PFPuppi')
-                                   ),
-                                   
-                                   
-                               ) )
-    process.es_prefer_jer = cms.ESPrefer("PoolDBESSource",'jer')
-    
 # Include pat:packedCandidateCollection in AOD for miniPFIsolation
 if options.isFullAOD:   
     process.load("TrackingTools.TransientTrack.TransientTrackBuilder_cfi")
@@ -271,8 +241,7 @@ if options.isFullAOD:
                 process.packedCandsForMuons +
                 process.muonL1Info +
                 process.muonL1InfoByQ +
-                #process.ak4PFCHSL1FastL2L3ResidualCorrectorChain +
-                process.ak4PFPuppiL1FastL2L3ResidualCorrectorChain +
+                process.ak4PFCHSL1FastL2L3ResidualCorrectorChain +
                 process.muSequence
             )
         else:
@@ -282,8 +251,7 @@ if options.isFullAOD:
                 process.packedCandsForMuons +
                 process.muonL1Info +
                 process.muonL1InfoByQ +
-                #process.ak4PFCHSL1FastL2L3CorrectorChain +
-                process.ak4PFPuppiL1FastL2L3CorrectorChain +
+                process.ak4PFCHSL1FastL2L3CorrectorChain +
                 process.muSequence
 	    )
     else:
@@ -301,16 +269,14 @@ else:
             process.analysis_step = cms.Path(
                 process.muonL1Info +
                 process.muonL1InfoByQ +
-                #process.ak4PFCHSL1FastL2L3ResidualCorrectorChain +
-                process.ak4PFPuppiL1FastL2L3ResidualCorrectorChain +
+                process.ak4PFCHSL1FastL2L3ResidualCorrectorChain +
                 process.muSequence
             )
         else:
             process.analysis_step = cms.Path(
                 process.muonL1Info +
                 process.muonL1InfoByQ +
-                #process.ak4PFCHSL1FastL2L3CorrectorChain +
-                process.ak4PFPuppiL1FastL2L3CorrectorChain +
+                process.ak4PFCHSL1FastL2L3CorrectorChain +
                 process.muSequence
             )
     else:
