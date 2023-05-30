@@ -91,6 +91,7 @@
 #include "TrackingTools/Records/interface/TransientTrackRecord.h"
 #include "TrackingTools/TransientTrack/interface/TransientTrack.h"
 #include "TrackingTools/TransientTrack/interface/TransientTrackBuilder.h"
+#include "TrackingTools/IPTools/interface/IPTools.h"
 #include "Geometry/CSCGeometry/interface/CSCGeometry.h"
 #include "Geometry/DTGeometry/interface/DTGeometry.h"
 
@@ -1202,6 +1203,10 @@ void MuonFullAODAnalyzer::analyze(const edm::Event& iEvent, const edm::EventSetu
       nt.tag_isMatchedGen = genmatched_tag[&tag - &tag_trkttrk[0]];
 
       FillTagBranches<reco::Muon, reco::Track>(tag.first, *tracks, nt, *pv);
+      std::pair<bool, Measurement1D> sip3d = IPTools::signedImpactParameter3D(reco::TransientTrack(*tag.first.bestTrack(), &(*bField)), GlobalVector(tag.first.bestTrack()->px(), tag.first.bestTrack()->py(), tag.first.bestTrack()->pz()), *pv);
+      nt.tag_SIP3D = sip3d.second.value();
+      nt.tag_SIP3D_err = (pv->isValid() ? sip3d.second.error() : -1.0);
+
       FillMiniIso<reco::Muon, pat::PackedCandidate>(patpfcands.product(), tag.first, *rhoJetsNC, nt, true);
 
       // Tag-trigger matching
@@ -1279,6 +1284,9 @@ void MuonFullAODAnalyzer::analyze(const edm::Event& iEvent, const edm::EventSetu
                     << std::endl;
         FillProbeBranches<reco::Muon, reco::Track>(muons->at(trk_muon_map.second[idx]), *tracks, nt, true, *pv);
         FillProbeBranchesSelector<reco::Muon>(muons->at(trk_muon_map.second[idx]), nt, probeSelectorBits_, true);
+	std::pair<bool, Measurement1D> sip3d = IPTools::signedImpactParameter3D(reco::TransientTrack(*muons->at(trk_muon_map.second[idx]).bestTrack(), &(*bField)), GlobalVector(muons->at(trk_muon_map.second[idx]).bestTrack()->px(), muons->at(trk_muon_map.second[idx]).bestTrack()->py(), muons->at(trk_muon_map.second[idx]).bestTrack()->pz()), *pv);
+	nt.probe_SIP3D = sip3d.second.value();
+	nt.probe_SIP3D_err = (pv->isValid() ? sip3d.second.error() : -1.0);
         FillMiniIso<reco::Muon, pat::PackedCandidate>(
             patpfcands.product(), muons->at(trk_muon_map.second[idx]), *rhoJetsNC, nt, false);
         if (includeJets_)
