@@ -80,6 +80,8 @@ void NtupleContent::CreateBranches(const std::vector<std::string> &HLTs,
   t1->Branch("tag_isTight", &tag_isTight);
   t1->Branch("tag_isSoft", &tag_isSoft);
   t1->Branch("tag_isHighPt", &tag_isHighPt);
+  t1->Branch("tag_SIP3D", &tag_SIP3D);
+  t1->Branch("tag_SIP3D_err", &tag_SIP3D_err);
   t1->Branch("tag_relTrkIso04", &tag_relTrkIso04);
   t1->Branch("tag_miniIso", &tag_miniIso);
   t1->Branch("tag_miniIsoCharged", &tag_miniIsoCharged);
@@ -156,6 +158,8 @@ void NtupleContent::CreateBranches(const std::vector<std::string> &HLTs,
   t1->Branch("probe_muonHits", &probe_muonHits);
   t1->Branch("probe_DTHits", &probe_DTHits);
   t1->Branch("probe_CSCHits", &probe_CSCHits);
+  t1->Branch("probe_SIP3D", &probe_SIP3D);
+  t1->Branch("probe_SIP3D_err", &probe_SIP3D_err);
   t1->Branch("probe_relTrkIso04", &probe_relTrkIso04);
   t1->Branch("probe_miniIso", &probe_miniIso);
   t1->Branch("probe_miniIsoCharged", &probe_miniIsoCharged);
@@ -430,6 +434,8 @@ void NtupleContent::ClearBranches() {
   tag_isTight = false;
   tag_isSoft = false;
   tag_isHighPt = false;
+  tag_SIP3D = -99;
+  tag_SIP3D_err = -99;
   tag_relTrkIso04 = -99;
   tag_miniIso = -1.;
   tag_miniIsoCharged = 0.;
@@ -506,6 +512,8 @@ void NtupleContent::ClearBranches() {
   probe_pterr = 0;
   probe_dxy = -99;
   probe_dz = -99;
+  probe_SIP3D = -99;
+  probe_SIP3D_err = -99;
   probe_relTrkIso04 = -99;
   probe_miniIso = -1.;
   probe_miniIsoCharged = 0.;

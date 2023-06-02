@@ -150,6 +150,8 @@ public:
   bool tag_isTight;
   bool tag_isSoft;
   bool tag_isHighPt;
+  float tag_SIP3D;
+  float tag_SIP3D_err;
   float tag_relTrkIso04;
   float tag_miniIso;
   float tag_miniIsoCharged;
@@ -212,6 +214,8 @@ public:
   float probe_cosmic_minDR;
   bool probe_isGood;
   bool probe_isHighPurity;
+  float probe_SIP3D;
+  float probe_SIP3D_err;
   float probe_relTrkIso04;
   float probe_miniIso;
   float probe_miniIsoCharged;

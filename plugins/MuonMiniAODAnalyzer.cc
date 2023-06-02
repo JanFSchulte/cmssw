@@ -88,6 +88,7 @@
 #include "TTree.h"
 #include "TLorentzVector.h"
 #include "TrackingTools/TransientTrack/interface/TransientTrack.h"
+#include "TrackingTools/IPTools/interface/IPTools.h"
 #include "helper.h"
 #include "MuonMiniIsolation.h"
 #include "JetsBranches.h"
@@ -758,6 +759,9 @@ void MuonMiniAODAnalyzer::analyze(const edm::Event& iEvent, const edm::EventSetu
 
       FillTagBranches<pat::Muon, reco::Track>(tag.first, tracks, nt, *pv);
       nt.tag_isMatchedGen = genmatched_tag[&tag - &tag_muon_ttrack[0]];
+      std::pair<bool, Measurement1D> sip3d = IPTools::signedImpactParameter3D(reco::TransientTrack(*tag.first.bestTrack(), &(*bField)), GlobalVector(tag.first.bestTrack()->px(), tag.first.bestTrack()->py(), tag.first.bestTrack()->pz()), *pv);
+      nt.tag_SIP3D = sip3d.second.value();
+      nt.tag_SIP3D_err = (pv->isValid() ? sip3d.second.error() : -1.0);
       FillMiniIsov2<pat::Muon>(tag.first, *rhoJetsNC, nt, true);
 
       // Tag-trigger matching
@@ -798,6 +802,9 @@ void MuonMiniAODAnalyzer::analyze(const edm::Event& iEvent, const edm::EventSetu
         unsigned idx = std::distance(trk_muon_map.first.begin(), it);
         FillProbeBranches<pat::Muon, reco::Track>(muons->at(trk_muon_map.second[idx]), tracks, nt, true, *pv);
         FillProbeBranchesSelector<pat::Muon>(muons->at(trk_muon_map.second[idx]), nt, probeSelectorBits_, true);
+	std::pair<bool, Measurement1D> sip3d = IPTools::signedImpactParameter3D(reco::TransientTrack(*muons->at(trk_muon_map.second[idx]).bestTrack(), &(*bField)), GlobalVector(muons->at(trk_muon_map.second[idx]).bestTrack()->px(), muons->at(trk_muon_map.second[idx]).bestTrack()->py(), muons->at(trk_muon_map.second[idx]).bestTrack()->pz()), *pv);
+	nt.probe_SIP3D = sip3d.second.value();
+	nt.probe_SIP3D_err = (pv->isValid() ? sip3d.second.error() : -1.0);
         FillMiniIsov2<pat::Muon>(
             muons->at(trk_muon_map.second[idx]), *rhoJetsNC, nt, false);
         if (includeJets_)
