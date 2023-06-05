@@ -69,7 +69,7 @@ def getOptions():
     parser.add_option('-e', '--era',
                       dest = 'era',
                       default = 'Run2018',
-                      help = "Era to run samples over. Options are 'Run2022/Run2022EE/Run2018'/'Run2017'/'Run2016'/'Run2018_UL'/'Run2017_UL'/'Run2016_UL'/'Run2016_UL_HIPM'. Default is 'Run2018'.",
+                      help = "Era to run samples over. Options are 'Run2023/Run2022/Run2022EE/Run2018'/'Run2017'/'Run2016'/'Run2018_UL'/'Run2017_UL'/'Run2016_UL'/'Run2016_UL_HIPM'. Default is 'Run2018'.",
                       metavar = 'ERA')
 
     parser.add_option('-s', '--subEra',
