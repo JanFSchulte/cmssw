@@ -43,7 +43,7 @@
             "Run2022C4_M1": {
                 "dataset": "/Muon1/Run2023C-PromptReco-v4/MINIAOD",
                 "globalTag": "130X_dataRun3_Prompt_v3"
-            },
+            }
         },
         "AOD": {
             "Run2022B_M0": {
@@ -85,7 +85,7 @@
             "Run2022C4_M1": {
                 "dataset": "/Muon1/Run2023C-PromptReco-v4/AOD",
                 "globalTag": "130X_dataRun3_Prompt_v3"
-            },
+            }
         }
     }
 }
