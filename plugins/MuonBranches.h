@@ -31,13 +31,13 @@ inline void FillTagBranches(const MUON &muon,
   nt.tag_eta = muon.eta();
   nt.tag_phi = muon.phi();
   nt.tag_charge = muon.charge();
-  nt.tag_pterr = muon.innerTrack()->ptError() / muon.innerTrack()->pt();
   nt.tag_dxy = muon.innerTrack()->dxy(reco::TrackBase::Point(nt.pv_x, nt.pv_y, nt.pv_z));
   nt.tag_dz = muon.innerTrack()->dz(reco::TrackBase::Point(nt.pv_x, nt.pv_y, nt.pv_z));
   nt.tag_isPF = muon.isPFMuon();
   nt.tag_isSA = muon.isStandAloneMuon();
   nt.tag_isTracker = muon.isTrackerMuon();
   nt.tag_isGlobal = muon.isGlobalMuon();
+  nt.tag_isRPC = muon.isRPCMuon();
   // Use selectors instead of 'muon.passed' method which is only introduced in CMSSW_9_4_X
   nt.tag_isLoose = muon::isLooseMuon(muon);
   nt.tag_isMedium = muon::isMediumMuon(muon);
@@ -46,6 +46,8 @@ inline void FillTagBranches(const MUON &muon,
   nt.tag_isHighPt = muon::isHighPtMuon(muon, vertex);
   float Trkiso04 = (TrackerEnergy04<TRK>(muon.eta(), muon.phi(), tracks) - muon.pt()) / muon.pt();
   nt.tag_relTrkIso04 = (Trkiso04 > 0) ? Trkiso04 : 0;
+  float Trkiso03 = (TrackerEnergy03<TRK>(muon.eta(), muon.phi(), tracks) - muon.pt()) / muon.pt();
+  nt.tag_relTrkIso03 = (Trkiso03 > 0) ? Trkiso03 : 0;
   nt.tag_iso03_sumPt = muon.isolationR03().sumPt;
   nt.tag_pfIso03_charged = muon.pfIsolationR03().sumChargedHadronPt;
   nt.tag_pfIso03_neutral = muon.pfIsolationR03().sumNeutralHadronEt;
@@ -58,6 +60,7 @@ inline void FillTagBranches(const MUON &muon,
   nt.tag_pfIso04_sumPU = muon.pfIsolationR04().sumPUPt;
   nt.tag_combRelIsoPF04dBeta = (muon.pfIsolationR04().sumChargedHadronPt + TMath::Max(muon.pfIsolationR04().sumNeutralHadronEt + muon.pfIsolationR04().sumPhotonEt - muon.pfIsolationR04().sumPUPt/2.0,0.0))/muon.pt();
   if (muon.tunePMuonBestTrack().isNonnull()) {
+    nt.tag_TuneP_ExistingRefit = true;
     nt.tag_tuneP_pt = muon.tunePMuonBestTrack()->pt();
     nt.tag_tuneP_pterr = muon.tunePMuonBestTrack()->ptError();
   } else {
@@ -73,6 +76,35 @@ inline void FillTagBranches(const MUON &muon,
     nsegments += chamber.segmentMatches.size();
   }
   nt.tag_nsegments = nsegments;
+
+  // for high-pt
+  if (muon.innerTrack().isNonnull() && muon.innerTrack().isAvailable()) {
+    nt.tag_validFraction = muon.innerTrack()->validFraction();
+    nt.tag_trackerLayers = muon.innerTrack()->hitPattern().trackerLayersWithMeasurement();
+    nt.tag_pixelLayers = muon.innerTrack()->hitPattern().pixelLayersWithMeasurement();
+    nt.tag_inner_pterr = muon.innerTrack()->ptError();
+    nt.tag_pixelHits = muon.innerTrack()->hitPattern().numberOfValidPixelHits();
+    nt.tag_inner_pt = muon.innerTrack()->pt();
+    nt.tag_inner_eta = muon.innerTrack()->eta();
+    nt.tag_inner_phi = muon.innerTrack()->phi();
+    nt.tag_inner_charge = muon.innerTrack()->charge();
+  } else {
+    nt.tag_validFraction = -99;
+    nt.tag_trackerLayers = -99;
+    nt.tag_pixelLayers = -99;
+    nt.tag_inner_pterr = -99;
+    nt.tag_pixelHits = -99;
+    nt.tag_inner_pt = -99;
+    nt.tag_inner_eta = -99;
+    nt.tag_inner_phi = -99;
+    nt.tag_inner_charge = -99;
+  }
+
+  if (muon.globalTrack().isNonnull()) {
+    nt.tag_GlobalValidHits = muon.globalTrack()->hitPattern().numberOfValidMuonHits();
+  }
+  nt.tag_ZprimeMatchedStations = (muon.numberOfMatchedStations() > 1 || (muon.numberOfMatchedStations() == 1 && !(muon.stationMask() == 1 || muon.stationMask() == 16)) || (muon.numberOfMatchedStations() == 1 && (muon.stationMask() == 1 || muon.stationMask() == 16) && muon.numberOfMatchedRPCLayers() > 2));
+  nt.tag_RPCLayers = muon.numberOfMatchedRPCLayers();
 }
 
 template <typename MUON, typename TRK>
@@ -84,6 +116,8 @@ inline void FillProbeBranches(
   nt.probe_charge = mu.charge();
   float Trkiso04 = (TrackerEnergy04<TRK>(mu.eta(), mu.phi(), tracks) - mu.pt()) / mu.pt();
   nt.probe_relTrkIso04 = (Trkiso04 > 0) ? Trkiso04 : 0;
+  float Trkiso03 = (TrackerEnergy03<TRK>(mu.eta(), mu.phi(), tracks) - mu.pt()) / mu.pt();
+  nt.probe_relTrkIso03 = (Trkiso03 > 0) ? Trkiso03 : 0;
   // success --> muon obj and track match in dR
   if (success) {
     // Use selectors instead of 'mu.passed' method which is only introduced in CMSSW_9_4_X
@@ -97,6 +131,7 @@ inline void FillProbeBranches(
     nt.probe_isSA = mu.isStandAloneMuon();
     nt.probe_isTracker = mu.isTrackerMuon();
     nt.probe_isGlobal = mu.isGlobalMuon();
+    nt.probe_isRPC = mu.isRPCMuon();
     nt.probe_iso03_sumPt = mu.isolationR03().sumPt;
     nt.probe_pfIso03_charged = mu.pfIsolationR03().sumChargedHadronPt;
     nt.probe_pfIso03_neutral = mu.pfIsolationR03().sumNeutralHadronEt;
@@ -125,7 +160,7 @@ inline void FillProbeBranches(
       nt.probe_validFraction = mu.innerTrack()->validFraction();
       nt.probe_trackerLayers = mu.innerTrack()->hitPattern().trackerLayersWithMeasurement();
       nt.probe_pixelLayers = mu.innerTrack()->hitPattern().pixelLayersWithMeasurement();
-      nt.probe_pterr = mu.innerTrack()->ptError() / mu.innerTrack()->pt();
+      nt.probe_inner_pterr = mu.innerTrack()->ptError();
       nt.probe_dxy = mu.innerTrack()->dxy(reco::TrackBase::Point(nt.pv_x, nt.pv_y, nt.pv_z));
       nt.probe_dz = mu.innerTrack()->dz(reco::TrackBase::Point(nt.pv_x, nt.pv_y, nt.pv_z));
       nt.probe_pixelHits = mu.innerTrack()->hitPattern().numberOfValidPixelHits();
@@ -137,7 +172,7 @@ inline void FillProbeBranches(
       nt.probe_validFraction = -99;
       nt.probe_trackerLayers = -99;
       nt.probe_pixelLayers = -99;
-      nt.probe_pterr = -99;
+      nt.probe_inner_pterr = -99;
       nt.probe_dxy = -99;
       nt.probe_dz = -99;
       nt.probe_pixelHits = -99;
@@ -187,6 +222,7 @@ inline void FillProbeBranches(
       nt.probe_best_charge = -99;
     }
     if (mu.tunePMuonBestTrack().isNonnull()) {
+      nt.probe_TuneP_ExistingRefit = true;
       nt.probe_tuneP_pt = mu.tunePMuonBestTrack()->pt();
       nt.probe_tuneP_pterr = mu.tunePMuonBestTrack()->ptError();
       nt.probe_tuneP_muonHits = mu.tunePMuonBestTrack()->hitPattern().numberOfValidMuonHits();
@@ -234,7 +270,7 @@ inline void FillProbeBranches(
     nt.probe_muonHits = -99;
     nt.probe_DTHits = -99;
     nt.probe_CSCHits = -99;
-    nt.probe_pterr = -99;
+    nt.probe_inner_pterr = -99;
     nt.probe_iso03_sumPt = -99;
     nt.probe_pfIso03_charged = -99;
     nt.probe_pfIso03_neutral = -99;

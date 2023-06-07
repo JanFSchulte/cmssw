@@ -19,7 +19,7 @@ options.register('resonance', 'Z',
     "Set resonance ('Z'/'JPsi')"
 )
 
-options.register('isFullAOD', True,
+options.register('isFullAOD', False,
     VarParsing.multiplicity.singleton,
     VarParsing.varType.bool,
     "Set to False for MiniAOD datatier"

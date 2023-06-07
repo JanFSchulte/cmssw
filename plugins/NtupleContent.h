@@ -137,7 +137,7 @@ public:
   float tag_eta;
   float tag_phi;
   int tag_charge;
-  float tag_pterr;
+  float tag_inner_pterr;
   float tag_dxy;
   float tag_dz;
   bool tag_isPF;
@@ -145,14 +145,18 @@ public:
   bool tag_isdSA;
   bool tag_isTracker;
   bool tag_isGlobal;
+  bool tag_isRPC;
   bool tag_isLoose;
   bool tag_isMedium;
   bool tag_isTight;
   bool tag_isSoft;
   bool tag_isHighPt;
+  bool tag_TuneP_ExistingRefit;
+  bool tag_ZprimeMatchedStations;
   float tag_SIP3D;
   float tag_SIP3D_err;
   float tag_relTrkIso04;
+  float tag_relTrkIso03;
   float tag_miniIso;
   float tag_miniIsoCharged;
   float tag_miniIsoPhotons;
@@ -174,6 +178,16 @@ public:
   float tag_tuneP_pt;
   float tag_tuneP_pterr;
   int tag_nsegments;
+  float tag_validFraction;
+  float tag_trackerLayers;
+  float tag_pixelLayers;
+  int tag_pixelHits;
+  float tag_inner_pt;
+  float tag_inner_eta;
+  float tag_inner_phi;
+  int tag_inner_charge;
+  float tag_GlobalValidHits;
+  int tag_RPCLayers;
 
   // Probe properties
   float probe_pt;
@@ -203,6 +217,7 @@ public:
   bool probe_isHighPt;
   bool probe_isArbitratedTracker;
   bool probe_isMuMatched;
+  bool probe_TuneP_ExistingRefit;
   bool probe_isPF;
   bool probe_isSA;
   bool probe_isTracker;
@@ -210,6 +225,7 @@ public:
   bool probe_isdSA;
   bool probe_isdGlobal;
   bool probe_isCosmic;
+  bool probe_isRPC;
   int probe_ncosmic;
   float probe_cosmic_minDR;
   bool probe_isGood;
@@ -217,6 +233,7 @@ public:
   float probe_SIP3D;
   float probe_SIP3D_err;
   float probe_relTrkIso04;
+  float probe_relTrkIso03;
   float probe_miniIso;
   float probe_miniIsoCharged;
   float probe_miniIsoPhotons;
@@ -234,7 +251,7 @@ public:
   float probe_muonHits;
   float probe_DTHits;
   float probe_CSCHits;
-  float probe_pterr;
+  float probe_inner_pterr;
   float probe_dxy;
   float probe_dz;
   float probe_minDR;

@@ -67,7 +67,7 @@ void NtupleContent::CreateBranches(const std::vector<std::string> &HLTs,
   t1->Branch("tag_eta", &tag_eta);
   t1->Branch("tag_phi", &tag_phi);
   t1->Branch("tag_charge", &tag_charge);
-  t1->Branch("tag_pterr", &tag_pterr);
+  t1->Branch("tag_inner_pterr", &tag_inner_pterr);
   t1->Branch("tag_dxy", &tag_dxy);
   t1->Branch("tag_dz", &tag_dz);
   t1->Branch("tag_isPF", &tag_isPF);
@@ -75,14 +75,18 @@ void NtupleContent::CreateBranches(const std::vector<std::string> &HLTs,
   t1->Branch("tag_isdSA", &tag_isdSA);
   t1->Branch("tag_isTracker", &tag_isTracker);
   t1->Branch("tag_isGlobal", &tag_isGlobal);
+  t1->Branch("tag_isRPC", &tag_isRPC);
   t1->Branch("tag_isLoose", &tag_isLoose);
   t1->Branch("tag_isMedium", &tag_isMedium);
   t1->Branch("tag_isTight", &tag_isTight);
   t1->Branch("tag_isSoft", &tag_isSoft);
   t1->Branch("tag_isHighPt", &tag_isHighPt);
+  t1->Branch("tag_TuneP_ExistingRefit", &tag_TuneP_ExistingRefit);
+  t1->Branch("tag_ZprimeMatchedStations", &tag_ZprimeMatchedStations);
   t1->Branch("tag_SIP3D", &tag_SIP3D);
   t1->Branch("tag_SIP3D_err", &tag_SIP3D_err);
   t1->Branch("tag_relTrkIso04", &tag_relTrkIso04);
+  t1->Branch("tag_relTrkIso03", &tag_relTrkIso03);
   t1->Branch("tag_miniIso", &tag_miniIso);
   t1->Branch("tag_miniIsoCharged", &tag_miniIsoCharged);
   t1->Branch("tag_miniIsoPhotons", &tag_miniIsoPhotons);
@@ -104,6 +108,17 @@ void NtupleContent::CreateBranches(const std::vector<std::string> &HLTs,
   t1->Branch("tag_tuneP_pt", &tag_tuneP_pt);
   t1->Branch("tag_tuneP_pterr", &tag_tuneP_pterr);
   t1->Branch("tag_nsegments", &tag_nsegments);
+  t1->Branch("tag_validFraction", &tag_validFraction);
+  t1->Branch("tag_trackerLayers", &tag_trackerLayers);
+  t1->Branch("tag_pixelLayers", &tag_pixelLayers);
+  t1->Branch("tag_pixelHits", &tag_pixelHits);
+  t1->Branch("tag_inner_pt", &tag_inner_pt);
+  t1->Branch("tag_inner_eta", &tag_inner_eta);
+  t1->Branch("tag_inner_phi", &tag_inner_phi);
+  t1->Branch("tag_inner_charge", &tag_inner_charge);
+  t1->Branch("tag_GlobalValidHits", &tag_GlobalValidHits);
+  t1->Branch("tag_RPCLayers", &tag_RPCLayers);
+
   // Probe specific
   t1->Branch("iprobe", &iprobe);
   t1->Branch("probe_pt", &probe_pt);
@@ -126,7 +141,7 @@ void NtupleContent::CreateBranches(const std::vector<std::string> &HLTs,
   t1->Branch("probe_best_eta", &probe_best_eta);
   t1->Branch("probe_best_phi", &probe_best_phi);
   t1->Branch("probe_best_charge", &probe_best_charge);
-  t1->Branch("probe_pterr", &probe_pterr);
+  t1->Branch("probe_inner_pterr", &probe_inner_pterr);
   t1->Branch("probe_dxy", &probe_dxy);
   t1->Branch("probe_dz", &probe_dz);
   t1->Branch("probe_isPF", &probe_isPF);
@@ -138,8 +153,10 @@ void NtupleContent::CreateBranches(const std::vector<std::string> &HLTs,
   t1->Branch("probe_isTight", &probe_isTight);
   t1->Branch("probe_isSoft", &probe_isSoft);
   t1->Branch("probe_isHighPt", &probe_isHighPt);
+  t1->Branch("probe_isRPC", &probe_isRPC);
   t1->Branch("probe_isArbitratedTracker", &probe_isArbitratedTracker);
   t1->Branch("probe_isMuMatched", &probe_isMuMatched);
+  t1->Branch("probe_TuneP_ExistingRefit", &probe_TuneP_ExistingRefit);
   t1->Branch("probe_isdSA", &probe_isdSA);
   t1->Branch("probe_isdGlobal", &probe_isdGlobal);
   t1->Branch("probe_isCosmic", &probe_isCosmic);
@@ -161,6 +178,7 @@ void NtupleContent::CreateBranches(const std::vector<std::string> &HLTs,
   t1->Branch("probe_SIP3D", &probe_SIP3D);
   t1->Branch("probe_SIP3D_err", &probe_SIP3D_err);
   t1->Branch("probe_relTrkIso04", &probe_relTrkIso04);
+  t1->Branch("probe_relTrkIso03", &probe_relTrkIso03);
   t1->Branch("probe_miniIso", &probe_miniIso);
   t1->Branch("probe_miniIsoCharged", &probe_miniIsoCharged);
   t1->Branch("probe_miniIsoPhotons", &probe_miniIsoPhotons);
@@ -421,7 +439,7 @@ void NtupleContent::ClearBranches() {
   tag_eta = -99;
   tag_phi = -99;
   tag_charge = -99;
-  tag_pterr = 0;
+  tag_inner_pterr = 0;
   tag_dxy = -99;
   tag_dz = -99;
   tag_isPF = false;
@@ -429,14 +447,18 @@ void NtupleContent::ClearBranches() {
   tag_isdSA = false;
   tag_isTracker = false;
   tag_isGlobal = false;
+  tag_isRPC = false;
   tag_isLoose = false;
   tag_isMedium = false;
   tag_isTight = false;
   tag_isSoft = false;
   tag_isHighPt = false;
+  tag_TuneP_ExistingRefit = false;
+  tag_ZprimeMatchedStations = false;
   tag_SIP3D = -99;
   tag_SIP3D_err = -99;
   tag_relTrkIso04 = -99;
+  tag_relTrkIso03 = -99;
   tag_miniIso = -1.;
   tag_miniIsoCharged = 0.;
   tag_miniIsoPhotons = 0.;
@@ -458,6 +480,15 @@ void NtupleContent::ClearBranches() {
   tag_tuneP_pt = -99;
   tag_tuneP_pterr = -99;
   tag_nsegments = -99;
+  tag_validFraction = -99;
+  tag_trackerLayers = -99;
+  tag_pixelHits = -99;
+  tag_inner_pt = 0;
+  tag_inner_eta = -99;
+  tag_inner_phi = -99;
+  tag_inner_charge = -99;
+  tag_GlobalValidHits = -99;
+  tag_RPCLayers = -99;
 
   iprobe = 0;
   probe_pt = 0;
@@ -485,8 +516,10 @@ void NtupleContent::ClearBranches() {
   probe_isTight = false;
   probe_isSoft = false;
   probe_isHighPt = false;
+  probe_isRPC = false;
   probe_isArbitratedTracker = false;
   probe_isMuMatched = false;
+  probe_TuneP_ExistingRefit = false;
   probe_isPF = false;
   probe_isSA = false;
   probe_isTracker = false;
@@ -509,12 +542,13 @@ void NtupleContent::ClearBranches() {
   probe_muonHits = -99;
   probe_DTHits = -99;
   probe_CSCHits = -99;
-  probe_pterr = 0;
+  probe_inner_pterr = 0;
   probe_dxy = -99;
   probe_dz = -99;
   probe_SIP3D = -99;
   probe_SIP3D_err = -99;
   probe_relTrkIso04 = -99;
+  probe_relTrkIso03 = -99;
   probe_miniIso = -1.;
   probe_miniIsoCharged = 0.;
   probe_miniIsoPhotons = 0.;
