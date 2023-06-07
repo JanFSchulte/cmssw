@@ -69,7 +69,7 @@ def getOptions():
     parser.add_option('-e', '--era',
                       dest = 'era',
                       default = 'Run2018',
-                      help = "Era to run samples over. Options are 'Run2022/Run2022EE/Run2018'/'Run2017'/'Run2016'/'Run2018_UL'/'Run2017_UL'/'Run2016_UL'/'Run2016_UL_HIPM'. Default is 'Run2018'.",
+                      help = "Era to run samples over. Options are 'Run2023/Run2022/Run2022EE/Run2018'/'Run2017'/'Run2016'/'Run2018_UL'/'Run2017_UL'/'Run2016_UL'/'Run2016_UL_HIPM'. Default is 'Run2018'.",
                       metavar = 'ERA')
 
     parser.add_option('-s', '--subEra',
@@ -291,7 +291,9 @@ def main():
              
             config.Data.lumiMask = ''
             if isData:
-                if 'Run2022' in era:
+                if 'Run2023' in era:
+                    config.Data.lumiMask = 'https://cms-service-dqmdc.web.cern.ch/CAF/certification/Collisions23/Cert_Collisions2023_366442_367758_Golden.json'
+                elif 'Run2022' in era:
                     config.Data.lumiMask = 'https://cms-service-dqmdc.web.cern.ch/CAF/certification/Collisions22/Cert_Collisions2022_355100_362760_Golden.json'
                 elif 'UL' in era:
                     if '2018' in era:
