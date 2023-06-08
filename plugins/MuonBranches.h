@@ -44,10 +44,10 @@ inline void FillTagBranches(const MUON &muon,
   nt.tag_isTight = muon::isTightMuon(muon, vertex);
   nt.tag_isSoft = muon::isSoftMuon(muon, vertex, false);
   nt.tag_isHighPt = muon::isHighPtMuon(muon, vertex);
-  float Trkiso04 = (TrackerEnergy04<TRK>(muon.eta(), muon.phi(), tracks) - muon.pt()) / muon.pt();
-  nt.tag_relTrkIso04 = (Trkiso04 > 0) ? Trkiso04 : 0;
-  float Trkiso03 = (TrackerEnergy03<TRK>(muon.eta(), muon.phi(), tracks) - muon.pt()) / muon.pt();
-  nt.tag_relTrkIso03 = (Trkiso03 > 0) ? Trkiso03 : 0;
+  float Trkiso04 = (TrackerEnergy04<TRK>(muon.eta(), muon.phi(), tracks) - muon.pt());
+  nt.tag_absTrkIso04 = (Trkiso04 > 0) ? Trkiso04 : 0;
+  float Trkiso03 = (TrackerEnergy03<TRK>(muon.eta(), muon.phi(), tracks) - muon.pt());
+  nt.tag_absTrkIso03 = (Trkiso03 > 0) ? Trkiso03 : 0;
   nt.tag_iso03_sumPt = muon.isolationR03().sumPt;
   nt.tag_pfIso03_charged = muon.pfIsolationR03().sumChargedHadronPt;
   nt.tag_pfIso03_neutral = muon.pfIsolationR03().sumNeutralHadronEt;
@@ -114,10 +114,10 @@ inline void FillProbeBranches(
   nt.probe_eta = mu.eta();
   nt.probe_phi = mu.phi();
   nt.probe_charge = mu.charge();
-  float Trkiso04 = (TrackerEnergy04<TRK>(mu.eta(), mu.phi(), tracks) - mu.pt()) / mu.pt();
-  nt.probe_relTrkIso04 = (Trkiso04 > 0) ? Trkiso04 : 0;
-  float Trkiso03 = (TrackerEnergy03<TRK>(mu.eta(), mu.phi(), tracks) - mu.pt()) / mu.pt();
-  nt.probe_relTrkIso03 = (Trkiso03 > 0) ? Trkiso03 : 0;
+  float Trkiso04 = (TrackerEnergy04<TRK>(mu.eta(), mu.phi(), tracks) - mu.pt());
+  nt.probe_absTrkIso04 = (Trkiso04 > 0) ? Trkiso04 : 0;
+  float Trkiso03 = (TrackerEnergy03<TRK>(mu.eta(), mu.phi(), tracks) - mu.pt());
+  nt.probe_absTrkIso03 = (Trkiso03 > 0) ? Trkiso03 : 0;
   // success --> muon obj and track match in dR
   if (success) {
     // Use selectors instead of 'mu.passed' method which is only introduced in CMSSW_9_4_X

@@ -85,8 +85,8 @@ void NtupleContent::CreateBranches(const std::vector<std::string> &HLTs,
   t1->Branch("tag_ZprimeMatchedStations", &tag_ZprimeMatchedStations);
   t1->Branch("tag_SIP3D", &tag_SIP3D);
   t1->Branch("tag_SIP3D_err", &tag_SIP3D_err);
-  t1->Branch("tag_relTrkIso04", &tag_relTrkIso04);
-  t1->Branch("tag_relTrkIso03", &tag_relTrkIso03);
+  t1->Branch("tag_absTrkIso04", &tag_absTrkIso04);
+  t1->Branch("tag_absTrkIso03", &tag_absTrkIso03);
   t1->Branch("tag_miniIso", &tag_miniIso);
   t1->Branch("tag_miniIsoCharged", &tag_miniIsoCharged);
   t1->Branch("tag_miniIsoPhotons", &tag_miniIsoPhotons);
@@ -177,8 +177,8 @@ void NtupleContent::CreateBranches(const std::vector<std::string> &HLTs,
   t1->Branch("probe_CSCHits", &probe_CSCHits);
   t1->Branch("probe_SIP3D", &probe_SIP3D);
   t1->Branch("probe_SIP3D_err", &probe_SIP3D_err);
-  t1->Branch("probe_relTrkIso04", &probe_relTrkIso04);
-  t1->Branch("probe_relTrkIso03", &probe_relTrkIso03);
+  t1->Branch("probe_absTrkIso04", &probe_absTrkIso04);
+  t1->Branch("probe_absTrkIso03", &probe_absTrkIso03);
   t1->Branch("probe_miniIso", &probe_miniIso);
   t1->Branch("probe_miniIsoCharged", &probe_miniIsoCharged);
   t1->Branch("probe_miniIsoPhotons", &probe_miniIsoPhotons);
@@ -457,8 +457,8 @@ void NtupleContent::ClearBranches() {
   tag_ZprimeMatchedStations = false;
   tag_SIP3D = -99;
   tag_SIP3D_err = -99;
-  tag_relTrkIso04 = -99;
-  tag_relTrkIso03 = -99;
+  tag_absTrkIso04 = -99;
+  tag_absTrkIso03 = -99;
   tag_miniIso = -1.;
   tag_miniIsoCharged = 0.;
   tag_miniIsoPhotons = 0.;
@@ -547,8 +547,8 @@ void NtupleContent::ClearBranches() {
   probe_dz = -99;
   probe_SIP3D = -99;
   probe_SIP3D_err = -99;
-  probe_relTrkIso04 = -99;
-  probe_relTrkIso03 = -99;
+  probe_absTrkIso04 = -99;
+  probe_absTrkIso03 = -99;
   probe_miniIso = -1.;
   probe_miniIsoCharged = 0.;
   probe_miniIsoPhotons = 0.;

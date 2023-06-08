@@ -562,10 +562,12 @@ void MuonMiniAODAnalyzer::analyze(const edm::Event& iEvent, const edm::EventSetu
     for (const auto& trk : tracks) {
       if (mu.charge() != trk.charge())
         continue;
-      if (fabs(mu.vz() - trk.vz()) > maxdz_trk_mu_)
-        continue;
-      if (fabs(mu.pt() - trk.pt()) / mu.pt() > maxpt_relative_dif_trk_mu_)
-        continue;
+      if(mu.innerTrack().isNonnull() && mu.innerTrack().isAvailable()){
+	if (fabs(mu.innerTrack()->pt() - trk.pt()) / mu.innerTrack()->pt() > maxpt_relative_dif_trk_mu_)
+	  continue;
+	if (fabs(mu.innerTrack()->vz() - trk.vz()) > maxdz_trk_mu_)
+	  continue;
+      }
       float DR = deltaR(mu.eta(), mu.phi(), trk.eta(), trk.phi());
       if (minDR < DR)
         continue;

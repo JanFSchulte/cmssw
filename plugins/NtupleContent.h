@@ -155,8 +155,8 @@ public:
   bool tag_ZprimeMatchedStations;
   float tag_SIP3D;
   float tag_SIP3D_err;
-  float tag_relTrkIso04;
-  float tag_relTrkIso03;
+  float tag_absTrkIso04;
+  float tag_absTrkIso03;
   float tag_miniIso;
   float tag_miniIsoCharged;
   float tag_miniIsoPhotons;
@@ -232,8 +232,8 @@ public:
   bool probe_isHighPurity;
   float probe_SIP3D;
   float probe_SIP3D_err;
-  float probe_relTrkIso04;
-  float probe_relTrkIso03;
+  float probe_absTrkIso04;
+  float probe_absTrkIso03;
   float probe_miniIso;
   float probe_miniIsoCharged;
   float probe_miniIsoPhotons;
