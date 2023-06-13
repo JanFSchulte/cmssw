@@ -652,12 +652,12 @@ void MuonFullAODAnalyzer::analyze(const edm::Event& iEvent, const edm::EventSetu
     if (debug_ > 1)
       std::cout << "New trk-muon map entry pt " << mu.pt() << " eta " << mu.eta() << " phi " << mu.phi() << std::endl;
     for (const reco::Track& trk : *tracks) {
-      if (mu.charge() != trk.charge())
-        continue;
-      if (fabs(mu.vz() - trk.vz()) > maxdz_trk_mu_ && maxdz_trk_mu_ > 0)
-        continue;
-      if (fabs(mu.pt() - trk.pt()) / mu.pt() > maxpt_relative_dif_trk_mu_ && maxpt_relative_dif_trk_mu_ > 0)
-        continue;
+      if(mu.innerTrack().isNonnull() && mu.innerTrack().isAvailable()){
+	if (fabs(mu.innerTrack()->vz() - trk.vz()) > maxdz_trk_mu_ && maxdz_trk_mu_ > 0)
+	  continue;
+	if (fabs(mu.innerTrack()->pt() - trk.pt()) / mu.innerTrack()->pt() > maxpt_relative_dif_trk_mu_ && maxpt_relative_dif_trk_mu_ > 0)
+	  continue;
+      }
       float DR = deltaR(mu.eta(), mu.phi(), trk.eta(), trk.phi());
       if (debug_ > 1)
         std::cout << "   DR " << DR << "  " << mu.eta() << "  " << mu.phi() << "  " << trk.eta() << "  " << trk.phi()
