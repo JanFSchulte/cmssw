@@ -31,21 +31,23 @@ inline void FillTagBranches(const MUON &muon,
   nt.tag_eta = muon.eta();
   nt.tag_phi = muon.phi();
   nt.tag_charge = muon.charge();
-  nt.tag_pterr = muon.innerTrack()->ptError() / muon.innerTrack()->pt();
   nt.tag_dxy = muon.innerTrack()->dxy(reco::TrackBase::Point(nt.pv_x, nt.pv_y, nt.pv_z));
   nt.tag_dz = muon.innerTrack()->dz(reco::TrackBase::Point(nt.pv_x, nt.pv_y, nt.pv_z));
   nt.tag_isPF = muon.isPFMuon();
   nt.tag_isSA = muon.isStandAloneMuon();
   nt.tag_isTracker = muon.isTrackerMuon();
   nt.tag_isGlobal = muon.isGlobalMuon();
+  nt.tag_isRPC = muon.isRPCMuon();
   // Use selectors instead of 'muon.passed' method which is only introduced in CMSSW_9_4_X
   nt.tag_isLoose = muon::isLooseMuon(muon);
   nt.tag_isMedium = muon::isMediumMuon(muon);
   nt.tag_isTight = muon::isTightMuon(muon, vertex);
   nt.tag_isSoft = muon::isSoftMuon(muon, vertex, false);
   nt.tag_isHighPt = muon::isHighPtMuon(muon, vertex);
-  float Trkiso04 = (TrackerEnergy04<TRK>(muon.eta(), muon.phi(), tracks) - muon.pt()) / muon.pt();
-  nt.tag_relTrkIso04 = (Trkiso04 > 0) ? Trkiso04 : 0;
+  float Trkiso04 = (TrackerEnergy04<TRK>(muon.eta(), muon.phi(), tracks) - muon.pt());
+  nt.tag_absTrkIso04 = (Trkiso04 > 0) ? Trkiso04 : 0;
+  float Trkiso03 = (TrackerEnergy03<TRK>(muon.eta(), muon.phi(), tracks) - muon.pt());
+  nt.tag_absTrkIso03 = (Trkiso03 > 0) ? Trkiso03 : 0;
   nt.tag_iso03_sumPt = muon.isolationR03().sumPt;
   nt.tag_pfIso03_charged = muon.pfIsolationR03().sumChargedHadronPt;
   nt.tag_pfIso03_neutral = muon.pfIsolationR03().sumNeutralHadronEt;
@@ -58,11 +60,22 @@ inline void FillTagBranches(const MUON &muon,
   nt.tag_pfIso04_sumPU = muon.pfIsolationR04().sumPUPt;
   nt.tag_combRelIsoPF04dBeta = (muon.pfIsolationR04().sumChargedHadronPt + TMath::Max(muon.pfIsolationR04().sumNeutralHadronEt + muon.pfIsolationR04().sumPhotonEt - muon.pfIsolationR04().sumPUPt/2.0,0.0))/muon.pt();
   if (muon.tunePMuonBestTrack().isNonnull()) {
+    nt.tag_tuneP_ExistingRefit = true;
+    nt.tag_tuneP_charge = muon.tunePMuonBestTrack()->charge();
     nt.tag_tuneP_pt = muon.tunePMuonBestTrack()->pt();
     nt.tag_tuneP_pterr = muon.tunePMuonBestTrack()->ptError();
+    nt.tag_tuneP_eta = muon.tunePMuonBestTrack()->eta();
+    nt.tag_tuneP_phi = muon.tunePMuonBestTrack()->phi();
+    nt.tag_tuneP_muonHits = muon.tunePMuonBestTrack()->hitPattern().numberOfValidMuonHits();
   } else {
+    nt.tag_tuneP_ExistingRefit = false;
+    nt.tag_tuneP_charge = -99.;
     nt.tag_tuneP_pt = -99.;
     nt.tag_tuneP_pterr = -99.;
+    nt.tag_tuneP_eta = -99.;
+    nt.tag_tuneP_phi = -99.;
+    nt.tag_tuneP_pterr = -99.;
+    nt.tag_tuneP_muonHits = -99.;
   }
   int nsegments = 0;
   for (auto &chamber : muon.matches()) {
@@ -73,6 +86,87 @@ inline void FillTagBranches(const MUON &muon,
     nsegments += chamber.segmentMatches.size();
   }
   nt.tag_nsegments = nsegments;
+
+  // for high-pt
+  if (muon.innerTrack().isNonnull() && muon.innerTrack().isAvailable()) {
+    nt.tag_inner_validFraction = muon.innerTrack()->validFraction();
+    nt.tag_inner_trackerLayers = muon.innerTrack()->hitPattern().trackerLayersWithMeasurement();
+    nt.tag_inner_pixelLayers = muon.innerTrack()->hitPattern().pixelLayersWithMeasurement();
+    nt.tag_inner_pterr = muon.innerTrack()->ptError();
+    nt.tag_inner_pixelHits = muon.innerTrack()->hitPattern().numberOfValidPixelHits();
+    nt.tag_inner_pt = muon.innerTrack()->pt();
+    nt.tag_inner_eta = muon.innerTrack()->eta();
+    nt.tag_inner_phi = muon.innerTrack()->phi();
+    nt.tag_inner_charge = muon.innerTrack()->charge();
+  } else {
+    nt.tag_inner_validFraction = -99;
+    nt.tag_inner_trackerLayers = -99;
+    nt.tag_inner_pixelLayers = -99;
+    nt.tag_inner_pterr = -99;
+    nt.tag_inner_pixelHits = -99;
+    nt.tag_inner_pt = -99;
+    nt.tag_inner_eta = -99;
+    nt.tag_inner_phi = -99;
+    nt.tag_inner_charge = -99;
+  }
+
+  if (muon.tpfmsTrack().isNonnull() && muon.tpfmsTrack().isAvailable()) {
+    nt.tag_tpfms_charge = muon.tpfmsTrack()->charge();
+    nt.tag_tpfms_pt = muon.tpfmsTrack()->pt();
+    nt.tag_tpfms_pterr = muon.tpfmsTrack()->ptError();
+    nt.tag_tpfms_eta = muon.tpfmsTrack()->eta();
+    nt.tag_tpfms_phi = muon.tpfmsTrack()->phi();
+    nt.tag_tpfms_muonHits = muon.tpfmsTrack()->hitPattern().numberOfValidMuonHits();
+  } else {
+    nt.tag_tpfms_charge = -99.;
+    nt.tag_tpfms_pt = -99.;
+    nt.tag_tpfms_pterr = -99.;
+    nt.tag_tpfms_eta = -99.;
+    nt.tag_tpfms_phi = -99.;
+    nt.tag_tpfms_pterr = -99.;
+    nt.tag_tpfms_muonHits = -99.;
+  }
+
+  if (muon.pickyTrack().isNonnull() && muon.pickyTrack().isAvailable()) {
+    nt.tag_picky_charge = muon.pickyTrack()->charge();
+    nt.tag_picky_pt = muon.pickyTrack()->pt();
+    nt.tag_picky_pterr = muon.pickyTrack()->ptError();
+    nt.tag_picky_eta = muon.pickyTrack()->eta();
+    nt.tag_picky_phi = muon.pickyTrack()->phi();
+    nt.tag_picky_muonHits = muon.pickyTrack()->hitPattern().numberOfValidMuonHits();
+  } else {
+    nt.tag_picky_charge = -99.;
+    nt.tag_picky_pt = -99.;
+    nt.tag_picky_pterr = -99.;
+    nt.tag_picky_eta = -99.;
+    nt.tag_picky_phi = -99.;
+    nt.tag_picky_pterr = -99.;
+    nt.tag_picky_muonHits = -99.;
+  }
+
+  if (muon.dytTrack().isNonnull() && muon.dytTrack().isAvailable()) {
+    nt.tag_dyt_charge = muon.dytTrack()->charge();
+    nt.tag_dyt_pt = muon.dytTrack()->pt();
+    nt.tag_dyt_pterr = muon.dytTrack()->ptError();
+    nt.tag_dyt_eta = muon.dytTrack()->eta();
+    nt.tag_dyt_phi = muon.dytTrack()->phi();
+    nt.tag_dyt_muonHits = muon.dytTrack()->hitPattern().numberOfValidMuonHits();
+  } else {
+    nt.tag_dyt_charge = -99.;
+    nt.tag_dyt_pt = -99.;
+    nt.tag_dyt_pterr = -99.;
+    nt.tag_dyt_eta = -99.;
+    nt.tag_dyt_phi = -99.;
+    nt.tag_dyt_pterr = -99.;
+    nt.tag_dyt_muonHits = -99.;
+  }
+
+
+  if (muon.globalTrack().isNonnull()) {
+    nt.tag_GlobalValidHits = muon.globalTrack()->hitPattern().numberOfValidMuonHits();
+  }
+  nt.tag_ZprimeMatchedStations = (muon.numberOfMatchedStations() > 1 || (muon.numberOfMatchedStations() == 1 && !(muon.stationMask() == 1 || muon.stationMask() == 16)) || (muon.numberOfMatchedStations() == 1 && (muon.stationMask() == 1 || muon.stationMask() == 16) && muon.numberOfMatchedRPCLayers() > 2));
+  nt.tag_RPCLayers = muon.numberOfMatchedRPCLayers();
 }
 
 template <typename MUON, typename TRK>
@@ -82,8 +176,10 @@ inline void FillProbeBranches(
   nt.probe_eta = mu.eta();
   nt.probe_phi = mu.phi();
   nt.probe_charge = mu.charge();
-  float Trkiso04 = (TrackerEnergy04<TRK>(mu.eta(), mu.phi(), tracks) - mu.pt()) / mu.pt();
-  nt.probe_relTrkIso04 = (Trkiso04 > 0) ? Trkiso04 : 0;
+  float Trkiso04 = (TrackerEnergy04<TRK>(mu.eta(), mu.phi(), tracks) - mu.pt());
+  nt.probe_absTrkIso04 = (Trkiso04 > 0) ? Trkiso04 : 0;
+  float Trkiso03 = (TrackerEnergy03<TRK>(mu.eta(), mu.phi(), tracks) - mu.pt());
+  nt.probe_absTrkIso03 = (Trkiso03 > 0) ? Trkiso03 : 0;
   // success --> muon obj and track match in dR
   if (success) {
     // Use selectors instead of 'mu.passed' method which is only introduced in CMSSW_9_4_X
@@ -97,6 +193,7 @@ inline void FillProbeBranches(
     nt.probe_isSA = mu.isStandAloneMuon();
     nt.probe_isTracker = mu.isTrackerMuon();
     nt.probe_isGlobal = mu.isGlobalMuon();
+    nt.probe_isRPC = mu.isRPCMuon();
     nt.probe_iso03_sumPt = mu.isolationR03().sumPt;
     nt.probe_pfIso03_charged = mu.pfIsolationR03().sumChargedHadronPt;
     nt.probe_pfIso03_neutral = mu.pfIsolationR03().sumNeutralHadronEt;
@@ -122,25 +219,25 @@ inline void FillProbeBranches(
       nt.probe_muonHits = -99;
     }
     if (mu.innerTrack().isNonnull() && mu.innerTrack().isAvailable()) {
-      nt.probe_validFraction = mu.innerTrack()->validFraction();
-      nt.probe_trackerLayers = mu.innerTrack()->hitPattern().trackerLayersWithMeasurement();
-      nt.probe_pixelLayers = mu.innerTrack()->hitPattern().pixelLayersWithMeasurement();
-      nt.probe_pterr = mu.innerTrack()->ptError() / mu.innerTrack()->pt();
+      nt.probe_inner_validFraction = mu.innerTrack()->validFraction();
+      nt.probe_inner_trackerLayers = mu.innerTrack()->hitPattern().trackerLayersWithMeasurement();
+      nt.probe_inner_pixelLayers = mu.innerTrack()->hitPattern().pixelLayersWithMeasurement();
+      nt.probe_inner_pterr = mu.innerTrack()->ptError();
       nt.probe_dxy = mu.innerTrack()->dxy(reco::TrackBase::Point(nt.pv_x, nt.pv_y, nt.pv_z));
       nt.probe_dz = mu.innerTrack()->dz(reco::TrackBase::Point(nt.pv_x, nt.pv_y, nt.pv_z));
-      nt.probe_pixelHits = mu.innerTrack()->hitPattern().numberOfValidPixelHits();
+      nt.probe_inner_pixelHits = mu.innerTrack()->hitPattern().numberOfValidPixelHits();
       nt.probe_inner_pt = mu.innerTrack()->pt();
       nt.probe_inner_eta = mu.innerTrack()->eta();
       nt.probe_inner_phi = mu.innerTrack()->phi();
       nt.probe_inner_charge = mu.innerTrack()->charge();
     } else {
-      nt.probe_validFraction = -99;
-      nt.probe_trackerLayers = -99;
-      nt.probe_pixelLayers = -99;
-      nt.probe_pterr = -99;
+      nt.probe_inner_validFraction = -99;
+      nt.probe_inner_trackerLayers = -99;
+      nt.probe_inner_pixelLayers = -99;
+      nt.probe_inner_pterr = -99;
       nt.probe_dxy = -99;
       nt.probe_dz = -99;
-      nt.probe_pixelHits = -99;
+      nt.probe_inner_pixelHits = -99;
       nt.probe_inner_pt = -99;
       nt.probe_inner_eta = -99;
       nt.probe_inner_phi = -99;
@@ -186,15 +283,75 @@ inline void FillProbeBranches(
       nt.probe_best_phi = -99;
       nt.probe_best_charge = -99;
     }
-    if (mu.tunePMuonBestTrack().isNonnull()) {
+    if (mu.tunePMuonBestTrack().isNonnull() && mu.tunePMuonBestTrack().isAvailable()) {
+      nt.probe_tuneP_ExistingRefit = true;
+      nt.probe_tuneP_charge = mu.tunePMuonBestTrack()->charge();
       nt.probe_tuneP_pt = mu.tunePMuonBestTrack()->pt();
+      nt.probe_tuneP_eta = mu.tunePMuonBestTrack()->eta();
+      nt.probe_tuneP_phi = mu.tunePMuonBestTrack()->phi();
       nt.probe_tuneP_pterr = mu.tunePMuonBestTrack()->ptError();
       nt.probe_tuneP_muonHits = mu.tunePMuonBestTrack()->hitPattern().numberOfValidMuonHits();
     } else {
+      nt.probe_tuneP_ExistingRefit = false;
+      nt.probe_tuneP_charge = -99;
       nt.probe_tuneP_pt = -99;
+      nt.probe_tuneP_eta = -99;
+      nt.probe_tuneP_phi = -99;
       nt.probe_tuneP_pterr = -99;
       nt.probe_tuneP_muonHits = -99;
     }
+    
+    if (mu.tpfmsTrack().isNonnull() && mu.tpfmsTrack().isAvailable()) {
+      nt.probe_tpfms_charge = mu.tpfmsTrack()->charge();
+      nt.probe_tpfms_pt = mu.tpfmsTrack()->pt();
+      nt.probe_tpfms_pterr = mu.tpfmsTrack()->ptError();
+      nt.probe_tpfms_eta = mu.tpfmsTrack()->eta();
+      nt.probe_tpfms_phi = mu.tpfmsTrack()->phi();
+      nt.probe_tpfms_muonHits = mu.tpfmsTrack()->hitPattern().numberOfValidMuonHits();
+    } else {
+      nt.probe_tpfms_charge = -99.;
+      nt.probe_tpfms_pt = -99.;
+      nt.probe_tpfms_pterr = -99.;
+      nt.probe_tpfms_eta = -99.;
+      nt.probe_tpfms_phi = -99.;
+      nt.probe_tpfms_pterr = -99.;
+      nt.probe_tpfms_muonHits = -99.;
+    }
+
+    if (mu.pickyTrack().isNonnull() && mu.pickyTrack().isAvailable()) {
+      nt.probe_picky_charge = mu.pickyTrack()->charge();
+      nt.probe_picky_pt = mu.pickyTrack()->pt();
+      nt.probe_picky_pterr = mu.pickyTrack()->ptError();
+      nt.probe_picky_eta = mu.pickyTrack()->eta();
+      nt.probe_picky_phi = mu.pickyTrack()->phi();
+      nt.probe_picky_muonHits = mu.pickyTrack()->hitPattern().numberOfValidMuonHits();
+    } else {
+      nt.probe_picky_charge = -99.;
+      nt.probe_picky_pt = -99.;
+      nt.probe_picky_pterr = -99.;
+      nt.probe_picky_eta = -99.;
+      nt.probe_picky_phi = -99.;
+      nt.probe_picky_pterr = -99.;
+      nt.probe_picky_muonHits = -99.;
+    }
+    
+    if (mu.dytTrack().isNonnull() && mu.dytTrack().isAvailable()) {
+      nt.probe_dyt_charge = mu.dytTrack()->charge();
+      nt.probe_dyt_pt = mu.dytTrack()->pt();
+      nt.probe_dyt_pterr = mu.dytTrack()->ptError();
+      nt.probe_dyt_eta = mu.dytTrack()->eta();
+      nt.probe_dyt_phi = mu.dytTrack()->phi();
+      nt.probe_dyt_muonHits = mu.dytTrack()->hitPattern().numberOfValidMuonHits();
+    } else {
+      nt.probe_dyt_charge = -99.;
+      nt.probe_dyt_pt = -99.;
+      nt.probe_dyt_pterr = -99.;
+      nt.probe_dyt_eta = -99.;
+      nt.probe_dyt_phi = -99.;
+      nt.probe_dyt_pterr = -99.;
+      nt.probe_dyt_muonHits = -99.;
+    }
+
     nt.probe_positionChi2 = mu.combinedQuality().chi2LocalPosition;
     nt.probe_trkKink = mu.combinedQuality().trkKink;
     nt.probe_segmentCompatibility = muon::segmentCompatibility(mu);
@@ -222,19 +379,19 @@ inline void FillProbeBranches(
     nt.probe_isSA = false;
     nt.probe_isTracker = false;
     nt.probe_isGlobal = false;
-    nt.probe_validFraction = -99;
+    nt.probe_inner_validFraction = -99;
     nt.probe_trkChi2 = -99;
     nt.probe_positionChi2 = -99;
     nt.probe_trkKink = -99;
-    nt.probe_trackerLayers = -99;
-    nt.probe_pixelLayers = -99;
+    nt.probe_inner_trackerLayers = -99;
+    nt.probe_inner_pixelLayers = -99;
     nt.probe_dxy = -99;
     nt.probe_dz = -99;
     nt.probe_muonStations = -99;
     nt.probe_muonHits = -99;
     nt.probe_DTHits = -99;
     nt.probe_CSCHits = -99;
-    nt.probe_pterr = -99;
+    nt.probe_inner_pterr = -99;
     nt.probe_iso03_sumPt = -99;
     nt.probe_pfIso03_charged = -99;
     nt.probe_pfIso03_neutral = -99;
@@ -244,7 +401,7 @@ inline void FillProbeBranches(
     nt.probe_pfIso04_neutral = -99;
     nt.probe_pfIso04_photon = -99;
     nt.probe_pfIso04_sumPU = -99;
-    nt.probe_pixelHits = -99;
+    nt.probe_inner_pixelHits = -99;
     nt.probe_matchedStations = -99;
     nt.probe_expectedMatchedStations = -99;
     nt.probe_RPCLayers = -99;

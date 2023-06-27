@@ -30,6 +30,17 @@ inline float TrackerEnergy04(const float eta_muon, const float phi_muon, const s
 }
 
 template <typename TRK>
+inline float TrackerEnergy03(const float eta_muon, const float phi_muon, const std::vector<TRK> tracks) {
+  float energy = 0;
+  for (const auto& trk : tracks) {
+    if (deltaR(eta_muon, phi_muon, trk.eta(), trk.phi()) > 0.3)
+      continue;
+    energy += trk.pt();
+  }
+  return energy;
+}
+
+template <typename TRK>
 std::pair<bool, unsigned> MatchReco(
     const std::vector<TRK>& tracks, const float& eta, const float& phi, const int charge, const double& dr_max) {
   double minDR = 100;
