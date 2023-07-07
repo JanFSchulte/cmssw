@@ -43,6 +43,14 @@
             "Run2023C4_M1": {
                 "dataset": "/Muon1/Run2023C-PromptReco-v4/MINIAOD",
                 "globalTag": "130X_dataRun3_Prompt_v3"
+            },
+            "Run2023D_M0": {
+                "dataset": "/Muon0/Run2023D-PromptReco-v1/MINIAOD",
+                "globalTag": "130X_dataRun3_Prompt_v3"
+            },
+            "Run2023D_M1": {
+                "dataset": "/Muon1/Run2023D-PromptReco-v1/MINIAOD",
+                "globalTag": "130X_dataRun3_Prompt_v3"
             }
         },
         "AOD": {
@@ -84,6 +92,14 @@
             },
             "Run2023C4_M1": {
                 "dataset": "/Muon1/Run2023C-PromptReco-v4/AOD",
+                "globalTag": "130X_dataRun3_Prompt_v3"
+            },
+            "Run2023D_M0": {
+                "dataset": "/Muon0/Run2023D-PromptReco-v1/AOD",
+                "globalTag": "130X_dataRun3_Prompt_v3"
+            },
+            "Run2023D_M1": {
+                "dataset": "/Muon1/Run2023D-PromptReco-v1/AOD",
                 "globalTag": "130X_dataRun3_Prompt_v3"
             }
         }
