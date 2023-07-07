@@ -292,7 +292,7 @@ def main():
             config.Data.lumiMask = ''
             if isData:
                 if 'Run2023' in era:
-                    config.Data.lumiMask = 'https://cms-service-dqmdc.web.cern.ch/CAF/certification/Collisions23/Cert_Collisions2023_366442_367758_Golden.json'
+                    config.Data.lumiMask = 'https://cms-service-dqmdc.web.cern.ch/CAF/certification/Collisions23/Cert_Collisions2023_366442_368823_Golden.json'
                 elif 'Run2022' in era:
                     config.Data.lumiMask = 'https://cms-service-dqmdc.web.cern.ch/CAF/certification/Collisions22/Cert_Collisions2022_355100_362760_Golden.json'
                 elif 'UL' in era:
