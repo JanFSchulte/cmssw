@@ -27,55 +27,57 @@ inline void FillTagBranches(const MUON &muon,
                             const std::vector<TRK> &tracks,
                             NtupleContent &nt,
                             const reco::Vertex &vertex) {
-  nt.tag_pt = muon.pt();
-  nt.tag_eta = muon.eta();
-  nt.tag_phi = muon.phi();
-  nt.tag_charge = muon.charge();
-  nt.tag_dxy = muon.innerTrack()->dxy(reco::TrackBase::Point(nt.pv_x, nt.pv_y, nt.pv_z));
-  nt.tag_dz = muon.innerTrack()->dz(reco::TrackBase::Point(nt.pv_x, nt.pv_y, nt.pv_z));
-  nt.tag_isPF = muon.isPFMuon();
-  nt.tag_isSA = muon.isStandAloneMuon();
-  nt.tag_isTracker = muon.isTrackerMuon();
-  nt.tag_isGlobal = muon.isGlobalMuon();
-  nt.tag_isRPC = muon.isRPCMuon();
+
+  nt.branches["tag_pt"] = (float)muon.pt();
+  nt.branches["tag_eta"] = (float)muon.eta();
+  nt.branches["tag_phi"] = (float)muon.phi();
+  nt.branches["tag_charge"] = (int)muon.charge();
+  nt.branches["tag_dxy"] = (float)muon.innerTrack()->dxy(reco::TrackBase::Point(nt.pv_x, nt.pv_y, nt.pv_z));
+  nt.branches["tag_dz"] = (float)muon.innerTrack()->dz(reco::TrackBase::Point(nt.pv_x, nt.pv_y, nt.pv_z));
+  nt.branches["tag_isPF"] = (bool)muon.isPFMuon();
+  nt.branches["tag_isSA"] = (bool)muon.isStandAloneMuon();
+  nt.branches["tag_isTracker"] = (bool)muon.isTrackerMuon();
+  nt.branches["tag_isGlobal"] = (bool)muon.isGlobalMuon();
+  nt.branches["tag_isRPC"] = (bool)muon.isRPCMuon();
+  
   // Use selectors instead of 'muon.passed' method which is only introduced in CMSSW_9_4_X
-  nt.tag_isLoose = muon::isLooseMuon(muon);
-  nt.tag_isMedium = muon::isMediumMuon(muon);
-  nt.tag_isTight = muon::isTightMuon(muon, vertex);
-  nt.tag_isSoft = muon::isSoftMuon(muon, vertex, false);
-  nt.tag_isHighPt = muon::isHighPtMuon(muon, vertex);
+  nt.branches["tag_isLoose"] = (bool)muon::isLooseMuon(muon);
+  nt.branches["tag_isMedium"] = (bool)muon::isMediumMuon(muon);
+  nt.branches["tag_isTight"] = (bool)muon::isTightMuon(muon, vertex);
+  nt.branches["tag_isSoft"] = (bool)muon::isSoftMuon(muon, vertex, false);
+  nt.branches["tag_isHighPt"] = (bool)muon::isHighPtMuon(muon, vertex);
   float Trkiso04 = (TrackerEnergy04<TRK>(muon.eta(), muon.phi(), tracks) - muon.pt());
-  nt.tag_absTrkIso04 = (Trkiso04 > 0) ? Trkiso04 : 0;
+  nt.branches["tag_absTrkIso04"] = (float)(Trkiso04 > 0) ? Trkiso04 : 0;
   float Trkiso03 = (TrackerEnergy03<TRK>(muon.eta(), muon.phi(), tracks) - muon.pt());
-  nt.tag_absTrkIso03 = (Trkiso03 > 0) ? Trkiso03 : 0;
-  nt.tag_iso03_sumPt = muon.isolationR03().sumPt;
-  nt.tag_pfIso03_charged = muon.pfIsolationR03().sumChargedHadronPt;
-  nt.tag_pfIso03_neutral = muon.pfIsolationR03().sumNeutralHadronEt;
-  nt.tag_pfIso03_photon = muon.pfIsolationR03().sumPhotonEt;
-  nt.tag_pfIso03_sumPU = muon.pfIsolationR03().sumPUPt;
-  nt.tag_combRelIsoPF03dBeta = (muon.pfIsolationR03().sumChargedHadronPt + TMath::Max(muon.pfIsolationR03().sumNeutralHadronEt + muon.pfIsolationR03().sumPhotonEt - muon.pfIsolationR03().sumPUPt/2.0,0.0))/muon.pt();
-  nt.tag_pfIso04_charged = muon.pfIsolationR04().sumChargedHadronPt;
-  nt.tag_pfIso04_neutral = muon.pfIsolationR04().sumNeutralHadronEt;
-  nt.tag_pfIso04_photon = muon.pfIsolationR04().sumPhotonEt;
-  nt.tag_pfIso04_sumPU = muon.pfIsolationR04().sumPUPt;
-  nt.tag_combRelIsoPF04dBeta = (muon.pfIsolationR04().sumChargedHadronPt + TMath::Max(muon.pfIsolationR04().sumNeutralHadronEt + muon.pfIsolationR04().sumPhotonEt - muon.pfIsolationR04().sumPUPt/2.0,0.0))/muon.pt();
+  nt.branches["tag_absTrkIso03"] = (Trkiso03 > 0) ? Trkiso03 : 0;
+  nt.branches["tag_iso03_sumPt"] = (float)muon.isolationR03().sumPt;
+  nt.branches["tag_pfIso03_charged"] = (float)muon.pfIsolationR03().sumChargedHadronPt;
+  nt.branches["tag_pfIso03_neutral"] = (float)muon.pfIsolationR03().sumNeutralHadronEt;
+  nt.branches["tag_pfIso03_photon"] = (float)muon.pfIsolationR03().sumPhotonEt;
+  nt.branches["tag_pfIso03_sumPU"] = (float)muon.pfIsolationR03().sumPUPt;
+  nt.branches["tag_combRelIsoPF03dBeta"] = (float)(muon.pfIsolationR03().sumChargedHadronPt + TMath::Max(muon.pfIsolationR03().sumNeutralHadronEt + muon.pfIsolationR03().sumPhotonEt - muon.pfIsolationR03().sumPUPt/2.0,0.0))/muon.pt();
+  nt.branches["tag_pfIso04_charged"] = (float)muon.pfIsolationR04().sumChargedHadronPt;
+  nt.branches["tag_pfIso04_neutral"] = (float)muon.pfIsolationR04().sumNeutralHadronEt;
+  nt.branches["tag_pfIso04_photon"] = (float)muon.pfIsolationR04().sumPhotonEt;
+  nt.branches["tag_pfIso04_sumPU"] = (float)muon.pfIsolationR04().sumPUPt;
+  nt.branches["tag_combRelIsoPF04dBeta"] = (float)(muon.pfIsolationR04().sumChargedHadronPt + TMath::Max(muon.pfIsolationR04().sumNeutralHadronEt + muon.pfIsolationR04().sumPhotonEt - muon.pfIsolationR04().sumPUPt/2.0,0.0))/muon.pt();
   if (muon.tunePMuonBestTrack().isNonnull()) {
-    nt.tag_tuneP_ExistingRefit = true;
-    nt.tag_tuneP_charge = muon.tunePMuonBestTrack()->charge();
-    nt.tag_tuneP_pt = muon.tunePMuonBestTrack()->pt();
-    nt.tag_tuneP_pterr = muon.tunePMuonBestTrack()->ptError();
-    nt.tag_tuneP_eta = muon.tunePMuonBestTrack()->eta();
-    nt.tag_tuneP_phi = muon.tunePMuonBestTrack()->phi();
-    nt.tag_tuneP_muonHits = muon.tunePMuonBestTrack()->hitPattern().numberOfValidMuonHits();
+    nt.branches["tag_tuneP_ExistingRefit"] = (bool)true;
+    nt.branches["tag_tuneP_charge"] = (int)muon.tunePMuonBestTrack()->charge();
+    nt.branches["tag_tuneP_pt"] = (float)muon.tunePMuonBestTrack()->pt();
+    nt.branches["tag_tuneP_pterr"] = (float)muon.tunePMuonBestTrack()->ptError();
+    nt.branches["tag_tuneP_eta"] = (float)muon.tunePMuonBestTrack()->eta();
+    nt.branches["tag_tuneP_phi"] = (float)muon.tunePMuonBestTrack()->phi();
+    nt.branches["tag_tuneP_muonHits"] = (float)muon.tunePMuonBestTrack()->hitPattern().numberOfValidMuonHits();
   } else {
-    nt.tag_tuneP_ExistingRefit = false;
-    nt.tag_tuneP_charge = -99.;
-    nt.tag_tuneP_pt = -99.;
-    nt.tag_tuneP_pterr = -99.;
-    nt.tag_tuneP_eta = -99.;
-    nt.tag_tuneP_phi = -99.;
-    nt.tag_tuneP_pterr = -99.;
-    nt.tag_tuneP_muonHits = -99.;
+    nt.branches["tag_tuneP_ExistingRefit"] = (bool)false;
+    nt.branches["tag_tuneP_charge"] = (int)0;
+    nt.branches["tag_tuneP_pt"] = (float)-99.;
+    nt.branches["tag_tuneP_pterr"] = (float)-99.;
+    nt.branches["tag_tuneP_eta"] = (float)-99.;
+    nt.branches["tag_tuneP_phi"] = (float)-99.;
+    nt.branches["tag_tuneP_pterr"] = (float)-99.;
+    nt.branches["tag_tuneP_muonHits"] = (float)-99.;
   }
   int nsegments = 0;
   for (auto &chamber : muon.matches()) {
@@ -85,88 +87,89 @@ inline void FillTagBranches(const MUON &muon,
       continue;
     nsegments += chamber.segmentMatches.size();
   }
-  nt.tag_nsegments = nsegments;
+  nt.branches["tag_nsegments"] = (int)nsegments;
 
   // for high-pt
   if (muon.innerTrack().isNonnull() && muon.innerTrack().isAvailable()) {
-    nt.tag_inner_validFraction = muon.innerTrack()->validFraction();
-    nt.tag_inner_trackerLayers = muon.innerTrack()->hitPattern().trackerLayersWithMeasurement();
-    nt.tag_inner_pixelLayers = muon.innerTrack()->hitPattern().pixelLayersWithMeasurement();
-    nt.tag_inner_pterr = muon.innerTrack()->ptError();
-    nt.tag_inner_pixelHits = muon.innerTrack()->hitPattern().numberOfValidPixelHits();
-    nt.tag_inner_pt = muon.innerTrack()->pt();
-    nt.tag_inner_eta = muon.innerTrack()->eta();
-    nt.tag_inner_phi = muon.innerTrack()->phi();
-    nt.tag_inner_charge = muon.innerTrack()->charge();
+    nt.branches["tag_inner_validFraction"] = (float)muon.innerTrack()->validFraction();
+    nt.branches["tag_inner_trackerLayers"] = (float)muon.innerTrack()->hitPattern().trackerLayersWithMeasurement();
+    nt.branches["tag_inner_pixelLayers"] = (float)muon.innerTrack()->hitPattern().pixelLayersWithMeasurement();
+    nt.branches["tag_inner_pterr"] = (float)muon.innerTrack()->ptError();
+    nt.branches["tag_inner_pixelHits"] = (float)muon.innerTrack()->hitPattern().numberOfValidPixelHits();
+    nt.branches["tag_inner_pt"] = (float)muon.innerTrack()->pt();
+    nt.branches["tag_inner_eta"] = (float)muon.innerTrack()->eta();
+    nt.branches["tag_inner_phi"] = (float)muon.innerTrack()->phi();
+    nt.branches["tag_inner_charge"] = (int)muon.innerTrack()->charge();
   } else {
-    nt.tag_inner_validFraction = -99;
-    nt.tag_inner_trackerLayers = -99;
-    nt.tag_inner_pixelLayers = -99;
-    nt.tag_inner_pterr = -99;
-    nt.tag_inner_pixelHits = -99;
-    nt.tag_inner_pt = -99;
-    nt.tag_inner_eta = -99;
-    nt.tag_inner_phi = -99;
-    nt.tag_inner_charge = -99;
+    nt.branches["tag_inner_validFraction"] = (float)-99;
+    nt.branches["tag_inner_trackerLayers"] = (float)-99;
+    nt.branches["tag_inner_pixelLayers"] = (float)-99;
+    nt.branches["tag_inner_pterr"] = (float)-99;
+    nt.branches["tag_inner_pixelHits"] = (float)-99;
+    nt.branches["tag_inner_pt"] = (float)-99;
+    nt.branches["tag_inner_eta"] = (float)-99;
+    nt.branches["tag_inner_phi"] = (float)-99;
+    nt.branches["tag_inner_charge"] = (int)0;
   }
 
   if (muon.tpfmsTrack().isNonnull() && muon.tpfmsTrack().isAvailable()) {
-    nt.tag_tpfms_charge = muon.tpfmsTrack()->charge();
-    nt.tag_tpfms_pt = muon.tpfmsTrack()->pt();
-    nt.tag_tpfms_pterr = muon.tpfmsTrack()->ptError();
-    nt.tag_tpfms_eta = muon.tpfmsTrack()->eta();
-    nt.tag_tpfms_phi = muon.tpfmsTrack()->phi();
-    nt.tag_tpfms_muonHits = muon.tpfmsTrack()->hitPattern().numberOfValidMuonHits();
+    nt.branches["tag_tpfms_charge"] = (int)muon.tpfmsTrack()->charge();
+    nt.branches["tag_tpfms_pt"] = (float)muon.tpfmsTrack()->pt();
+    nt.branches["tag_tpfms_pterr"] = (float)muon.tpfmsTrack()->ptError();
+    nt.branches["tag_tpfms_eta"] = (float)muon.tpfmsTrack()->eta();
+    nt.branches["tag_tpfms_phi"] = (float)muon.tpfmsTrack()->phi();
+    nt.branches["tag_tpfms_muonHits"] = (float)muon.tpfmsTrack()->hitPattern().numberOfValidMuonHits();
   } else {
-    nt.tag_tpfms_charge = -99.;
-    nt.tag_tpfms_pt = -99.;
-    nt.tag_tpfms_pterr = -99.;
-    nt.tag_tpfms_eta = -99.;
-    nt.tag_tpfms_phi = -99.;
-    nt.tag_tpfms_pterr = -99.;
-    nt.tag_tpfms_muonHits = -99.;
+    nt.branches["tag_tpfms_charge"] = (int)0;
+    nt.branches["tag_tpfms_pt"] = (float)-99.;
+    nt.branches["tag_tpfms_pterr"] = (float)-99.;
+    nt.branches["tag_tpfms_eta"] = (float)-99.;
+    nt.branches["tag_tpfms_phi"] = (float)-99.;
+    nt.branches["tag_tpfms_pterr"] = (float)-99.;
+    nt.branches["tag_tpfms_muonHits"] = (float)-99.;
   }
 
   if (muon.pickyTrack().isNonnull() && muon.pickyTrack().isAvailable()) {
-    nt.tag_picky_charge = muon.pickyTrack()->charge();
-    nt.tag_picky_pt = muon.pickyTrack()->pt();
-    nt.tag_picky_pterr = muon.pickyTrack()->ptError();
-    nt.tag_picky_eta = muon.pickyTrack()->eta();
-    nt.tag_picky_phi = muon.pickyTrack()->phi();
-    nt.tag_picky_muonHits = muon.pickyTrack()->hitPattern().numberOfValidMuonHits();
+    nt.branches["tag_picky_charge"] = (int)muon.pickyTrack()->charge();
+    nt.branches["tag_picky_pt"] = (float)muon.pickyTrack()->pt();
+    nt.branches["tag_picky_pterr"] = (float)muon.pickyTrack()->ptError();
+    nt.branches["tag_picky_eta"] = (float)muon.pickyTrack()->eta();
+    nt.branches["tag_picky_phi"] = (float)muon.pickyTrack()->phi();
+    nt.branches["tag_picky_muonHits"] = (float)muon.pickyTrack()->hitPattern().numberOfValidMuonHits();
   } else {
-    nt.tag_picky_charge = -99.;
-    nt.tag_picky_pt = -99.;
-    nt.tag_picky_pterr = -99.;
-    nt.tag_picky_eta = -99.;
-    nt.tag_picky_phi = -99.;
-    nt.tag_picky_pterr = -99.;
-    nt.tag_picky_muonHits = -99.;
+    nt.branches["tag_picky_charge"] = (int)0;
+    nt.branches["tag_picky_pt"] = (float)-99.;
+    nt.branches["tag_picky_pterr"] = (float)-99.;
+    nt.branches["tag_picky_eta"] = (float)-99.;
+    nt.branches["tag_picky_phi"] = (float)-99.;
+    nt.branches["tag_picky_pterr"] = (float)-99.;
+    nt.branches["tag_picky_muonHits"] = (float)-99.;
   }
 
   if (muon.dytTrack().isNonnull() && muon.dytTrack().isAvailable()) {
-    nt.tag_dyt_charge = muon.dytTrack()->charge();
-    nt.tag_dyt_pt = muon.dytTrack()->pt();
-    nt.tag_dyt_pterr = muon.dytTrack()->ptError();
-    nt.tag_dyt_eta = muon.dytTrack()->eta();
-    nt.tag_dyt_phi = muon.dytTrack()->phi();
-    nt.tag_dyt_muonHits = muon.dytTrack()->hitPattern().numberOfValidMuonHits();
+    nt.branches["tag_dyt_charge"] = (int)muon.dytTrack()->charge();
+    nt.branches["tag_dyt_pt"] = (float)muon.dytTrack()->pt();
+    nt.branches["tag_dyt_pterr"] = (float)muon.dytTrack()->ptError();
+    nt.branches["tag_dyt_eta"] = (float)muon.dytTrack()->eta();
+    nt.branches["tag_dyt_phi"] = (float)muon.dytTrack()->phi();
+    nt.branches["tag_dyt_muonHits"] = (float)muon.dytTrack()->hitPattern().numberOfValidMuonHits();
   } else {
-    nt.tag_dyt_charge = -99.;
-    nt.tag_dyt_pt = -99.;
-    nt.tag_dyt_pterr = -99.;
-    nt.tag_dyt_eta = -99.;
-    nt.tag_dyt_phi = -99.;
-    nt.tag_dyt_pterr = -99.;
-    nt.tag_dyt_muonHits = -99.;
+    nt.branches["tag_dyt_charge"] = (int)-99;
+    nt.branches["tag_dyt_pt"] = (float)-99.;
+    nt.branches["tag_dyt_pterr"] = (float)-99.;
+    nt.branches["tag_dyt_eta"] = (float)-99.;
+    nt.branches["tag_dyt_phi"] = (float)-99.;
+    nt.branches["tag_dyt_pterr"] = (float)-99.;
+    nt.branches["tag_dyt_muonHits"] = (float)-99.;
   }
 
 
   if (muon.globalTrack().isNonnull()) {
-    nt.tag_GlobalValidHits = muon.globalTrack()->hitPattern().numberOfValidMuonHits();
+    nt.branches["tag_GlobalValidHits"] = (int)muon.globalTrack()->hitPattern().numberOfValidMuonHits();
   }
-  nt.tag_ZprimeMatchedStations = (muon.numberOfMatchedStations() > 1 || (muon.numberOfMatchedStations() == 1 && !(muon.stationMask() == 1 || muon.stationMask() == 16)) || (muon.numberOfMatchedStations() == 1 && (muon.stationMask() == 1 || muon.stationMask() == 16) && muon.numberOfMatchedRPCLayers() > 2));
-  nt.tag_RPCLayers = muon.numberOfMatchedRPCLayers();
+  nt.branches["tag_ZprimeMatchedStations"] = (bool)(muon.numberOfMatchedStations() > 1 || (muon.numberOfMatchedStations() == 1 && !(muon.stationMask() == 1 || muon.stationMask() == 16)) || (muon.numberOfMatchedStations() == 1 && (muon.stationMask() == 1 || muon.stationMask() == 16) && muon.numberOfMatchedRPCLayers() > 2));
+    
+  nt.branches["tag_RPCLayers"] = (int)muon.numberOfMatchedRPCLayers();
 }
 
 template <typename MUON, typename TRK>
