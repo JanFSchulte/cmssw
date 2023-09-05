@@ -1,6 +1,354 @@
 #include "NtupleContent.h"
 
-NtupleContent::NtupleContent() {}
+NtupleContent::NtupleContent() :
+  branches{
+    {"run", {-1}},
+    {"event", {-1}},
+    {"lumi", {-1}},
+    {"fromFullAOD", {false}},
+    {"genWeight", {-99.f}},
+    {"BSpot_x", {-99.f}},
+    {"BSpot_y", {-99.f}},
+    {"BSpot_z", {-99.f}},
+    {"pv_x", {-99.f}},
+    {"pv_y", {-99.f}},
+    {"pv_z", {-99.f}},
+    {"nVertices", {0}},
+    {"nTrueInteractions", {-99.f}},
+    {"nPUInteractions", {0}},
+    {"rho", {-99.f}},
+    {"nmuons", {0}},
+    {"ntag", {0}},
+    {"npairs", {0}},
+    {"pair_probeMultiplicity", {0}},
+    {"genmu1_pt", {-99.f}},
+    {"genmu1_eta", {-99.f}},
+    {"genmu1_phi", {-99.f}},
+    {"genmu1_charge", {0}},
+    {"genmu2_pt", {-99.f}},
+    {"genmu2_eta", {-99.f}},
+    {"genmu2_phi", {-99.f}},
+    {"genmu2_charge", {0}},
+    {"genMass", {-99.f}},
+    {"genmuFSfromHP1_pt", {-99.f}},
+    {"genmuFSfromHP1_eta", {-99.f}},
+    {"genmuFSfromHP1_phi", {-99.f}},
+    {"genmuFSfromHP1_charge", {0}},
+    {"genmuFSfromHP2_pt", {-99.f}},
+    {"genmuFSfromHP2_eta", {-99.f}},
+    {"genmuFSfromHP2_phi", {-99.f}},
+    {"genmuFSfromHP2_charge", {0}},
+    {"genMassFSfromHP", {-99.f}},
+    {"genJets_pt", {-99.f}},
+    {"genJets_eta", {-99.f}},
+    {"genJets_phi", {-99.f}},
+    {"genJets_mass", {-99.f}},
+    {"jets_pt", {-99.f}},
+    {"jets_eta", {-99.f}},
+    {"jets_phi", {-99.f}},
+    {"jets_mass", {-99.f}},
+    {"jets_isTight", {0}},
+    {"jets_isTightLepVeto", {0}},
+    {"jets_bTag_deepCSV", {-99.f}},
+    {"jets_bTag_deepFlav", {-99.f}},
+    {"nTightJets", {-99.f}},
+    {"nTightLepVetoJets", {-99.f}},
+    {"tag_pt", {-99.f}},
+    {"tag_eta", {-99.f}},
+    {"tag_phi", {-99.f}},
+    {"tag_charge", {0}},
+    {"tag_inner_pterr", {-99.f}},
+    {"tag_dxy", {-99.f}},
+    {"tag_dz", {-99.f}},
+    {"tag_isPF", {false}},
+    {"tag_isSA", {false}},
+    {"tag_isdSA", {false}},
+    {"tag_isTracker", {false}},
+    {"tag_isGlobal", {false}},
+    {"tag_isRPC", {false}},
+    {"tag_isLoose", {false}},
+    {"tag_isMedium", {false}},
+    {"tag_isTight", {false}},
+    {"tag_isSoft", {false}},
+    {"tag_isHighPt", {false}},
+    {"tag_tuneP_ExistingRefit", {false}},
+    {"tag_ZprimeMatchedStations", {false}},
+    {"tag_SIP3D", {-99.f}},
+    {"tag_SIP3D_err", {-99.f}},
+    {"tag_absTrkIso04", {-99.f}},
+    {"tag_absTrkIso03", {-99.f}},
+    {"tag_miniIso", {-1}},
+    {"tag_miniIsoCharged", {0.f}},
+    {"tag_miniIsoPhotons", {0.f}},
+    {"tag_miniIsoNeutrals", {0.f}},
+    {"tag_isMatchedGen", {false}},
+    {"tag_minDR", {-99.f}},
+    {"tag_ptRel_minDR", {-99.f}},
+    {"tag_iso03_sumPt", {-99.f}},
+    {"tag_pfIso03_charged", {-99.f}},
+    {"tag_pfIso03_neutral", {-99.f}},
+    {"tag_pfIso03_photon", {-99.f}},
+    {"tag_pfIso03_sumPU", {-99.f}},
+    {"tag_combRelIsoPF03dBeta", {-99.f}},
+    {"tag_pfIso04_charged", {-99.f}},
+    {"tag_pfIso04_neutral", {-99.f}},
+    {"tag_pfIso04_photon", {-99.f}},
+    {"tag_pfIso04_sumPU", {-99.f}},
+    {"tag_combRelIsoPF04dBeta", {-99.f}},
+    {"tag_tuneP_pt", {-99.f}},
+    {"tag_tuneP_eta", {-99.f}},
+    {"tag_tuneP_phi", {-99.f}},
+    {"tag_tuneP_muonHits", {0}},
+    {"tag_tuneP_charge", {0}},
+    {"tag_tuneP_pterr", {-99.f}},
+    {"tag_nsegments", {-99}},
+    {"tag_inner_validFraction", {-99.f}},
+    {"tag_inner_trackerLayers", {-99.f}},
+    {"tag_inner_pixelLayers", {-99}},
+    {"tag_inner_pixelHits", {-99}},
+    {"tag_inner_pt", {-99.f}},
+    {"tag_inner_eta", {-99.f}},
+    {"tag_inner_phi", {-99.f}},
+    {"tag_inner_charge", {0}},
+    {"tag_GlobalValidHits", {-99}},
+    {"tag_RPCLayers", {-99}},
+    {"tag_tpfms_pt", {-99.f}},
+    {"tag_tpfms_eta", {-99.f}},
+    {"tag_tpfms_phi", {-99.f}},
+    {"tag_tpfms_muonHits", {-99}},
+    {"tag_tpfms_charge", {0}},
+    {"tag_tpfms_pterr", {-99.f}},
+    {"tag_picky_pt", {-99.f}},
+    {"tag_picky_eta", {-99.f}},
+    {"tag_picky_phi", {-99.f}},
+    {"tag_picky_muonHits", {-99}},
+    {"tag_picky_charge", {0}},
+    {"tag_picky_pterr", {-99.f}},
+    {"tag_dyt_pt", {-99.f}},
+    {"tag_dyt_eta", {-99.f}},
+    {"tag_dyt_phi", {-99.f}},
+    {"tag_dyt_muonHits", {-99}},
+    {"tag_dyt_charge", {0}},
+    {"tag_dyt_pterr", {-99.f}},
+    {"iprobe", {0}},
+    {"probe_pt", {-99.f}},
+    {"probe_eta", {-99.f}},
+    {"probe_phi", {-99.f}},
+    {"probe_charge", {0}},
+    {"probe_inner_pt", {-99.f}},
+    {"probe_inner_eta", {-99.f}},
+    {"probe_inner_phi", {-99.f}},
+    {"probe_inner_charge", {0}},
+    {"probe_outer_pt", {-99.f}},
+    {"probe_outer_eta", {-99.f}},
+    {"probe_outer_phi", {-99.f}},
+    {"probe_outer_charge", {0}},
+    {"probe_global_pt", {-99.f}},
+    {"probe_global_eta", {-99.f}},
+    {"probe_global_phi", {-99.f}},
+    {"probe_global_charge", {0}},
+    {"probe_best_pt", {-99.f}},
+    {"probe_best_eta", {-99.f}},
+    {"probe_best_phi", {-99.f}},
+    {"probe_best_charge", {0}},
+    {"probe_inner_pterr", {-99.f}},
+    {"probe_dxy", {-99.f}},
+    {"probe_dz", {-99.f}},
+    {"probe_isPF", {false}},
+    {"probe_isSA", {false}},
+    {"probe_isTracker", {false}},
+    {"probe_isGlobal", {false}},
+    {"probe_isLoose", {false}},
+    {"probe_isMedium", {false}},
+    {"probe_isTight", {false}},
+    {"probe_isSoft", {false}},
+    {"probe_isHighPt", {false}},
+    {"probe_isRPC", {false}},
+    {"probe_isArbitratedTracker", {false}},
+    {"probe_isMuMatched", {false}},
+    {"probe_tuneP_ExistingRefit", {false}},
+    {"probe_isdSA", {false}},
+    {"probe_isdGlobal", {false}},
+    {"probe_isCosmic", {false}},
+    {"probe_ncosmic", {0}},
+    {"probe_cosmic_minDR", {-99.f}},
+    {"probe_isGood", {false}},
+    {"probe_isHighPurity", {false}},
+    {"probe_inner_validFraction", {-99.f}},
+    {"probe_trkChi2", {-99.f}},
+    {"probe_positionChi2", {-99.f}},
+    {"probe_trkKink", {-99.f}},
+    {"probe_segmentCompatibility", {-99.f}},
+    {"probe_inner_trackerLayers", {-99.f}},
+    {"probe_inner_pixelLayers", {-99.f}},
+    {"probe_muonStations", {-99.f}},
+    {"probe_muonHits", {-99.f}},
+    {"probe_DTHits", {-99.f}},
+    {"probe_CSCHits", {-99.f}},
+    {"probe_SIP3D", {-99.f}},
+    {"probe_SIP3D_err", {-99.f}},
+    {"probe_absTrkIso04", {-99.f}},
+    {"probe_absTrkIso03", {-99.f}},
+    {"probe_miniIso", {-99.f}},
+    {"probe_miniIsoCharged", {-99.f}},
+    {"probe_miniIsoPhotons", {-99.f}},
+    {"probe_miniIsoNeutrals", {-99.f}},
+    {"probe_isMatchedGen", {-99.f}},
+    {"probe_minDR", {-99.f}},
+    {"probe_ptRel_minDR", {-99.f}},
+    {"probe_iso03_sumPt", {-99.f}},
+    {"probe_pfIso03_charged", {-99.f}},
+    {"probe_pfIso03_neutral", {-99.f}},
+    {"probe_pfIso03_photon", {-99.f}},
+    {"probe_pfIso03_sumPU", {-99.f}},
+    {"probe_pfIso04_charged", {-99.f}},
+    {"probe_pfIso04_neutral", {-99.f}},
+    {"probe_pfIso04_photon", {-99.f}},
+    {"probe_pfIso04_sumPU", {-99.f}},
+    {"probe_inner_pixelHits", {-99.f}},
+    {"probe_matchedStations", {-99.f}},
+    {"probe_expectedMatchedStations", {-99.f}},
+    {"probe_RPCLayers", {-99.f}},
+    {"probe_stationMask", {-99.f}},
+    {"probe_nShowers", {-99.f}},
+    {"probe_tuneP_pt", {-99.f}},
+    {"probe_tuneP_eta", {-99.f}},
+    {"probe_tuneP_phi", {-99.f}},
+    {"probe_tuneP_charge", {-99.f}},
+    {"probe_tuneP_pterr", {-99.f}},
+    {"probe_tuneP_muonHits", {-99.f}},
+    {"probe_nsegments", {-99.f}},
+    {"probe_tpfms_pt", {-99.f}},
+    {"probe_tpfms_eta", {-99.f}},
+    {"probe_tpfms_phi", {-99.f}},
+    {"probe_tpfms_charge", {-99.f}},
+    {"probe_tpfms_pterr", {-99.f}},
+    {"probe_tpfms_muonHits", {-99.f}},
+    {"probe_picky_pt", {-99.f}},
+    {"probe_picky_eta", {-99.f}},
+    {"probe_picky_phi", {-99.f}},
+    {"probe_picky_charge", {-99.f}},
+    {"probe_picky_pterr", {-99.f}},
+    {"probe_picky_muonHits", {-99.f}},
+    {"probe_dyt_pt", {-99.f}},
+    {"probe_dyt_eta", {-99.f}},
+    {"probe_dyt_phi", {-99.f}},
+    {"probe_dyt_charge", {-99.f}},
+    {"probe_dyt_pterr", {-99.f}},
+    {"probe_dyt_muonHits", {-99.f}},
+    {"l1pt", {-99.f}},
+    {"l1q", {-99.f}},
+    {"l1dr", {-99.f}},
+    {"l1ptByQ", {-99.f}},
+    {"l1qByQ", {-99.f}},
+    {"l1drByQ", {-99.f}},
+    {"tag_l1pt", {-99.f}},
+    {"tag_l1q", {-99.f}},
+    {"tag_l1dr", {-99.f}},
+    {"tag_l1ptByQ", {-99.f}},
+    {"tag_l1qByQ", {-99.f}},
+    {"tag_l1drByQ", {-99.f}},
+    {"probe_dsa_segmentMatches", {-99.f}},
+    {"probe_dsa_nsegments", {-99.f}},
+    {"probe_dsa_muonStations", {-99.f}},
+    {"probe_dsa_muonHits", {-99.f}},
+    {"probe_dsa_DTHits", {-99.f}},
+    {"probe_dsa_CSCHits", {-99.f}},
+    {"probe_dsa_pterr", {-99.f}},
+    {"probe_dsa_dxy", {-99.f}},
+    {"probe_dsa_dz", {-99.f}},
+    {"probe_dsa_trkChi2", {-99.f}},
+    {"probe_dsa_pt", {-99.f}},
+    {"probe_dsa_eta", {-99.f}},
+    {"probe_dsa_phi", {-99.f}},
+    {"probe_dsa_outerEta", {-99.f}},
+    {"probe_dsa_outerPhi", {-99.f}},
+    {"probe_dsa_minDR", {-99.f}},
+    {"probe_dsa_charge", {-99.f}},
+    {"tag_dsa_segmentMatches", {-99.f}},
+    {"tag_dsa_nsegments", {-99.f}},
+    {"tag_dsa_muonStations", {-99.f}},
+    {"tag_dsa_muonHits", {-99.f}},
+    {"tag_dsa_DTHits", {-99.f}},
+    {"tag_dsa_CSCHits", {-99.f}},
+    {"tag_dsa_pterr", {-99.f}},
+    {"tag_dsa_dxy", {-99.f}},
+    {"tag_dsa_dz", {-99.f}},
+    {"tag_dsa_trkChi2", {-99.f}},
+    {"tag_dsa_pt", {-99.f}},
+    {"tag_dsa_eta", {-99.f}},
+    {"tag_dsa_phi", {-99.f}},
+    {"tag_dsa_outerEta", {-99.f}},
+    {"tag_dsa_outerPhi", {-99.f}},
+    {"tag_dsa_minDR", {-99.f}},
+    {"tag_dsa_charge", {-99.f}},
+    {"probe_dgl_segmentMatches", {-99.f}},
+    {"probe_dgl_nsegments", {-99}},
+    {"probe_dgl_muonStations", {-99}},
+    {"probe_dgl_muonHits", {-99}},
+    {"probe_dgl_totalHits", {-99}},
+    {"probe_dgl_outerTrackerHits", {-99}},
+    {"probe_dgl_trackerHits", {-99}},
+    {"probe_dgl_DTHits", {-99}},
+    {"probe_dgl_CSCHits", {-99}},
+    {"probe_dgl_pterr", {-99.f}},
+    {"probe_dgl_dxy", {-99.f}},
+    {"probe_dgl_dz", {-99.f}},
+    {"probe_dgl_trkChi2", {-99.f}},
+    {"probe_dgl_pt", {-99.f}},
+    {"probe_dgl_eta", {-99.f}},
+    {"probe_dgl_phi", {-99.f}},
+    {"probe_dgl_charge", {0}},
+    {"probe_dgl_minDR", {-99.f}},
+    {"pair_pt", {-99.f}},
+    {"pair_eta", {-99.f}},
+    {"pair_phi", {-99.f}},
+    {"pair_mass", {-99.f}},
+    {"pair_fit_mass", {-99.f}},
+    {"pair_svprob", {-99.f}},
+    {"pair_normalchi2", {-99.f}},
+    {"pair_dz", {-99.f}},
+    {"pair_dR", {-99.f}},
+    {"pair_drM1", {-99.f}},
+    {"pair_rank_vtx_prob", {-99.f}},
+    {"pair_rank_dz_PV_SV", {-99.f}},
+    {"pair_rank_dPhi_muons", {-99.f}},
+    {"pair_rank_dM_Z_Mmumu", {-99.f}},
+    {"pair_tuneP_pt", {-99.f}},
+    {"pair_tuneP_eta", {-99.f}},
+    {"pair_tuneP_phi", {-99.f}},
+    {"pair_tuneP_mass", {-99.f}},
+    {"pair_tuneP_fit_mass", {-99.f}},
+    {"pair_tuneP_svprob", {-99.f}},
+    {"pair_tuneP_normalchi2", {-99.f}},
+    {"pair_tuneP_dz", {-99.f}},
+    {"pair_tuneP_dR", {-99.f}},
+    {"tag_simType", {-99}},
+    {"tag_simExtType", {-99}},
+    {"tag_simFlavour", {-99}},
+    {"tag_simHeaviestMotherFlavour", {-99}},
+    {"tag_simPdgId", {-99}},
+    {"tag_simMotherPdgId", {-99}},
+    {"tag_simBX", {-99}},
+    {"tag_simProdRho", {-99}},
+    {"tag_simProdZ", {-99}},
+    {"tag_simPt", {-99}},
+    {"tag_simEta", {-99}},
+    {"tag_simPhi", {-99}},
+    {"probe_simType", {-99}},
+    {"probe_simExtType", {-99}},
+    {"probe_simFlavour", {-99}},
+    {"probe_simHeaviestMotherFlavour", {-99}},
+    {"probe_simPdgId", {-99}},
+    {"probe_simMotherPdgId", {-99}},
+    {"probe_simBX", {-99}},
+    {"probe_simProdRho", {-99}},
+    {"probe_simProdZ", {-99}},
+    {"probe_simPt", {-99}},
+    {"probe_simEta", {-99}},
+    {"probe_simPhi", {-99}},
+}
+{}
 
 NtupleContent::~NtupleContent() {}
 
@@ -9,372 +357,27 @@ void NtupleContent::SetTree(TTree *mytree) { t1 = mytree; }
 void NtupleContent::CreateBranches(const std::vector<std::string> &HLTs,
                                    const std::vector<std::string> &selectorNames) {
   // General
-  t1->Branch("run", &run);
-  t1->Branch("event", &event);
-  t1->Branch("lumi", &ls);
-  t1->Branch("fromFullAOD", &fromFullAOD);
-  t1->Branch("genWeight", &genWeight);
-  t1->Branch("BSpot_x", &BSpot_x);
-  t1->Branch("BSpot_y", &BSpot_y);
-  t1->Branch("BSpot_z", &BSpot_z);
-  t1->Branch("pv_x", &pv_x);
-  t1->Branch("pv_y", &pv_y);
-  t1->Branch("pv_z", &pv_z);
-  t1->Branch("nVertices", &nvertices);
-  t1->Branch("nTrueInteractions", &trueNumInteractions);
-  t1->Branch("nPUInteractions", &puNumInteractions);
-  t1->Branch("rho", &Rho);
-  t1->Branch("nmuons", &nmuons);
-  t1->Branch("ntag", &ntag);
-  t1->Branch("npairs", &npairs);
-  t1->Branch("pair_probeMultiplicity", &pair_probeMultiplicity);
-  t1->Branch("genmu1_pt", &genmu1_pt);
-  t1->Branch("genmu1_eta", &genmu1_eta);
-  t1->Branch("genmu1_phi", &genmu1_phi);
-  t1->Branch("genmu1_charge", &genmu1_charge);
-  t1->Branch("genmu2_pt", &genmu2_pt);
-  t1->Branch("genmu2_eta", &genmu2_eta);
-  t1->Branch("genmu2_phi", &genmu2_phi);
-  t1->Branch("genmu2_charge", &genmu2_charge);
-  t1->Branch("genMass", &genMass);
-  t1->Branch("genmuFSfromHP1_pt", &genmuFSfromHP1_pt);
-  t1->Branch("genmuFSfromHP1_eta", &genmuFSfromHP1_eta);
-  t1->Branch("genmuFSfromHP1_phi", &genmuFSfromHP1_phi);
-  t1->Branch("genmuFSfromHP1_charge", &genmuFSfromHP1_charge);
-  t1->Branch("genmuFSfromHP2_pt", &genmuFSfromHP2_pt);
-  t1->Branch("genmuFSfromHP2_eta", &genmuFSfromHP2_eta);
-  t1->Branch("genmuFSfromHP2_phi", &genmuFSfromHP2_phi);
-  t1->Branch("genmuFSfromHP2_charge", &genmuFSfromHP2_charge);
-  t1->Branch("genMassFSfromHP", &genMassFSfromHP);
-  for (unsigned int ihlt = 0; ihlt < HLTs.size(); ihlt++)
-    t1->Branch(TString(HLTs[ihlt]), &trigger[ihlt]);
-  t1->Branch("genJets_pt", &genJets_pt);
-  t1->Branch("genJets_eta", &genJets_eta);
-  t1->Branch("genJets_phi", &genJets_phi);
-  t1->Branch("genJets_mass", &genJets_mass);
-  t1->Branch("jets_pt", &jets_pt);
-  t1->Branch("jets_eta", &jets_eta);
-  t1->Branch("jets_phi", &jets_phi);
-  t1->Branch("jets_mass", &jets_mass);
-  t1->Branch("jets_isTight", &jets_isTight);
-  t1->Branch("jets_isTightLepVeto", &jets_isTightLepVeto);
-  t1->Branch("jets_bTag_deepCSV", &jets_bTag_deepCSV);
-  t1->Branch("jets_bTag_deepFlav", &jets_bTag_deepFlav);
-  t1->Branch("nTightJets", &nTightJets);
-  t1->Branch("nTightLepVetoJets", &nTightLepVetoJets);
-  // Tag specific
-  t1->Branch("tag_pt", &tag_pt);
-  t1->Branch("tag_eta", &tag_eta);
-  t1->Branch("tag_phi", &tag_phi);
-  t1->Branch("tag_charge", &tag_charge);
-  t1->Branch("tag_inner_pterr", &tag_inner_pterr);
-  t1->Branch("tag_dxy", &tag_dxy);
-  t1->Branch("tag_dz", &tag_dz);
-  t1->Branch("tag_isPF", &tag_isPF);
-  t1->Branch("tag_isSA", &tag_isSA);
-  t1->Branch("tag_isdSA", &tag_isdSA);
-  t1->Branch("tag_isTracker", &tag_isTracker);
-  t1->Branch("tag_isGlobal", &tag_isGlobal);
-  t1->Branch("tag_isRPC", &tag_isRPC);
-  t1->Branch("tag_isLoose", &tag_isLoose);
-  t1->Branch("tag_isMedium", &tag_isMedium);
-  t1->Branch("tag_isTight", &tag_isTight);
-  t1->Branch("tag_isSoft", &tag_isSoft);
-  t1->Branch("tag_isHighPt", &tag_isHighPt);
-  t1->Branch("tag_tuneP_ExistingRefit", &tag_tuneP_ExistingRefit);
-  t1->Branch("tag_ZprimeMatchedStations", &tag_ZprimeMatchedStations);
-  t1->Branch("tag_SIP3D", &tag_SIP3D);
-  t1->Branch("tag_SIP3D_err", &tag_SIP3D_err);
-  t1->Branch("tag_absTrkIso04", &tag_absTrkIso04);
-  t1->Branch("tag_absTrkIso03", &tag_absTrkIso03);
-  t1->Branch("tag_miniIso", &tag_miniIso);
-  t1->Branch("tag_miniIsoCharged", &tag_miniIsoCharged);
-  t1->Branch("tag_miniIsoPhotons", &tag_miniIsoPhotons);
-  t1->Branch("tag_miniIsoNeutrals", &tag_miniIsoPhotons);
-  t1->Branch("tag_isMatchedGen", &tag_isMatchedGen);
-  t1->Branch("tag_minDR", &tag_minDR);
-  t1->Branch("tag_ptRel_minDR", &tag_ptRel_minDR);
-  t1->Branch("tag_iso03_sumPt", &tag_iso03_sumPt);
-  t1->Branch("tag_pfIso03_charged", &tag_pfIso03_charged);
-  t1->Branch("tag_pfIso03_neutral", &tag_pfIso03_neutral);
-  t1->Branch("tag_pfIso03_photon", &tag_pfIso03_photon);
-  t1->Branch("tag_pfIso03_sumPU", &tag_pfIso03_sumPU);
-  t1->Branch("tag_combRelIsoPF03dBeta", &tag_combRelIsoPF03dBeta);
-  t1->Branch("tag_pfIso04_charged", &tag_pfIso04_charged);
-  t1->Branch("tag_pfIso04_neutral", &tag_pfIso04_neutral);
-  t1->Branch("tag_pfIso04_photon", &tag_pfIso04_photon);
-  t1->Branch("tag_pfIso04_sumPU", &tag_pfIso04_sumPU);
-  t1->Branch("tag_combRelIsoPF04dBeta", &tag_combRelIsoPF04dBeta);
-  t1->Branch("tag_tuneP_pt", &tag_tuneP_pt);
-  t1->Branch("tag_tuneP_eta", &tag_tuneP_eta);
-  t1->Branch("tag_tuneP_phi", &tag_tuneP_phi);
-  t1->Branch("tag_tuneP_muonHits", &tag_tuneP_muonHits);
-  t1->Branch("tag_tuneP_charge", &tag_tuneP_charge);
-  t1->Branch("tag_tuneP_pterr", &tag_tuneP_pterr);
-  t1->Branch("tag_nsegments", &tag_nsegments);
-  t1->Branch("tag_inner_validFraction", &tag_inner_validFraction);
-  t1->Branch("tag_inner_trackerLayers", &tag_inner_trackerLayers);
-  t1->Branch("tag_inner_pixelLayers", &tag_inner_pixelLayers);
-  t1->Branch("tag_inner_pixelHits", &tag_inner_pixelHits);
-  t1->Branch("tag_inner_pt", &tag_inner_pt);
-  t1->Branch("tag_inner_eta", &tag_inner_eta);
-  t1->Branch("tag_inner_phi", &tag_inner_phi);
-  t1->Branch("tag_inner_charge", &tag_inner_charge);
-  t1->Branch("tag_GlobalValidHits", &tag_GlobalValidHits);
-  t1->Branch("tag_RPCLayers", &tag_RPCLayers);
-  t1->Branch("tag_tpfms_pt", &tag_tpfms_pt);
-  t1->Branch("tag_tpfms_eta", &tag_tpfms_eta);
-  t1->Branch("tag_tpfms_phi", &tag_tpfms_phi);
-  t1->Branch("tag_tpfms_muonHits", &tag_tpfms_muonHits);
-  t1->Branch("tag_tpfms_charge", &tag_tpfms_charge);
-  t1->Branch("tag_tpfms_pterr", &tag_tpfms_pterr);
-  t1->Branch("tag_picky_pt", &tag_picky_pt);
-  t1->Branch("tag_picky_eta", &tag_picky_eta);
-  t1->Branch("tag_picky_phi", &tag_picky_phi);
-  t1->Branch("tag_picky_muonHits", &tag_picky_muonHits);
-  t1->Branch("tag_picky_charge", &tag_picky_charge);
-  t1->Branch("tag_picky_pterr", &tag_picky_pterr);
-  t1->Branch("tag_dyt_pt", &tag_dyt_pt);
-  t1->Branch("tag_dyt_eta", &tag_dyt_eta);
-  t1->Branch("tag_dyt_phi", &tag_dyt_phi);
-  t1->Branch("tag_dyt_muonHits", &tag_dyt_muonHits);
-  t1->Branch("tag_dyt_charge", &tag_dyt_charge);
-  t1->Branch("tag_dyt_pterr", &tag_dyt_pterr);
-
-  // Probe specific
-  t1->Branch("iprobe", &iprobe);
-  t1->Branch("probe_pt", &probe_pt);
-  t1->Branch("probe_eta", &probe_eta);
-  t1->Branch("probe_phi", &probe_phi);
-  t1->Branch("probe_charge", &probe_charge);
-  t1->Branch("probe_inner_pt", &probe_inner_pt);
-  t1->Branch("probe_inner_eta", &probe_inner_eta);
-  t1->Branch("probe_inner_phi", &probe_inner_phi);
-  t1->Branch("probe_inner_charge", &probe_inner_charge);
-  t1->Branch("probe_outer_pt", &probe_outer_pt);
-  t1->Branch("probe_outer_eta", &probe_outer_eta);
-  t1->Branch("probe_outer_phi", &probe_outer_phi);
-  t1->Branch("probe_outer_charge", &probe_outer_charge);
-  t1->Branch("probe_global_pt", &probe_global_pt);
-  t1->Branch("probe_global_eta", &probe_global_eta);
-  t1->Branch("probe_global_phi", &probe_global_phi);
-  t1->Branch("probe_global_charge", &probe_global_charge);
-  t1->Branch("probe_best_pt", &probe_best_pt);
-  t1->Branch("probe_best_eta", &probe_best_eta);
-  t1->Branch("probe_best_phi", &probe_best_phi);
-  t1->Branch("probe_best_charge", &probe_best_charge);
-  t1->Branch("probe_inner_pterr", &probe_inner_pterr);
-  t1->Branch("probe_dxy", &probe_dxy);
-  t1->Branch("probe_dz", &probe_dz);
-  t1->Branch("probe_isPF", &probe_isPF);
-  t1->Branch("probe_isSA", &probe_isSA);
-  t1->Branch("probe_isTracker", &probe_isTracker);
-  t1->Branch("probe_isGlobal", &probe_isGlobal);
-  t1->Branch("probe_isLoose", &probe_isLoose);
-  t1->Branch("probe_isMedium", &probe_isMedium);
-  t1->Branch("probe_isTight", &probe_isTight);
-  t1->Branch("probe_isSoft", &probe_isSoft);
-  t1->Branch("probe_isHighPt", &probe_isHighPt);
-  t1->Branch("probe_isRPC", &probe_isRPC);
-  t1->Branch("probe_isArbitratedTracker", &probe_isArbitratedTracker);
-  t1->Branch("probe_isMuMatched", &probe_isMuMatched);
-  t1->Branch("probe_tuneP_ExistingRefit", &probe_tuneP_ExistingRefit);
-  t1->Branch("probe_isdSA", &probe_isdSA);
-  t1->Branch("probe_isdGlobal", &probe_isdGlobal);
-  t1->Branch("probe_isCosmic", &probe_isCosmic);
-  t1->Branch("probe_ncosmic", &probe_ncosmic);
-  t1->Branch("probe_cosmic_minDR", &probe_cosmic_minDR);
-  //  t1->Branch("probe_isGood", &probe_isGood);
-  t1->Branch("probe_isHighPurity", &probe_isHighPurity);
-  t1->Branch("probe_inner_validFraction", &probe_inner_validFraction);
-  t1->Branch("probe_trkChi2", &probe_trkChi2);
-  t1->Branch("probe_positionChi2", &probe_positionChi2);
-  t1->Branch("probe_trkKink", &probe_trkKink);
-  // t1->Branch("probe_segmentCompatibility", &probe_segmentCompatibility);
-  t1->Branch("probe_inner_trackerLayers", &probe_inner_trackerLayers);
-  t1->Branch("probe_inner_pixelLayers", &probe_inner_pixelLayers);
-  t1->Branch("probe_muonStations", &probe_muonStations);
-  t1->Branch("probe_muonHits", &probe_muonHits);
-  t1->Branch("probe_DTHits", &probe_DTHits);
-  t1->Branch("probe_CSCHits", &probe_CSCHits);
-  t1->Branch("probe_SIP3D", &probe_SIP3D);
-  t1->Branch("probe_SIP3D_err", &probe_SIP3D_err);
-  t1->Branch("probe_absTrkIso04", &probe_absTrkIso04);
-  t1->Branch("probe_absTrkIso03", &probe_absTrkIso03);
-  t1->Branch("probe_miniIso", &probe_miniIso);
-  t1->Branch("probe_miniIsoCharged", &probe_miniIsoCharged);
-  t1->Branch("probe_miniIsoPhotons", &probe_miniIsoPhotons);
-  t1->Branch("probe_miniIsoNeutrals", &probe_miniIsoPhotons);
-  t1->Branch("probe_isMatchedGen", &probe_isMatchedGen);
-  t1->Branch("probe_minDR", &probe_minDR);
-  t1->Branch("probe_ptRel_minDR", &probe_ptRel_minDR);
-  t1->Branch("probe_iso03_sumPt", &probe_iso03_sumPt);
-  t1->Branch("probe_pfIso03_charged", &probe_pfIso03_charged);
-  t1->Branch("probe_pfIso03_neutral", &probe_pfIso03_neutral);
-  t1->Branch("probe_pfIso03_photon", &probe_pfIso03_photon);
-  t1->Branch("probe_pfIso03_sumPU", &probe_pfIso03_sumPU);
-  t1->Branch("probe_pfIso04_charged", &probe_pfIso04_charged);
-  t1->Branch("probe_pfIso04_neutral", &probe_pfIso04_neutral);
-  t1->Branch("probe_pfIso04_photon", &probe_pfIso04_photon);
-  t1->Branch("probe_pfIso04_sumPU", &probe_pfIso04_sumPU);
-  t1->Branch("probe_inner_pixelHits", &probe_inner_pixelHits);
-  t1->Branch("probe_matchedStations", &probe_matchedStations);
-  t1->Branch("probe_expectedMatchedStations", &probe_expectedMatchedStations);
-  t1->Branch("probe_RPCLayers", &probe_RPCLayers);
-  t1->Branch("probe_stationMask", &probe_stationMask);
-  t1->Branch("probe_nShowers", &probe_nShowers);
-  t1->Branch("probe_tuneP_pt", &probe_tuneP_pt);
-  t1->Branch("probe_tuneP_eta", &probe_tuneP_eta);
-  t1->Branch("probe_tuneP_phi", &probe_tuneP_phi);
-  t1->Branch("probe_tuneP_charge", &probe_tuneP_charge);
-  t1->Branch("probe_tuneP_pterr", &probe_tuneP_pterr);
-  t1->Branch("probe_tuneP_muonHits", &probe_tuneP_muonHits);
-  t1->Branch("probe_nsegments", &probe_nsegments);
-  t1->Branch("probe_tpfms_pt", &probe_tpfms_pt);
-  t1->Branch("probe_tpfms_eta", &probe_tpfms_eta);
-  t1->Branch("probe_tpfms_phi", &probe_tpfms_phi);
-  t1->Branch("probe_tpfms_charge", &probe_tpfms_charge);
-  t1->Branch("probe_tpfms_pterr", &probe_tpfms_pterr);
-  t1->Branch("probe_tpfms_muonHits", &probe_tpfms_muonHits);
-  t1->Branch("probe_picky_pt", &probe_picky_pt);
-  t1->Branch("probe_picky_eta", &probe_picky_eta);
-  t1->Branch("probe_picky_phi", &probe_picky_phi);
-  t1->Branch("probe_picky_charge", &probe_picky_charge);
-  t1->Branch("probe_picky_pterr", &probe_picky_pterr);
-  t1->Branch("probe_picky_muonHits", &probe_picky_muonHits);
-  t1->Branch("probe_dyt_pt", &probe_dyt_pt);
-  t1->Branch("probe_dyt_eta", &probe_dyt_eta);
-  t1->Branch("probe_dyt_phi", &probe_dyt_phi);
-  t1->Branch("probe_dyt_charge", &probe_dyt_charge);
-  t1->Branch("probe_dyt_pterr", &probe_dyt_pterr);
-  t1->Branch("probe_dyt_muonHits", &probe_dyt_muonHits);
-
-
-  t1->Branch("l1pt", &l1pt);
-  t1->Branch("l1q", &l1q);
-  t1->Branch("l1dr", &l1dr);
-  t1->Branch("l1ptByQ", &l1ptByQ);
-  t1->Branch("l1qByQ", &l1qByQ);
-  t1->Branch("l1drByQ", &l1drByQ);
-
-  t1->Branch("tag_l1pt", &tag_l1pt);
-  t1->Branch("tag_l1q", &tag_l1q);
-  t1->Branch("tag_l1dr", &tag_l1dr);
-  t1->Branch("tag_l1ptByQ", &tag_l1ptByQ);
-  t1->Branch("tag_l1qByQ", &tag_l1qByQ);
-  t1->Branch("tag_l1drByQ", &tag_l1drByQ);
-
-  t1->Branch("probe_dsa_segmentMatches", &probe_dsa_segmentMatches);
-  t1->Branch("probe_dsa_nsegments", &probe_dsa_nsegments);
-  t1->Branch("probe_dsa_muonStations", &probe_dsa_muonStations);
-  t1->Branch("probe_dsa_muonHits", &probe_dsa_muonHits);
-  t1->Branch("probe_dsa_DTHits", &probe_dsa_DTHits);
-  t1->Branch("probe_dsa_CSCHits", &probe_dsa_CSCHits);
-  t1->Branch("probe_dsa_pterr", &probe_dsa_pterr);
-  t1->Branch("probe_dsa_dxy", &probe_dsa_dxy);
-  t1->Branch("probe_dsa_dz", &probe_dsa_dz);
-  t1->Branch("probe_dsa_trkChi2", &probe_dsa_trkChi2);
-  t1->Branch("probe_dsa_pt", &probe_dsa_pt);
-  t1->Branch("probe_dsa_eta", &probe_dsa_eta);
-  t1->Branch("probe_dsa_phi", &probe_dsa_phi);
-  t1->Branch("probe_dsa_outerEta", &probe_dsa_outerEta);
-  t1->Branch("probe_dsa_outerPhi", &probe_dsa_outerPhi);
-  t1->Branch("probe_dsa_minDR", &probe_dsa_minDR);
-  t1->Branch("probe_dsa_charge", &probe_dsa_charge);
-
-  t1->Branch("tag_dsa_segmentMatches", &tag_dsa_segmentMatches);
-  t1->Branch("tag_dsa_nsegments", &tag_dsa_nsegments);
-  t1->Branch("tag_dsa_muonStations", &tag_dsa_muonStations);
-  t1->Branch("tag_dsa_muonHits", &tag_dsa_muonHits);
-  t1->Branch("tag_dsa_DTHits", &tag_dsa_DTHits);
-  t1->Branch("tag_dsa_CSCHits", &tag_dsa_CSCHits);
-  t1->Branch("tag_dsa_pterr", &tag_dsa_pterr);
-  t1->Branch("tag_dsa_dxy", &tag_dsa_dxy);
-  t1->Branch("tag_dsa_dz", &tag_dsa_dz);
-  t1->Branch("tag_dsa_trkChi2", &tag_dsa_trkChi2);
-  t1->Branch("tag_dsa_pt", &tag_dsa_pt);
-  t1->Branch("tag_dsa_eta", &tag_dsa_eta);
-  t1->Branch("tag_dsa_phi", &tag_dsa_phi);
-  t1->Branch("tag_dsa_outerEta", &tag_dsa_outerEta);
-  t1->Branch("tag_dsa_outerPhi", &tag_dsa_outerPhi);
-  t1->Branch("tag_dsa_minDR", &tag_dsa_minDR);
-  t1->Branch("tag_dsa_charge", &tag_dsa_charge);
-
-  // selectors for probe
-  for (unsigned int isel = 0; isel < selectorNames.size(); ++isel) {
-    t1->Branch(TString("probe_" + selectorNames[isel]), &probe_selectors[isel]);
+  for (auto & [name, branch] : branches) {
+    if (std::holds_alternative<bool>(branch.value))
+      t1->Branch(name, & std::get<bool>(branch.value));
+    else if (std::holds_alternative<int>(branch.value))
+      t1->Branch(name, & std::get<int>(branch.value));
+    else if (std::holds_alternative<float>(branch.value))
+      t1->Branch(name, & std::get<float>(branch.value));
+    else if (std::holds_alternative<double>(branch.value))
+      t1->Branch(name, & std::get<double>(branch.value));
+    else if (std::holds_alternative<unsigned>(branch.value))
+      t1->Branch(name, & std::get<unsigned>(branch.value));
+    else if (std::holds_alternative<long unsigned>(branch.value))
+      t1->Branch(name, & std::get<long unsigned>(branch.value));
+    else if (std::holds_alternative<long long unsigned>(branch.value))
+      t1->Branch(name, & std::get<long long unsigned>(branch.value));
+    else if (std::holds_alternative<std::vector<int>>(branch.value))
+      t1->Branch(name, & std::get<std::vector<int>>(branch.value));
+    else if (std::holds_alternative<std::vector<float>>(branch.value))
+      t1->Branch(name, & std::get<std::vector<float>>(branch.value));
   }
 
-  t1->Branch("probe_dgl_segmentMatches", &probe_dgl_segmentMatches);
-  t1->Branch("probe_dgl_nsegments", &probe_dgl_nsegments);
-  t1->Branch("probe_dgl_muonStations", &probe_dgl_muonStations);
-  t1->Branch("probe_dgl_muonHits", &probe_dgl_muonHits);
-  t1->Branch("probe_dgl_totalHits", &probe_dgl_totalHits);
-  t1->Branch("probe_dgl_outerTrackerHits", &probe_dgl_outerTrackerHits);
-  t1->Branch("probe_dgl_trackerHits", &probe_dgl_trackerHits);
-  t1->Branch("probe_dgl_DTHits", &probe_dgl_DTHits);
-  t1->Branch("probe_dgl_CSCHits", &probe_dgl_CSCHits);
-  t1->Branch("probe_dgl_pterr", &probe_dgl_pterr);
-  t1->Branch("probe_dgl_dxy", &probe_dgl_dxy);
-  t1->Branch("probe_dgl_dz", &probe_dgl_dz);
-  t1->Branch("probe_dgl_trkChi2", &probe_dgl_trkChi2);
-  t1->Branch("probe_dgl_pt", &probe_dgl_pt);
-  t1->Branch("probe_dgl_eta", &probe_dgl_eta);
-  t1->Branch("probe_dgl_phi", &probe_dgl_phi);
-  t1->Branch("probe_dgl_charge", &probe_dgl_charge);
-  t1->Branch("probe_dgl_minDR", &probe_dgl_minDR);
-
-  // Pair specific
-  t1->Branch("pair_pt", &pair_pt);
-  t1->Branch("pair_eta", &pair_eta);
-  t1->Branch("pair_phi", &pair_phi);
-  t1->Branch("pair_mass", &pair_mass);
-  t1->Branch("pair_fit_mass", &pair_fit_mass);
-  t1->Branch("pair_svprob", &pair_svprob);
-  t1->Branch("pair_normalchi2", &pair_normalchi2);
-  t1->Branch("pair_dz", &pair_dz);
-  t1->Branch("pair_dR", &pair_dR);
-  t1->Branch("pair_drM1", &pair_drM1);
-  t1->Branch("pair_rank_vtx_prob", &pair_rank_vtx_prob);
-  t1->Branch("pair_rank_dz_PV_SV", &pair_rank_dz_PV_SV);
-  t1->Branch("pair_rank_dPhi_muons", &pair_rank_dPhi_muons);
-  t1->Branch("pair_rank_dM_Z_Mmumu", &pair_rank_dM_Z_Mmumu);
-
-  t1->Branch("pair_tuneP_pt", &pair_tuneP_pt);
-  t1->Branch("pair_tuneP_eta", &pair_tuneP_eta);
-  t1->Branch("pair_tuneP_phi", &pair_tuneP_phi);
-  t1->Branch("pair_tuneP_mass", &pair_tuneP_mass);
-  t1->Branch("pair_tuneP_fit_mass", &pair_tuneP_fit_mass);
-  t1->Branch("pair_tuneP_svprob", &pair_tuneP_svprob);
-  t1->Branch("pair_tuneP_normalchi2", &pair_tuneP_normalchi2);
-  t1->Branch("pair_tuneP_dz", &pair_tuneP_dz);
-  t1->Branch("pair_tuneP_dR", &pair_tuneP_dR);
-
-  t1->Branch("tag_simType", &tag_simType);
-  t1->Branch("tag_simExtType", &tag_simExtType);
-  t1->Branch("tag_simFlavour", &tag_simFlavour);
-  t1->Branch("tag_simHeaviestMotherFlavour", &tag_simHeaviestMotherFlavour);
-  t1->Branch("tag_simPdgId", &tag_simPdgId);
-  t1->Branch("tag_simMotherPdgId", &tag_simMotherPdgId);
-  t1->Branch("tag_simBX", &tag_simBX);
-  t1->Branch("tag_simProdRho", &tag_simProdRho);
-  t1->Branch("tag_simProdZ", &tag_simProdZ);
-  t1->Branch("tag_simPt", &tag_simPt);
-  t1->Branch("tag_simEta", &tag_simEta);
-  t1->Branch("tag_simPhi", &tag_simPhi);
-
-  t1->Branch("probe_simType", &probe_simType);
-  t1->Branch("probe_simExtType", &probe_simExtType);
-  t1->Branch("probe_simFlavour", &probe_simFlavour);
-  t1->Branch("probe_simHeaviestMotherFlavour", &probe_simHeaviestMotherFlavour);
-  t1->Branch("probe_simPdgId", &probe_simPdgId);
-  t1->Branch("probe_simMotherPdgId", &probe_simMotherPdgId);
-  t1->Branch("probe_simBX", &probe_simBX);
-  t1->Branch("probe_simProdRho", &probe_simProdRho);
-  t1->Branch("probe_simProdZ", &probe_simProdZ);
-  t1->Branch("probe_simPt", &probe_simPt);
-  t1->Branch("probe_simEta", &probe_simEta);
-  t1->Branch("probe_simPhi", &probe_simPhi);
 }
 
 void NtupleContent::CreateExtraTrgBranches(const std::vector<std::string> &HLTs, bool isTag = false) {
@@ -396,24 +399,7 @@ void NtupleContent::CreateExtraTrgBranches(const std::vector<std::string> &HLTs,
 }
 
 void NtupleContent::ClearBranches() {
-  run = -1;
-  event = -1;
-  ls = -1;
-  genWeight = -99;
-  BSpot_x = -99;
-  BSpot_y = -99;
-  BSpot_z = -99;
-  pv_x = -99;
-  pv_y = -99;
-  pv_z = -99;
-  nvertices = 0;
-  trueNumInteractions = -1.0;
-  puNumInteractions = -1;
-  Rho = -1;
-  nmuons = 0;
-  ntag = 0;
-  npairs = 0;
-  pair_probeMultiplicity = 0;
+
 
   for (unsigned int itrg = 0; itrg < NTRIGGERMAX; itrg++) {
     trigger[itrg] = false;
@@ -433,353 +419,5 @@ void NtupleContent::ClearBranches() {
     probe_selectors[isel] = false;
   }
 
-  // Gens
-  genmu1_pt = 0;
-  genmu1_eta = -99;
-  genmu1_phi = -99;
-  genmu1_charge = 0;
-  genmu2_pt = 0;
-  genmu2_eta = -99;
-  genmu2_phi = -99;
-  genmu2_charge = 0;
-  genMass = -99;
-
-  genmuFSfromHP1_pt = -99;
-  genmuFSfromHP1_eta = -99;
-  genmuFSfromHP1_phi = -99;
-  genmuFSfromHP1_charge = -99;
-  genmuFSfromHP2_pt = -99;
-  genmuFSfromHP2_eta = -99;
-  genmuFSfromHP2_phi = -99;
-  genmuFSfromHP2_charge = -99;
-  genMassFSfromHP = -99;
-
-  trg_filter.clear();
-  trg_pt.clear();
-  trg_eta.clear();
-  trg_phi.clear();
-  prb_filter.clear();
-  prb_pt.clear();
-  prb_eta.clear();
-  prb_phi.clear();
-
-  genJets_pt.clear();
-  genJets_eta.clear();
-  genJets_phi.clear();
-  genJets_mass.clear();
-
-  jets_pt.clear();
-  jets_eta.clear();
-  jets_phi.clear();
-  jets_mass.clear();
-  jets_isTight.clear();
-  jets_isTightLepVeto.clear();
-  jets_bTag_deepCSV.clear();
-  jets_bTag_deepFlav.clear();
-  nTightJets = 0;
-  nTightLepVetoJets = 0;
-
-  tag_pt = 0;
-  tag_eta = -99;
-  tag_phi = -99;
-  tag_charge = -99;
-  tag_inner_pterr = 0;
-  tag_dxy = -99;
-  tag_dz = -99;
-  tag_isPF = false;
-  tag_isSA = false;
-  tag_isdSA = false;
-  tag_isTracker = false;
-  tag_isGlobal = false;
-  tag_isRPC = false;
-  tag_isLoose = false;
-  tag_isMedium = false;
-  tag_isTight = false;
-  tag_isSoft = false;
-  tag_isHighPt = false;
-  tag_tuneP_ExistingRefit = false;
-  tag_ZprimeMatchedStations = false;
-  tag_SIP3D = -99;
-  tag_SIP3D_err = -99;
-  tag_absTrkIso04 = -99;
-  tag_absTrkIso03 = -99;
-  tag_miniIso = -1.;
-  tag_miniIsoCharged = 0.;
-  tag_miniIsoPhotons = 0.;
-  tag_miniIsoNeutrals = 0.;
-  tag_isMatchedGen = false;
-  tag_minDR = 0.;
-  tag_ptRel_minDR = 0.;
-  tag_iso03_sumPt = -99;
-  tag_pfIso03_charged = -99;
-  tag_pfIso03_neutral = -99;
-  tag_pfIso03_photon = -99;
-  tag_pfIso03_sumPU = -99;
-  tag_combRelIsoPF03dBeta = -99;
-  tag_pfIso04_charged = -99;
-  tag_pfIso04_neutral = -99;
-  tag_pfIso04_photon = -99;
-  tag_pfIso04_sumPU = -99;
-  tag_combRelIsoPF04dBeta = -99;
-  tag_tuneP_pt = -99;
-  tag_tuneP_charge = -99;
-  tag_tuneP_pterr = -99;
-  tag_tuneP_eta = -99;
-  tag_tuneP_phi = -99;
-  tag_tuneP_muonHits = -99;
-  tag_nsegments = -99;
-  tag_inner_validFraction = -99;
-  tag_inner_trackerLayers = -99;
-  tag_inner_pixelHits = -99;
-  tag_inner_pt = 0;
-  tag_inner_eta = -99;
-  tag_inner_phi = -99;
-  tag_inner_charge = -99;
-  tag_GlobalValidHits = -99;
-  tag_RPCLayers = -99;
-  tag_tpfms_pt = -99;
-  tag_tpfms_charge = -99;
-  tag_tpfms_pterr = -99;
-  tag_tpfms_eta = -99;
-  tag_tpfms_phi = -99;
-  tag_tpfms_muonHits = -99;
-  tag_picky_pt = -99;
-  tag_picky_charge = -99;
-  tag_picky_pterr = -99;
-  tag_picky_eta = -99;
-  tag_picky_phi = -99;
-  tag_picky_muonHits = -99;
-  tag_dyt_pt = -99;
-  tag_dyt_charge = -99;
-  tag_dyt_pterr = -99;
-  tag_dyt_eta = -99;
-  tag_dyt_phi = -99;
-  tag_dyt_muonHits = -99;
-
-  iprobe = 0;
-  probe_pt = 0;
-  probe_eta = -99;
-  probe_phi = -99;
-  probe_charge = -99;
-  probe_inner_pt = 0;
-  probe_inner_eta = -99;
-  probe_inner_phi = -99;
-  probe_inner_charge = -99;
-  probe_outer_pt = 0;
-  probe_outer_eta = -99;
-  probe_outer_phi = -99;
-  probe_outer_charge = -99;
-  probe_global_pt = 0;
-  probe_global_eta = -99;
-  probe_global_phi = -99;
-  probe_global_charge = -99;
-  probe_best_pt = 0;
-  probe_best_eta = -99;
-  probe_best_phi = -99;
-  probe_best_charge = -99;
-  probe_isLoose = false;
-  probe_isMedium = false;
-  probe_isTight = false;
-  probe_isSoft = false;
-  probe_isHighPt = false;
-  probe_isRPC = false;
-  probe_isArbitratedTracker = false;
-  probe_isMuMatched = false;
-  probe_tuneP_ExistingRefit = false;
-  probe_isPF = false;
-  probe_isSA = false;
-  probe_isTracker = false;
-  probe_isGlobal = false;
-  probe_isdSA = false;
-  probe_isdGlobal = false;
-  probe_isCosmic = false;
-  probe_ncosmic = -99;
-  probe_cosmic_minDR = +99;
-  probe_isGood = false;
-  probe_isHighPurity = false;
-  probe_inner_validFraction = -99;
-  probe_trkChi2 = -99;
-  probe_positionChi2 = -99;
-  probe_trkKink = -99;
-  probe_segmentCompatibility = -99;
-  probe_inner_trackerLayers = -99;
-  probe_inner_pixelLayers = -99;
-  probe_muonStations = -99;
-  probe_muonHits = -99;
-  probe_DTHits = -99;
-  probe_CSCHits = -99;
-  probe_inner_pterr = 0;
-  probe_dxy = -99;
-  probe_dz = -99;
-  probe_SIP3D = -99;
-  probe_SIP3D_err = -99;
-  probe_absTrkIso04 = -99;
-  probe_absTrkIso03 = -99;
-  probe_miniIso = -1.;
-  probe_miniIsoCharged = 0.;
-  probe_miniIsoPhotons = 0.;
-  probe_miniIsoNeutrals = 0.;
-  probe_isMatchedGen = false;
-  probe_minDR = 0.;
-  probe_ptRel_minDR = 0.;
-  probe_iso03_sumPt = -99;
-  probe_pfIso03_charged = -99;
-  probe_pfIso03_neutral = -99;
-  probe_pfIso03_photon = -99;
-  probe_pfIso03_sumPU = -99;
-  probe_pfIso04_charged = -99;
-  probe_pfIso04_neutral = -99;
-  probe_pfIso04_photon = -99;
-  probe_pfIso04_sumPU = -99;
-  probe_inner_pixelHits = -99;
-  probe_matchedStations = -99;
-  probe_expectedMatchedStations = -99;
-  probe_RPCLayers = -99;
-  probe_stationMask = 0;
-  probe_nShowers = -99;
-  probe_tuneP_pt = -99;
-  probe_tuneP_eta = -99;
-  probe_tuneP_phi = -99;
-  probe_tuneP_charge = -99;
-  probe_tuneP_pterr = -99;
-  probe_tuneP_muonHits = -99;
-  probe_nsegments = -99;
-  probe_tpfms_pt = -99;
-  probe_tpfms_eta = -99;
-  probe_tpfms_phi = -99;
-  probe_tpfms_charge = -99;
-  probe_tpfms_pterr = -99;
-  probe_tpfms_muonHits = -99;
-  probe_picky_pt = -99;
-  probe_picky_eta = -99;
-  probe_picky_phi = -99;
-  probe_picky_charge = -99;
-  probe_picky_pterr = -99;
-  probe_picky_muonHits = -99;
-  probe_dyt_pt = -99;
-  probe_dyt_eta = -99;
-  probe_dyt_phi = -99;
-  probe_dyt_charge = -99;
-  probe_dyt_pterr = -99;
-  probe_dyt_muonHits = -99;
-
-  l1pt = -99;
-  l1q = -99;
-  l1dr = 99;
-  l1ptByQ = -99;
-  l1qByQ = -99;
-  l1drByQ = 99;
-
-  tag_l1pt = -99;
-  tag_l1q = -99;
-  tag_l1dr = 99;
-  tag_l1ptByQ = -99;
-  tag_l1qByQ = -99;
-  tag_l1drByQ = 99;
-
-  probe_dsa_segmentMatches = -99;
-  probe_dsa_nsegments = -99;
-  probe_dsa_muonStations = -99;
-  probe_dsa_muonHits = -99;
-  probe_dsa_DTHits = -99;
-  probe_dsa_CSCHits = -99;
-  probe_dsa_pterr = 0;
-  probe_dsa_dxy = -99;
-  probe_dsa_dz = -99;
-  probe_dsa_trkChi2 = -99;
-  probe_dsa_pt = 0;
-  probe_dsa_eta = -99;
-  probe_dsa_phi = -99;
-  probe_dsa_outerEta = -99;
-  probe_dsa_outerPhi = -99;
-  probe_dsa_minDR = +99;
-  probe_dsa_charge = -99;
-
-  tag_dsa_segmentMatches = -99;
-  tag_dsa_nsegments = -99;
-  tag_dsa_muonStations = -99;
-  tag_dsa_muonHits = -99;
-  tag_dsa_DTHits = -99;
-  tag_dsa_CSCHits = -99;
-  tag_dsa_pterr = 0;
-  tag_dsa_dxy = -99;
-  tag_dsa_dz = -99;
-  tag_dsa_trkChi2 = -99;
-  tag_dsa_pt = 0;
-  tag_dsa_eta = -99;
-  tag_dsa_phi = -99;
-  tag_dsa_outerEta = -99;
-  tag_dsa_outerPhi = -99;
-  tag_dsa_minDR = +99;
-  tag_dsa_charge = -99;
-
-  probe_dgl_segmentMatches = -99;
-  probe_dgl_nsegments = -99;
-  probe_dgl_muonStations = -99;
-  probe_dgl_muonHits = -99;
-  probe_dgl_outerTrackerHits = -99;
-  probe_dgl_trackerHits = -99;
-  probe_dgl_totalHits = -99;
-  probe_dgl_DTHits = -99;
-  probe_dgl_CSCHits = -99;
-  probe_dgl_pterr = 0;
-  probe_dgl_dxy = -99;
-  probe_dgl_dz = -99;
-  probe_dgl_trkChi2 = -99;
-  probe_dgl_pt = 0;
-  probe_dgl_eta = -99;
-  probe_dgl_phi = -99;
-  probe_dgl_charge = -99;
-  probe_dgl_minDR = +99;
-
-  pair_pt = 0;
-  pair_mass = 0;
-  pair_eta = -99;
-  pair_phi = -99;
-  pair_fit_mass = 0;
-  pair_svprob = 0;
-  pair_normalchi2 = 0;
-  pair_dz = -99;
-  pair_dR = -99;
-  pair_drM1 = -99;
-  pair_rank_vtx_prob = -1;
-  pair_rank_dz_PV_SV = -1;
-  pair_rank_dPhi_muons = -1;
-  pair_rank_dM_Z_Mmumu = -1;
-
-  pair_tuneP_pt = -99;
-  pair_tuneP_mass = -99;
-  pair_tuneP_eta = -99;
-  pair_tuneP_phi = -99;
-  pair_tuneP_fit_mass = -99;
-  pair_tuneP_svprob = -99;
-  pair_tuneP_normalchi2 = -99;
-  pair_tuneP_dz = -99;
-  pair_tuneP_dR = -99;
-
-  tag_simType = -99;
-  tag_simExtType = -99;
-  tag_simFlavour = -99;
-  tag_simHeaviestMotherFlavour = -99;
-  tag_simPdgId = -99;
-  tag_simMotherPdgId = -99;
-  tag_simBX = -99;
-  tag_simProdRho = -99;
-  tag_simProdZ = -99;
-  tag_simPt = -99;
-  tag_simEta = -99;
-  tag_simPhi = -99;
-
-  probe_simType = -99;
-  probe_simExtType = -99;
-  probe_simFlavour = -99;
-  probe_simHeaviestMotherFlavour = -99;
-  probe_simPdgId = -99;
-  probe_simMotherPdgId = -99;
-  probe_simBX = -99;
-  probe_simProdRho = -99;
-  probe_simProdZ = -99;
-  probe_simPt = -99;
-  probe_simEta = -99;
-  probe_simPhi = -99;
+ 
 }
