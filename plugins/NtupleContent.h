@@ -12,6 +12,17 @@
 #include "TString.h"
 #include "TTree.h"
 
+using AllTypes = std::variant<bool, int, float, double,
+unsigned int, long unsigned int, long long unsigned int,
+std::vector<float>, std::vector<int>>;
+
+template<typename... Ts>
+struct getVal {
+    std::variant<Ts...> & var;
+    template <typename T>
+    operator T() { return std::get<T>(var); }
+};
+
 class NtupleContent {
 public:
   NtupleContent();
@@ -20,6 +31,30 @@ public:
   void CreateBranches(const std::vector<std::string> &, const std::vector<std::string> &);
   void CreateExtraTrgBranches(const std::vector<std::string> &, bool);
   void ClearBranches();
+
+  AllTypes & operator()(std::string key) {
+    return branches[key].value;
+  }
+
+  typedef struct BranchInfo {
+    BranchInfo() {}
+    BranchInfo(AllTypes in_val) :
+      default_value(in_val), value(in_val) {}
+    BranchInfo& operator= (AllTypes val) { value = val; return * this; }
+    AllTypes & operator()() { return value; }
+    template<typename T, typename... Ts>
+    friend std::ostream & operator<<(std::ostream& os, const std::variant<T, Ts...>& v) {
+      std::visit([&os](auto&& arg) {
+                   os << arg;
+                 }, v);
+      return os;
+    }
+
+    AllTypes default_value;
+    AllTypes value;
+  } BranchInfo;
+
+  std::map<TString, BranchInfo> branches;
 
   // Standard stuff
   int run;
