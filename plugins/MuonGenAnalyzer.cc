@@ -88,47 +88,47 @@ void MuonGenAnalyzer::SetInputs(const edm::Event& iEvent,
 
 void MuonGenAnalyzer::FillNtuple(NtupleContent& nt) {
   if (gmuon1.Pt() > 0. && gmuon2.Pt() > 0.) {
-    nt.genmu1_pt = gmuon1.Pt();
-    nt.genmu1_eta = gmuon1.Eta();
-    nt.genmu1_phi = gmuon1.Phi();
-    nt.genmu1_charge = -1;
-    nt.genmu2_pt = gmuon2.Pt();
-    nt.genmu2_eta = gmuon2.Eta();
-    nt.genmu2_phi = gmuon2.Phi();
-    nt.genmu2_charge = 1;
-    nt.genMass = (gmuon1 + gmuon2).M();
+    nt.branches["genmu1_pt"] = (float)gmuon1.Pt();
+    nt.branches["genmu1_eta"] = (float)gmuon1.Eta();
+    nt.branches["genmu1_phi"] = (float)gmuon1.Phi();
+    nt.branches["genmu1_charge"] = (int)-1;
+    nt.branches["genmu2_pt"] = (float)gmuon2.Pt();
+    nt.branches["genmu2_eta"] = (float)gmuon2.Eta();
+    nt.branches["genmu2_phi"] = (float)gmuon2.Phi();
+    nt.branches["genmu2_charge"] = (int)1;
+    nt.branches["genMass"] = (float)(gmuon1 + gmuon2).M();
   } else {
-    nt.genmu1_pt = -99;
-    nt.genmu1_eta = -99;
-    nt.genmu1_phi = -99;
-    nt.genmu1_charge = -99;
-    nt.genmu2_pt = -99;
-    nt.genmu2_eta = -99;
-    nt.genmu2_phi = -99;
-    nt.genmu2_charge = -99;
-    nt.genMass = -99;
+    nt.branches["genmu1_pt"] = (float)-99;
+    nt.branches["genmu1_eta"] = (float)-99;
+    nt.branches["genmu1_phi"] = (float)-99;
+    nt.branches["genmu1_charge"] = (int)-99;
+    nt.branches["genmu2_pt"] = (float)-99;
+    nt.branches["genmu2_eta"] = (float)-99;
+    nt.branches["genmu2_phi"] = (float)-99;
+    nt.branches["genmu2_charge"] = (int)-99;
+    nt.branches["genMass"] = (float)-99;
   }
 
   // Fill final state muons from hard process
   if (gmuonFSfromHP1.Pt() > 0. && gmuonFSfromHP2.Pt() > 0.) {
-    nt.genmuFSfromHP1_pt = gmuonFSfromHP1.Pt();
-    nt.genmuFSfromHP1_eta = gmuonFSfromHP1.Eta();
-    nt.genmuFSfromHP1_phi = gmuonFSfromHP1.Phi();
-    nt.genmuFSfromHP1_charge = -1;
-    nt.genmuFSfromHP2_pt = gmuonFSfromHP2.Pt();
-    nt.genmuFSfromHP2_eta = gmuonFSfromHP2.Eta();
-    nt.genmuFSfromHP2_phi = gmuonFSfromHP2.Phi();
-    nt.genmuFSfromHP2_charge = 1;
-    nt.genMassFSfromHP = (gmuonFSfromHP1 + gmuonFSfromHP2).M();
+    nt.branches["genmuFSfromHP1_pt"] = (float)gmuonFSfromHP1.Pt();
+    nt.branches["genmuFSfromHP1_eta"] = (float)gmuonFSfromHP1.Eta();
+    nt.branches["genmuFSfromHP1_phi"] = (float)gmuonFSfromHP1.Phi();
+    nt.branches["genmuFSfromHP1_charge"] = (int)-1;
+    nt.branches["genmuFSfromHP2_pt"] = (float)gmuonFSfromHP2.Pt();
+    nt.branches["genmuFSfromHP2_eta"] = (float)gmuonFSfromHP2.Eta();
+    nt.branches["genmuFSfromHP2_phi"] = (float)gmuonFSfromHP2.Phi();
+    nt.branches["genmuFSfromHP2_charge"] = (int)1;
+    nt.branches["genMassFSfromHP"] = (float)(gmuonFSfromHP1 + gmuonFSfromHP2).M();
   } else {
-    nt.genmuFSfromHP1_pt = -99;
-    nt.genmuFSfromHP1_eta = -99;
-    nt.genmuFSfromHP1_phi = -99;
-    nt.genmuFSfromHP1_charge = -99;
-    nt.genmuFSfromHP2_pt = -99;
-    nt.genmuFSfromHP2_eta = -99;
-    nt.genmuFSfromHP2_phi = -99;
-    nt.genmuFSfromHP2_charge = -99;
-    nt.genMassFSfromHP = -99;
+    nt.branches["genmuFSfromHP1_pt"] = (float)-99;
+    nt.branches["genmuFSfromHP1_eta"] = (float)-99;
+    nt.branches["genmuFSfromHP1_phi"] = (float)-99;
+    nt.branches["genmuFSfromHP1_charge"] = (int)-99;
+    nt.branches["genmuFSfromHP2_pt"] = (float)-99;
+    nt.branches["genmuFSfromHP2_eta"] = (float)-99;
+    nt.branches["genmuFSfromHP2_phi"] = (float)-99;
+    nt.branches["genmuFSfromHP2_charge"] = (int)-99;
+    nt.branches["genMassFSfromHP"] = (float)-99;
   }
 }
