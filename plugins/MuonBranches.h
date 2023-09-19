@@ -540,25 +540,23 @@ inline void FillTagBranchesdSA(const TRK &trk, NtupleContent &nt, bool passdSA) 
 
 template <typename TRK>
 inline void FillProbeBranchesdgl(const TRK &trk, NtupleContent &nt, bool passdgl) {
-  nt.probe_isdGlobal = passdgl;
-
-  nt.probe_dgl_pt = trk.pt();
-  nt.probe_dgl_eta = trk.eta();
-  nt.probe_dgl_phi = trk.phi();
-  nt.probe_dgl_charge = trk.charge();
-
+  nt.branches["probe_isdGlobal"] = (bool)passdgl;
+  nt.branches["probe_dgl_pt"] = (float)trk.pt();
+  nt.branches["probe_dgl_eta"] = (float)trk.eta();
+  nt.branches["probe_dgl_phi"] = (float)trk.phi();
+  nt.branches["probe_dgl_charge"] = (int)trk.charge();
   if (passdgl) {
-    nt.probe_dgl_dxy = trk.dxy(reco::TrackBase::Point(nt.pv_x, nt.pv_y, nt.pv_z));
-    nt.probe_dgl_dz = trk.dz(reco::TrackBase::Point(nt.pv_x, nt.pv_y, nt.pv_z));
-    nt.probe_dgl_muonStations = trk.hitPattern().muonStationsWithValidHits();
-    nt.probe_dgl_muonHits = trk.hitPattern().numberOfValidMuonHits();
-    nt.probe_dgl_outerTrackerHits = trk.hitPattern().numberOfValidStripHits();
-    nt.probe_dgl_trackerHits = trk.hitPattern().numberOfValidTrackerHits();
-    nt.probe_dgl_totalHits = trk.hitPattern().numberOfValidHits();
-    nt.probe_dgl_DTHits = trk.hitPattern().numberOfValidMuonDTHits();
-    nt.probe_dgl_CSCHits = trk.hitPattern().numberOfValidMuonCSCHits();
-    nt.probe_dgl_pterr = trk.ptError() / trk.pt();
-    nt.probe_dgl_trkChi2 = trk.normalizedChi2();
+    nt.branches["probe_dgl_dxy"] = (float)trk.dxy(reco::TrackBase::Point(nt.pv_x, nt.pv_y, nt.pv_z));
+    nt.branches["probe_dgl_dz"] = (float)trk.dz(reco::TrackBase::Point(nt.pv_x, nt.pv_y, nt.pv_z));
+    nt.branches["probe_dgl_muonStations"] = (int)trk.hitPattern().muonStationsWithValidHits();
+    nt.branches["probe_dgl_muonHits"] = (int)trk.hitPattern().numberOfValidMuonHits();
+    nt.branches["probe_dgl_outerTrackerHits"] = (int)trk.hitPattern().numberOfValidStripHits();
+    nt.branches["probe_dgl_trackerHits"] = (int)trk.hitPattern().numberOfValidTrackerHits();
+    nt.branches["probe_dgl_totalHits"] = (int)trk.hitPattern().numberOfValidHits();
+    nt.branches["probe_dgl_DTHits"] = (int)trk.hitPattern().numberOfValidMuonDTHits();
+    nt.branches["probe_dgl_CSCHits"] = (int)trk.hitPattern().numberOfValidMuonCSCHits();
+    nt.branches["probe_dgl_pterr"] = (float)trk.ptError() / trk.pt();
+    nt.branches["probe_dgl_trkChi2"] = (float)trk.normalizedChi2();
     // [Adapted from displaced dimuon analysis]
     // Number of DT+CSC segments
     unsigned int nsegments = 0;
@@ -571,35 +569,35 @@ inline void FillProbeBranchesdgl(const TRK &trk, NtupleContent &nt, bool passdgl
       if (id.subdetId() == MuonSubdetId::DT || id.subdetId() == MuonSubdetId::CSC)
         nsegments++;
     }
-    nt.probe_dgl_nsegments = nsegments;
+    nt.branches["probe_dgl_nsegments"] = (int)nsegments;
   } else {
-    nt.probe_dgl_dxy = -99;
-    nt.probe_dgl_dz = -99;
-    nt.probe_dgl_muonStations = -99;
-    nt.probe_dgl_muonHits = -99;
-    nt.probe_dgl_DTHits = -99;
-    nt.probe_dgl_CSCHits = -99;
-    nt.probe_dgl_pterr = -99;
-    nt.probe_dgl_trkChi2 = -99;
-    nt.probe_dgl_nsegments = -99;
+    nt.branches["probe_dgl_dxy"] = (float)-99;
+    nt.branches["probe_dgl_dz"] = (float)-99;
+    nt.branches["probe_dgl_muonStations"] = (int)-99;
+    nt.branches["probe_dgl_muonHits"] = (int)-99;
+    nt.branches["probe_dgl_DTHits"] = (int)-99;
+    nt.branches["probe_dgl_CSCHits"] = (int)-99;
+    nt.branches["probe_dgl_pterr"] = (float)-99;
+    nt.branches["probe_dgl_trkChi2"] = (float)-99;
+    nt.branches["probe_dgl_nsegments"] = (int)-99;
   }
 }
+  
 
 template <typename TRK>
 inline void FillProbeBranchesCosmic(const TRK &trk, NtupleContent &nt, bool passcosmic) {
-  nt.probe_isCosmic = passcosmic;
+  nt.branches["probe_isCosmic"] = (bool)passcosmic;
 }
 template <typename MUOTT, typename TRKTT>
 inline void FillPairBranches(const MUOTT &muon, const TRKTT &trk, NtupleContent &nt, PropagateToMuon &prop1_) {
   math::PtEtaPhiMLorentzVector mu1(muon.first.pt(), muon.first.eta(), muon.first.phi(), MU_MASS);
   math::PtEtaPhiMLorentzVector mu2(trk.first.pt(), trk.first.eta(), trk.first.phi(), MU_MASS);
-  nt.pair_pt = (mu1 + mu2).pt();
-  nt.pair_mass = (mu1 + mu2).mass();
-  nt.pair_eta = (mu1 + mu2).eta();
-  nt.pair_phi = (mu1 + mu2).phi();
-  nt.pair_dz = muon.first.vz() - trk.first.vz();
-  nt.pair_dR = deltaR(muon.first.eta(), muon.first.phi(), trk.first.eta(), trk.first.phi());
-
+  nt.branches["pair_pt"] = (float)(mu1 + mu2).pt();
+  nt.branches["pair_mass"] = (float)(mu1 + mu2).mass();
+  nt.branches["pair_eta"] = (float)(mu1 + mu2).eta();
+  nt.branches["pair_phi"] = (float)(mu1 + mu2).phi();
+  nt.branches["pair_dz"] = (float)muon.first.vz() - trk.first.vz();
+  nt.branches["pair_dR"] = (float)deltaR(muon.first.eta(), muon.first.phi(), trk.first.eta(), trk.first.phi());
   if (muon.second.impactPointStateAvailable() && trk.second.impactPointStateAvailable()) {
     FreeTrajectoryState trajectory_state_muon = muon.second.impactPointTSCP().theState();
     FreeTrajectoryState trajectory_state_trk = trk.second.impactPointTSCP().theState();
@@ -609,124 +607,124 @@ inline void FillPairBranches(const MUOTT &muon, const TRKTT &trk, NtupleContent 
 
     if (prop1_M1.isValid() && prop2_M1.isValid()) {
       float dphiM1 = deltaPhi<float>(prop1_M1.globalPosition().phi(), prop2_M1.globalPosition().phi());
-      nt.pair_drM1 = hypot(dphiM1, std::abs(prop1_M1.globalPosition().eta() - prop2_M1.globalPosition().eta()));
+      nt.branches["pair_drM1"] = (float)hypot(dphiM1, std::abs(prop1_M1.globalPosition().eta() - prop2_M1.globalPosition().eta()));
     } else
-      nt.pair_drM1 = 1000;
+      nt.branches["pair_drM1"] = (float)1000;
   } else
-    nt.pair_drM1 = 1000;
+    nt.branches["pair_drM1"] = (float)1000;
 }
 
 template <typename MUO, typename TRK>
 inline void FillTunePPairBranches(const MUO &muon, const TRK &trk, NtupleContent &nt) {
   math::PtEtaPhiMLorentzVector mu1(muon.pt(), muon.eta(), muon.phi(), MU_MASS);
   math::PtEtaPhiMLorentzVector mu2(trk.pt(), trk.eta(), trk.phi(), MU_MASS);
-  nt.pair_tuneP_pt = (mu1 + mu2).pt();
-  nt.pair_tuneP_mass = (mu1 + mu2).mass();
-  nt.pair_tuneP_eta = (mu1 + mu2).eta();
-  nt.pair_tuneP_phi = (mu1 + mu2).phi();
-  nt.pair_tuneP_dz = muon.vz() - trk.vz();
-  nt.pair_tuneP_dR = deltaR(muon.eta(), muon.phi(), trk.eta(), trk.phi());
+  nt.branches["pair_tuneP_pt"] = (float)(mu1 + mu2).pt();
+  nt.branches["pair_tuneP_mass"] = (float)(mu1 + mu2).mass();
+  nt.branches["pair_tuneP_eta"] = (float)(mu1 + mu2).eta();
+  nt.branches["pair_tuneP_phi"] = (float)(mu1 + mu2).phi();
+  nt.branches["pair_tuneP_dz"] = (float)muon.vz() - trk.vz();
+  nt.branches["pair_tuneP_dR"] = (float)deltaR(muon.eta(), muon.phi(), trk.eta(), trk.phi());
 }
 
 inline void FillTunePPairBranchesDummy(NtupleContent &nt) {
-  nt.pair_tuneP_pt = -99;
-  nt.pair_tuneP_mass = -99;
-  nt.pair_tuneP_eta = -99;
-  nt.pair_tuneP_phi = -99;
-  nt.pair_tuneP_dz = -99;
-  nt.pair_tuneP_dR = -99;
-  nt.pair_tuneP_fit_mass = -99;
-  nt.pair_tuneP_svprob = -99;
-  nt.pair_tuneP_normalchi2 = -99;
+  nt.branches["pair_tuneP_pt"] = (float)-99;
+  nt.branches["pair_tuneP_mass"] = (float)-99;
+  nt.branches["pair_tuneP_eta"] = (float)-99;
+  nt.branches["pair_tuneP_phi"] = (float)-99;
+  nt.branches["pair_tuneP_dz"] = (float)-99;
+  nt.branches["pair_tuneP_dR"] = (float)-99;
+  nt.branches["pair_tuneP_fit_mass"] = (float)-99;
+  nt.branches["pair_tuneP_svprob"] = (float)-99;
+  nt.branches["pair_tuneP_normalchi2"] = (float)-99;
 }
 
 inline void FillSimMatchingBranches(const pat::Muon &mu, NtupleContent &nt, bool isTag) {
   if (isTag) {
-    nt.tag_simType = mu.simType();
-    nt.tag_simExtType = mu.simExtType();
-    nt.tag_simFlavour = mu.simFlavour();
-    nt.tag_simHeaviestMotherFlavour = mu.simHeaviestMotherFlavour();
-    nt.tag_simPdgId = mu.simPdgId();
-    nt.tag_simMotherPdgId = mu.simMotherPdgId();
-    nt.tag_simBX = mu.simBX();
-    nt.tag_simProdRho = mu.simProdRho();
-    nt.tag_simProdZ = mu.simProdZ();
-    nt.tag_simPt = mu.simPt();
-    nt.tag_simEta = mu.simEta();
-    nt.tag_simPhi = mu.simPhi();
+    nt.branches["tag_simType"] = (int)mu.simType();
+    nt.branches["tag_simExtType"] = (int)mu.simExtType();
+    nt.branches["tag_simFlavour"] = (int)mu.simFlavour();
+    nt.branches["tag_simHeaviestMotherFlavour"] = (int)mu.simHeaviestMotherFlavour();
+    nt.branches["tag_simPdgId"] = (int)mu.simPdgId();
+    nt.branches["tag_simMotherPdgId"] = (int)mu.simMotherPdgId();
+    nt.branches["tag_simBX"] = (int)mu.simBX();
+    nt.branches["tag_simProdRho"] = (float)mu.simProdRho();
+    nt.branches["tag_simProdZ"] = (float)mu.simProdZ();
+    nt.branches["tag_simPt"] = (float)mu.simPt();
+    nt.branches["tag_simEta"] = (float)mu.simEta();
+    nt.branches["tag_simPhi"] = (float)mu.simPhi();
   } else {
-    nt.probe_simType = mu.simType();
-    nt.probe_simExtType = mu.simExtType();
-    nt.probe_simFlavour = mu.simFlavour();
-    nt.probe_simHeaviestMotherFlavour = mu.simHeaviestMotherFlavour();
-    nt.probe_simPdgId = mu.simPdgId();
-    nt.probe_simMotherPdgId = mu.simMotherPdgId();
-    nt.probe_simBX = mu.simBX();
-    nt.probe_simProdRho = mu.simProdRho();
-    nt.probe_simProdZ = mu.simProdZ();
-    nt.probe_simPt = mu.simPt();
-    nt.probe_simEta = mu.simEta();
-    nt.probe_simPhi = mu.simPhi();
+    nt.branches["probe_simType"] = (int)mu.simType();
+    nt.branches["probe_simExtType"] = (int)mu.simExtType();
+    nt.branches["probe_simFlavour"] = (int)mu.simFlavour();
+    nt.branches["probe_simHeaviestMotherFlavour"] = (int)mu.simHeaviestMotherFlavour();
+    nt.branches["probe_simPdgId"] = (int)mu.simPdgId();
+    nt.branches["probe_simMotherPdgId"] = (int)mu.simMotherPdgId();
+    nt.branches["probe_simBX"] = (int)mu.simBX();
+    nt.branches["probe_simProdRho"] = (float)mu.simProdRho();
+    nt.branches["probe_simProdZ"] = (float)mu.simProdZ();
+    nt.branches["probe_simPt"] = (float)mu.simPt();
+    nt.branches["probe_simEta"] = (float)mu.simEta();
+    nt.branches["probe_simPhi"] = (float)mu.simPhi();
   }
 }
 
 inline void FillSimMatchingBranchesAOD(const reco::MuonSimInfo &msi, NtupleContent &nt, bool isTag) {
   if (isTag) {
-    nt.tag_simType = msi.primaryClass;
-    nt.tag_simExtType = msi.extendedClass;
-    nt.tag_simFlavour = msi.flavour;
-    nt.tag_simHeaviestMotherFlavour = msi.heaviestMotherFlavour;
-    nt.tag_simPdgId = msi.pdgId;
-    nt.tag_simMotherPdgId = msi.motherPdgId;
-    nt.tag_simBX = msi.tpBX;
-    nt.tag_simProdRho = msi.vertex.Rho();
-    nt.tag_simProdZ = msi.vertex.Z();
-    nt.tag_simPt = msi.p4.pt();
-    nt.tag_simEta = msi.p4.eta();
-    nt.tag_simPhi = msi.p4.phi();
+    nt.branches["tag_simType"] = (int)msi.primaryClass;
+    nt.branches["tag_simExtType"] = (int)msi.extendedClass;
+    nt.branches["tag_simFlavour"] = (int)msi.flavour;
+    nt.branches["tag_simHeaviestMotherFlavour"] = (int)msi.heaviestMotherFlavour;
+    nt.branches["tag_simPdgId"] = (int)msi.pdgId;
+    nt.branches["tag_simMotherPdgId"] = (int)msi.motherPdgId;
+    nt.branches["tag_simBX"] = (int)msi.tpBX;
+    nt.branches["tag_simProdRho"] = (float)msi.vertex.Rho();
+    nt.branches["tag_simProdZ"] = (float)msi.vertex.Z();
+    nt.branches["tag_simPt"] = (float)msi.p4.pt();
+    nt.branches["tag_simEta"] = (float)msi.p4.eta();
+    nt.branches["tag_simPhi"] = (float)msi.p4.phi();
   } else {
-    nt.probe_simType = msi.primaryClass;
-    nt.probe_simExtType = msi.extendedClass;
-    nt.probe_simFlavour = msi.flavour;
-    nt.probe_simHeaviestMotherFlavour = msi.heaviestMotherFlavour;
-    nt.probe_simPdgId = msi.pdgId;
-    nt.probe_simMotherPdgId = msi.motherPdgId;
-    nt.probe_simBX = msi.tpBX;
-    nt.probe_simProdRho = msi.vertex.Rho();
-    nt.probe_simProdZ = msi.vertex.Z();
-    nt.probe_simPt = msi.p4.pt();
-    nt.probe_simEta = msi.p4.eta();
-    nt.probe_simPhi = msi.p4.phi();
+    nt.branches["probe_simType"] = (int)msi.primaryClass;
+    nt.branches["probe_simExtType"] = (int)msi.extendedClass;
+    nt.branches["probe_simFlavour"] = (int)msi.flavour;
+    nt.branches["probe_simHeaviestMotherFlavour"] = (int)msi.heaviestMotherFlavour;
+    nt.branches["probe_simPdgId"] = (int)msi.pdgId;
+    nt.branches["probe_simMotherPdgId"] = (int)msi.motherPdgId;
+    nt.branches["probe_simBX"] = (int)msi.tpBX;
+    nt.branches["probe_simProdRho"] = (float)msi.vertex.Rho();
+    nt.branches["probe_simProdZ"] = (float)msi.vertex.Z();
+    nt.branches["probe_simPt"] = (float)msi.p4.pt();
+    nt.branches["probe_simEta"] = (float)msi.p4.eta();
+    nt.branches["probe_simPhi"] = (float)msi.p4.phi();
   }
 }
 
 inline void FillSimMatchingBranchesDummy(NtupleContent &nt, bool isTag) {
   if (isTag) {
-    nt.tag_simType = -99;
-    nt.tag_simExtType = -99;
-    nt.tag_simFlavour = -99;
-    nt.tag_simHeaviestMotherFlavour = -99;
-    nt.tag_simPdgId = -99;
-    nt.tag_simMotherPdgId = -99;
-    nt.tag_simBX = -99;
-    nt.tag_simProdRho = -99;
-    nt.tag_simProdZ = -99;
-    nt.tag_simPt = -99;
-    nt.tag_simEta = -99;
-    nt.tag_simPhi = -99;
+    nt.branches["tag_simType"] = (int)-99;
+    nt.branches["tag_simExtType"] = (int)-99;
+    nt.branches["tag_simFlavour"] = (int)-99;
+    nt.branches["tag_simHeaviestMotherFlavour"] = (int)-99;
+    nt.branches["tag_simPdgId"] = (int)-99;
+    nt.branches["tag_simMotherPdgId"] = (int)-99;
+    nt.branches["tag_simBX"] = (int)-99;
+    nt.branches["tag_simProdRho"] = (float)-99;
+    nt.branches["tag_simProdZ"] = (float)-99;
+    nt.branches["tag_simPt"] = (float)-99;
+    nt.branches["tag_simEta"] = (float)-99;
+    nt.branches["tag_simPhi"] = (float)-99;
   } else {
-    nt.probe_simType = -99;
-    nt.probe_simExtType = -99;
-    nt.probe_simFlavour = -99;
-    nt.probe_simHeaviestMotherFlavour = -99;
-    nt.probe_simPdgId = -99;
-    nt.probe_simMotherPdgId = -99;
-    nt.probe_simBX = -99;
-    nt.probe_simProdRho = -99;
-    nt.probe_simProdZ = -99;
-    nt.probe_simPt = -99;
-    nt.probe_simEta = -99;
-    nt.probe_simPhi = -99;
+    nt.branches["probe_simType"] = (int)-99;
+    nt.branches["probe_simExtType"] = (int)-99;
+    nt.branches["probe_simFlavour"] = (int)-99;
+    nt.branches["probe_simHeaviestMotherFlavour"] = (int)-99;
+    nt.branches["probe_simPdgId"] = (int)-99;
+    nt.branches["probe_simMotherPdgId"] = (int)-99;
+    nt.branches["probe_simBX"] = (int)-99;
+    nt.branches["probe_simProdRho"] = (float)-99;
+    nt.branches["probe_simProdZ"] = (float)-99;
+    nt.branches["probe_simPt"] = (float)-99;
+    nt.branches["probe_simEta"] = (float)-99;
+    nt.branches["probe_simPhi"] = (float)-99;
   }
 }
 
