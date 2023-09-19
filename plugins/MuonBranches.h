@@ -446,25 +446,22 @@ inline void FillProbeBranchesSelector(const MUON &mu,
 
 template <typename TRK>
 inline void FillProbeBranchesdSA(const TRK &trk, NtupleContent &nt, bool passdSA) {
-  nt.probe_isdSA = passdSA;
-
-  nt.probe_dsa_pt = trk.pt();
-  nt.probe_dsa_eta = trk.eta();
-  nt.probe_dsa_phi = trk.phi();
-  nt.probe_dsa_charge = trk.charge();
-
+  nt.branches["probe_isdSA"] = (bool)passdSA;
+  nt.branches["probe_dsa_pt"] = (float)trk.pt();
+  nt.branches["probe_dsa_eta"] = (float)trk.eta();
+  nt.branches["probe_dsa_phi"] = (float)trk.phi();
+  nt.branches["probe_dsa_charge"] = (int)trk.charge();
   if (passdSA) {
-    nt.probe_dsa_outerEta = trk.outerEta();
-    nt.probe_dsa_outerPhi = trk.outerPhi();
-    nt.probe_dsa_dxy = trk.dxy(reco::TrackBase::Point(nt.pv_x, nt.pv_y, nt.pv_z));
-    nt.probe_dsa_dz = trk.dz(reco::TrackBase::Point(nt.pv_x, nt.pv_y, nt.pv_z));
-    nt.probe_dsa_muonStations = trk.hitPattern().muonStationsWithValidHits();
-    nt.probe_dsa_muonHits = trk.hitPattern().numberOfValidMuonHits();
-    nt.probe_dsa_DTHits = trk.hitPattern().numberOfValidMuonDTHits();
-    nt.probe_dsa_CSCHits = trk.hitPattern().numberOfValidMuonCSCHits();
-    nt.probe_dsa_pterr = trk.ptError() / trk.pt();
-    nt.probe_dsa_trkChi2 = trk.normalizedChi2();
-
+    nt.branches["probe_dsa_outerEta"] = (float)trk.outerEta();
+    nt.branches["probe_dsa_outerPhi"] = (float)trk.outerPhi();
+    nt.branches["probe_dsa_dxy"] = (float)trk.dxy(reco::TrackBase::Point(nt.pv_x, nt.pv_y, nt.pv_z));
+    nt.branches["probe_dsa_dz"] = (float)trk.dz(reco::TrackBase::Point(nt.pv_x, nt.pv_y, nt.pv_z));
+    nt.branches["probe_dsa_muonStations"] = (int)trk.hitPattern().muonStationsWithValidHits();
+    nt.branches["probe_dsa_muonHits"] = (int)trk.hitPattern().numberOfValidMuonHits();
+    nt.branches["probe_dsa_DTHits"] = (int)trk.hitPattern().numberOfValidMuonDTHits();
+    nt.branches["probe_dsa_CSCHits"] = (int)trk.hitPattern().numberOfValidMuonCSCHits();
+    nt.branches["probe_dsa_pterr"] = (float)trk.ptError() / trk.pt();
+    nt.branches["probe_dsa_trkChi2"] = (float)trk.normalizedChi2();
     // [Adapted from displaced dimuon analysis]
     // Number of DT+CSC segments
     unsigned int nsegments = 0;
@@ -477,42 +474,42 @@ inline void FillProbeBranchesdSA(const TRK &trk, NtupleContent &nt, bool passdSA
       if (id.subdetId() == MuonSubdetId::DT || id.subdetId() == MuonSubdetId::CSC)
         nsegments++;
     }
-    nt.probe_dsa_nsegments = nsegments;
-  } else {
-    nt.probe_dsa_outerEta = -99;
-    nt.probe_dsa_outerPhi = -99;
-    nt.probe_dsa_dxy = -99;
-    nt.probe_dsa_dz = -99;
-    nt.probe_dsa_muonStations = -99;
-    nt.probe_dsa_muonHits = -99;
-    nt.probe_dsa_DTHits = -99;
-    nt.probe_dsa_CSCHits = -99;
-    nt.probe_dsa_pterr = -99;
-    nt.probe_dsa_trkChi2 = -99;
-    nt.probe_dsa_nsegments = -99;
+    nt.branches["probe_dsa_nsegments"] = (int)nsegments;
+  } else {   
+    nt.branches["probe_dsa_outerEta"] = (float)-99;
+    nt.branches["probe_dsa_outerPhi"] = (float)-99;
+    nt.branches["probe_dsa_dxy"] = (float)-99;
+    nt.branches["probe_dsa_dz"] = (float)-99;
+    nt.branches["probe_dsa_muonStations"] = (int)-99;
+    nt.branches["probe_dsa_muonHits"] = (int)-99;
+    nt.branches["probe_dsa_DTHits"] = (int)-99;
+    nt.branches["probe_dsa_CSCHits"] = (int)-99;
+    nt.branches["probe_dsa_pterr"] = (float)-99;
+    nt.branches["probe_dsa_trkChi2"] = (float)-99;
+    nt.branches["probe_dsa_nsegments"] = (int)-99;
   }
 }
 
+
+
 template <typename TRK>
 inline void FillTagBranchesdSA(const TRK &trk, NtupleContent &nt, bool passdSA) {
-  nt.tag_isdSA = passdSA;
-
-  nt.tag_dsa_pt = trk.pt();
-  nt.tag_dsa_eta = trk.eta();
-  nt.tag_dsa_phi = trk.phi();
-  nt.tag_dsa_charge = trk.charge();
-
+  nt.branches["tag_isdSA"] = (bool)passdSA;
+  nt.branches["tag_dsa_pt"] = (float)trk.pt();
+  nt.branches["tag_dsa_eta"] = (float)trk.eta();
+  nt.branches["tag_dsa_phi"] = (float)trk.phi();
+  nt.branches["tag_dsa_charge"] = (int)trk.charge();
   if (passdSA) {
-    nt.tag_dsa_outerEta = trk.outerEta();
-    nt.tag_dsa_outerPhi = trk.outerPhi();
-    nt.tag_dsa_dxy = trk.dxy(reco::TrackBase::Point(nt.pv_x, nt.pv_y, nt.pv_z));
-    nt.tag_dsa_dz = trk.dz(reco::TrackBase::Point(nt.pv_x, nt.pv_y, nt.pv_z));
-    nt.tag_dsa_muonStations = trk.hitPattern().muonStationsWithValidHits();
-    nt.tag_dsa_muonHits = trk.hitPattern().numberOfValidMuonHits();
-    nt.tag_dsa_DTHits = trk.hitPattern().numberOfValidMuonDTHits();
-    nt.tag_dsa_CSCHits = trk.hitPattern().numberOfValidMuonCSCHits();
-    nt.tag_dsa_pterr = trk.ptError() / trk.pt();
-    nt.tag_dsa_trkChi2 = trk.normalizedChi2();
+    nt.branches["tag_dsa_outerEta"] = (float)trk.outerEta();
+    nt.branches["tag_dsa_outerPhi"] = (float)trk.outerPhi();
+    nt.branches["tag_dsa_dxy"] = (float)trk.dxy(reco::TrackBase::Point(nt.pv_x, nt.pv_y, nt.pv_z));
+    nt.branches["tag_dsa_dz"] = (float)trk.dz(reco::TrackBase::Point(nt.pv_x, nt.pv_y, nt.pv_z));
+    nt.branches["tag_dsa_muonStations"] = (int)trk.hitPattern().muonStationsWithValidHits();
+    nt.branches["tag_dsa_muonHits"] = (int)trk.hitPattern().numberOfValidMuonHits();
+    nt.branches["tag_dsa_DTHits"] = (int)trk.hitPattern().numberOfValidMuonDTHits();
+    nt.branches["tag_dsa_CSCHits"] = (int)trk.hitPattern().numberOfValidMuonCSCHits();
+    nt.branches["tag_dsa_pterr"] = (float)trk.ptError() / trk.pt();
+    nt.branches["tag_dsa_trkChi2"] = (float)trk.normalizedChi2();
     // [Adapted from displaced dimuon analysis]
     // Number of DT+CSC segments
     unsigned int nsegments = 0;
@@ -525,19 +522,19 @@ inline void FillTagBranchesdSA(const TRK &trk, NtupleContent &nt, bool passdSA) 
       if (id.subdetId() == MuonSubdetId::DT || id.subdetId() == MuonSubdetId::CSC)
         nsegments++;
     }
-    nt.tag_dsa_nsegments = nsegments;
+    nt.branches["tag_dsa_nsegments"] = (int)nsegments;
   } else {
-    nt.tag_dsa_outerEta = -99;
-    nt.tag_dsa_outerPhi = -99;
-    nt.tag_dsa_dxy = -99;
-    nt.tag_dsa_dz = -99;
-    nt.tag_dsa_muonStations = -99;
-    nt.tag_dsa_muonHits = -99;
-    nt.tag_dsa_DTHits = -99;
-    nt.tag_dsa_CSCHits = -99;
-    nt.tag_dsa_pterr = -99;
-    nt.tag_dsa_trkChi2 = -99;
-    nt.tag_dsa_nsegments = -99;
+    nt.branches["tag_dsa_outerEta"] = (float)-99;
+    nt.branches["tag_dsa_outerPhi"] = (float)-99;
+    nt.branches["tag_dsa_dxy"] = (float)-99;
+    nt.branches["tag_dsa_dz"] = (float)-99;
+    nt.branches["tag_dsa_muonStations"] = (int)-99;
+    nt.branches["tag_dsa_muonHits"] = (int)-99;
+    nt.branches["tag_dsa_DTHits"] = (int)-99;
+    nt.branches["tag_dsa_CSCHits"] = (int)-99;
+    nt.branches["tag_dsa_pterr"] = (float)-99;
+    nt.branches["tag_dsa_trkChi2"] = (float)-99;
+    nt.branches["tag_dsa_nsegments"] = (int)-99;
   }
 }
 
