@@ -113,12 +113,12 @@ inline void FillJetBranches(const JET &jet, const JET &corrJet, NtupleContent &n
     nt.nTightLepVetoJets++;
 
   // Store Jet Information
-  nt.jets_isTight.push_back(jetTightID);
-  nt.jets_isTightLepVeto.push_back(jetTightLepVeto);
-  nt.jets_pt.push_back(corrJet.pt());
-  nt.jets_eta.push_back(corrJet.eta());
-  nt.jets_phi.push_back(corrJet.phi());
-  nt.jets_mass.push_back(corrJet.mass());
+  nt.branches["jets_isTight"].push_back((int)jetTightID);
+  nt.branches["jets_isTightLepVeto"].push_back((bool)jetTightLepVeto);
+  nt.branches["jets_pt"].push_back((float)corrJet.pt());
+  nt.branches["jets_eta"].push_back((float)corrJet.eta());
+  nt.branches["jets_phi"].push_back((float)corrJet.phi());
+  nt.branches["jets_mass"].push_back((float)corrJet.mass());
 }
 
 template <typename JET, typename MUON>
@@ -138,8 +138,8 @@ inline void FindJetProbePair(const std::vector<JET> &jets, const MUON &mu, Ntupl
       closestJetP4 = jetP4;
     }
   }
-  nt.probe_minDR = minDR;
-  nt.probe_ptRel_minDR =
-      (muonP4.P() * (closestJetP4.Vect().Cross(muonP4.Vect()).Mag() / closestJetP4.P() / muonP4.P()));
+  nt.branches["probe_minDR"] = (float)minDR;
+  nt.branches["probe_ptRel_minDR"] =
+      (float)(muonP4.P() * (closestJetP4.Vect().Cross(muonP4.Vect()).Mag() / closestJetP4.P() / muonP4.P()));
 }
 #endif
