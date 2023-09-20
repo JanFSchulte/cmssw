@@ -51,7 +51,7 @@
             "Run2022E": {
                 "dataset": "/Muon/Run2022E-27Jun2023-v1/MINIAOD",
                 "globalTag": "124X_dataRun3_v15"
-            }
+            },
             "Run2022F": {
                 "dataset": "/Muon/Run2022F-PromptReco-v1/MINIAOD",
                 "globalTag": "124X_dataRun3_Prompt_v4"
@@ -69,7 +69,7 @@
             "Run2022E": {
                 "dataset": "/Muon/Run2022E-27Jun2023-v1/AOD",
                 "globalTag": "124X_dataRun3_v15"
-            }
+            },
             "Run2022F": {
                 "dataset": "/Muon/Run2022F-PromptReco-v1/AOD",
                 "globalTag": "124X_dataRun3_Prompt_v4"
