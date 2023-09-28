@@ -11,10 +11,11 @@
 #include <vector>
 #include "TString.h"
 #include "TTree.h"
+#include <variant>
 
-using AllTypes = std::variant<bool, int, float, double,
+using AllTypes = std::variant<bool, int, float, double, long,
 unsigned int, long unsigned int, long long unsigned int,
-std::vector<float>, std::vector<int>>;
+std::vector<float>, std::vector<int>,std::vector<bool>>;
 
 template<typename... Ts>
 struct getVal {

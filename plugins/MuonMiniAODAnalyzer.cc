@@ -414,14 +414,14 @@ void MuonMiniAODAnalyzer::analyze(const edm::Event& iEvent, const edm::EventSetu
 
   // Information about run
   nt.ClearBranches();
-  nt.ls = iEvent.luminosityBlock();
+  nt.branches["lumi"] = (int)iEvent.luminosityBlock();
   nt.branches["run"] = (int)iEvent.id().run();
   nt.branches["event"] = (int)iEvent.id().event();
   nt.branches["fromFullAOD"] = (bool)false;
   nt.branches["BSpot_x"] = (float)theBeamSpot->x0();
   nt.branches["BSpot_y"] = (float)theBeamSpot->y0();
   nt.branches["BSpot_z"] = (float)theBeamSpot->z0();
-  nt.branches["nvertices"] = (int)vertices->size();
+  nt.branches["nVertices"] = (int)vertices->size();
 
   // Gen weights
   if (!iEvent.isRealData()) {
@@ -435,7 +435,7 @@ void MuonMiniAODAnalyzer::analyze(const edm::Event& iEvent, const edm::EventSetu
   // Pileup information
   edm::Handle<double> rhoHandle;
   iEvent.getByToken(rhoToken_, rhoHandle);
-  nt.branches["Rho"] = (double)*rhoHandle;
+  nt.branches["rho"] = (double)*rhoHandle;
 
   float trueNumInteractions = -1;
   int puNumInteractions = -1;
@@ -452,10 +452,10 @@ void MuonMiniAODAnalyzer::analyze(const edm::Event& iEvent, const edm::EventSetu
       }
     }
   }
-
-  nt.branches["trueNumInteractions"] = (int)trueNumInteractions;
-  nt.branches["puNumInteractions"] = (int)puNumInteractions;
-
+  
+  nt.branches["nTrueInteractions"] = (float)trueNumInteractions;
+  nt.branches["nPUInteractions"] = (float)puNumInteractions;
+  
   bool goodVtx = false;
   reco::Vertex const* pv;
   for (const reco::Vertex& vtx : *vertices) {
@@ -483,9 +483,9 @@ void MuonMiniAODAnalyzer::analyze(const edm::Event& iEvent, const edm::EventSetu
     genmu.SetInputs(iEvent, genToken_, momPdgId_);
     genmu.FillNtuple(nt);
     auto reco_match_genmu1 =
-        MatchReco<pat::Muon>(*muons, std::get<float>(nt.branches["genmu1_eta"]), std::get<float>(nt.branches["genmu1_phi"]), std::get<int>(nt.branches["genmu1_charge"]), genRecoDrMatch_);
+        MatchReco<pat::Muon>(*muons, std::get<float>(nt.branches["genmu1_eta"].value), std::get<float>(nt.branches["genmu1_phi"].value), std::get<int>(nt.branches["genmu1_charge"].value), genRecoDrMatch_);
     auto reco_match_genmu2 =
-        MatchReco<pat::Muon>(*muons, std::get<float>(nt.branches["genmu2_eta"]), std::get<float>(nt.branches["genmu2_phi"]), std::get<int>(nt.branches["genmu2_charge"]), genRecoDrMatch_);
+        MatchReco<pat::Muon>(*muons, std::get<float>(nt.branches["genmu2_eta"].value), std::get<float>(nt.branches["genmu2_phi"].value), std::get<int>(nt.branches["genmu2_charge"].value), genRecoDrMatch_);
     if (reco_match_genmu1.first)
       matched_muon_idx.push_back(reco_match_genmu1.second);
     if (reco_match_genmu2.first)
@@ -545,9 +545,9 @@ void MuonMiniAODAnalyzer::analyze(const edm::Event& iEvent, const edm::EventSetu
   std::vector<unsigned> matched_track_idx;
   if (!iEvent.isRealData()) {
     auto reco_match_genmu1 =
-        MatchReco<reco::Track>(tracks, std::get<float>(nt.branches["genmu1_eta"]), std::get<float>(nt.branches["genmu1_phi"]), std::get<int>(nt.branches["genmu1_charge"]), genRecoDrMatch_);
+        MatchReco<reco::Track>(tracks, std::get<float>(nt.branches["genmu1_eta"].value), std::get<float>(nt.branches["genmu1_phi"].value), std::get<int>(nt.branches["genmu1_charge"].value), genRecoDrMatch_);
     auto reco_match_genmu2 =
-        MatchReco<reco::Track>(tracks, std::get<float>(nt.branches["genmu2_eta"]), std::get<float>(nt.branches["genmu2_phi"]), std::get<int>(nt.branches["genmu2_charge"]), genRecoDrMatch_);
+        MatchReco<reco::Track>(tracks, std::get<float>(nt.branches["genmu2_eta"].value), std::get<float>(nt.branches["genmu2_phi"].value), std::get<int>(nt.branches["genmu2_charge"].value), genRecoDrMatch_);
     if (reco_match_genmu1.first)
       matched_track_idx.push_back(reco_match_genmu1.second);
     if (reco_match_genmu2.first)
@@ -587,7 +587,26 @@ void MuonMiniAODAnalyzer::analyze(const edm::Event& iEvent, const edm::EventSetu
   }
 
   std::vector<pat::Jet> corrJets;
+  std::vector<float> genJets_pt;
+  std::vector<float> genJets_eta;
+  std::vector<float> genJets_phi;
+  std::vector<float> genJets_mass;
+  std::vector<float> jets_bTag_deepCSV;
+  std::vector<float> jets_bTag_deepFlav;
   if (includeJets_) {
+    if (isMC_) {
+        // Gen Jet Info
+      for (const auto& genJet : *genJets) {
+          genJets_pt.push_back((float)genJet.pt());
+          genJets_eta.push_back((float)genJet.eta());
+          genJets_phi.push_back((float)genJet.phi());
+          genJets_mass.push_back((float)genJet.mass());
+        }
+      nt.branches["genJets_pt"] = (std::vector<float>)genJets_pt;
+      nt.branches["genJets_eta"] = (std::vector<float>)genJets_eta;
+      nt.branches["genJets_phi"] = (std::vector<float>)genJets_phi;
+      nt.branches["genJets_mass"] = (std::vector<float>)genJets_mass;
+    }
     for (const auto& jet : *jets) {
       if (CrossClean(jet, muForJetCleaning))
         continue;
@@ -598,13 +617,6 @@ void MuonMiniAODAnalyzer::analyze(const edm::Event& iEvent, const edm::EventSetu
       // JER
       double smearFactor = 1.0;
       if (isMC_) {
-        // Gen Jet Info
-        for (const auto& genJet : *genJets) {
-          nt.branches["genJets_pt"].push_back((float)genJet.pt());
-          nt.branches["genJets_eta"].push_back((float)genJet.eta());
-          nt.branches["genJets_phi"].push_back((float)genJet.phi());
-          nt.branches["genJets_mass"].push_back((float)genJet.mass());
-        }
 
         double jet_resolution = resolution.getResolution({{JME::Binning::JetPt, corrJet->pt()},
                                                           {JME::Binning::JetEta, corrJet->eta()},
@@ -660,14 +672,16 @@ void MuonMiniAODAnalyzer::analyze(const edm::Event& iEvent, const edm::EventSetu
         }
       }
       if (deepCSVprobb != -9999. && deepCSVprobbb != -9999.) {
-        nt.branches["jets_bTag_deepCSV"].push_back((float)deepCSVprobb + deepCSVprobbb);
+	jets_bTag_deepCSV.push_back(deepCSVprobb + deepCSVprobbb);
       } else
-        nt.branches["jets_bTag_deepCSV"].push_back((float)-9999.);
+	jets_bTag_deepCSV.push_back(-9999.);
       if (deepFlavprobb != -9999. && deepFlavprobbb != -9999. && deepFlavproblepb != -9999.) {
-        nt.branches["jets_bTag_deepFlav"].push_back((float)deepFlavprobb + deepFlavprobbb + deepFlavproblepb);
+	jets_bTag_deepFlav.push_back(deepFlavprobb + deepFlavprobbb + deepFlavproblepb);
       } else
-        nt.branches["jets_bTag_deepFlav"].push_back((float)-9999.);
+	jets_bTag_deepFlav.push_back(-9999.);
     }
+    nt.branches["jets_bTag_deepCSV"] = (std::vector<float>)jets_bTag_deepCSV;
+    nt.branches["jets_bTag_deepFlav"] = (std::vector<float>)jets_bTag_deepFlav;
   }
 
   // run over tracks and probes once prior to filling tree to determine ordering of pairs
@@ -728,6 +742,9 @@ void MuonMiniAODAnalyzer::analyze(const edm::Event& iEvent, const edm::EventSetu
   for (size_t i = 0; i < pair_vtx_probs.size(); i++)
     pair_rank_vtx_prob[pair_vtx_probs[i].first] = i;
 
+
+  nt.branches["iprobe"] = (int)0;
+  
   // Final pair selection
   // loop over tags
   for (const auto& tag : tag_muon_ttrack) {
@@ -893,11 +910,11 @@ void MuonMiniAODAnalyzer::analyze(const edm::Event& iEvent, const edm::EventSetu
       vtx.fillNtuple(nt);
 
       auto it_match = std::find(matched_track_idx.begin(), matched_track_idx.end(), &probe - &tracks[0]);
-      nt.probe_isMatchedGen = (it_match != matched_track_idx.end());
+      nt.branches["probe_isMatchedGen"] = (bool)(it_match != matched_track_idx.end());
 
-      nt.iprobe++;
-      nt.pair_rank_vtx_prob = pair_rank_vtx_prob[{&tag - &tag_muon_ttrack[0], &probe - &tracks[0]}];
-      nt.probe_isHighPurity = probe.quality(reco::TrackBase::highPurity);
+      nt.branches["iprobe"] = (int)(std::get<int>(nt.branches["iprobe"].value) + 1);
+      nt.branches["pair_rank_vtx_prob"] = (float)pair_rank_vtx_prob[{&tag - &tag_muon_ttrack[0], &probe - &tracks[0]}];
+      nt.branches["probe_isHighPurity"] = (bool)probe.quality(reco::TrackBase::highPurity);
 
       for (auto it = map_tagIdx_nprobes.begin(); it != map_tagIdx_nprobes.end(); ++it) {
         if (it->first == tag_idx) {

@@ -32,8 +32,8 @@ inline void FillTagBranches(const MUON &muon,
   nt.branches["tag_eta"] = (float)muon.eta();
   nt.branches["tag_phi"] = (float)muon.phi();
   nt.branches["tag_charge"] = (int)muon.charge();
-  nt.branches["tag_dxy"] = (float)muon.innerTrack()->dxy(reco::TrackBase::Point(nt.pv_x, nt.pv_y, nt.pv_z));
-  nt.branches["tag_dz"] = (float)muon.innerTrack()->dz(reco::TrackBase::Point(nt.pv_x, nt.pv_y, nt.pv_z));
+  nt.branches["tag_dxy"] = (float)muon.innerTrack()->dxy(reco::TrackBase::Point(std::get<float>(nt.branches["pv_x"].value), std::get<float>(nt.branches["pv_y"].value), std::get<float>(nt.branches["pv_z"].value)));
+  nt.branches["tag_dz"] = (float)muon.innerTrack()->dz(reco::TrackBase::Point(std::get<float>(nt.branches["pv_x"].value), std::get<float>(nt.branches["pv_y"].value), std::get<float>(nt.branches["pv_z"].value)));
   nt.branches["tag_isPF"] = (bool)muon.isPFMuon();
   nt.branches["tag_isSA"] = (bool)muon.isStandAloneMuon();
   nt.branches["tag_isTracker"] = (bool)muon.isTrackerMuon();
@@ -92,20 +92,20 @@ inline void FillTagBranches(const MUON &muon,
   // for high-pt
   if (muon.innerTrack().isNonnull() && muon.innerTrack().isAvailable()) {
     nt.branches["tag_inner_validFraction"] = (float)muon.innerTrack()->validFraction();
-    nt.branches["tag_inner_trackerLayers"] = (float)muon.innerTrack()->hitPattern().trackerLayersWithMeasurement();
-    nt.branches["tag_inner_pixelLayers"] = (float)muon.innerTrack()->hitPattern().pixelLayersWithMeasurement();
+    nt.branches["tag_inner_trackerLayers"] = (int)muon.innerTrack()->hitPattern().trackerLayersWithMeasurement();
+    nt.branches["tag_inner_pixelLayers"] = (int)muon.innerTrack()->hitPattern().pixelLayersWithMeasurement();
     nt.branches["tag_inner_pterr"] = (float)muon.innerTrack()->ptError();
-    nt.branches["tag_inner_pixelHits"] = (float)muon.innerTrack()->hitPattern().numberOfValidPixelHits();
+    nt.branches["tag_inner_pixelHits"] = (int)muon.innerTrack()->hitPattern().numberOfValidPixelHits();
     nt.branches["tag_inner_pt"] = (float)muon.innerTrack()->pt();
     nt.branches["tag_inner_eta"] = (float)muon.innerTrack()->eta();
     nt.branches["tag_inner_phi"] = (float)muon.innerTrack()->phi();
     nt.branches["tag_inner_charge"] = (int)muon.innerTrack()->charge();
   } else {
     nt.branches["tag_inner_validFraction"] = (float)-99;
-    nt.branches["tag_inner_trackerLayers"] = (float)-99;
-    nt.branches["tag_inner_pixelLayers"] = (float)-99;
+    nt.branches["tag_inner_trackerLayers"] = (int)-99;
+    nt.branches["tag_inner_pixelLayers"] = (int)-99;
     nt.branches["tag_inner_pterr"] = (float)-99;
-    nt.branches["tag_inner_pixelHits"] = (float)-99;
+    nt.branches["tag_inner_pixelHits"] = (int)-99;
     nt.branches["tag_inner_pt"] = (float)-99;
     nt.branches["tag_inner_eta"] = (float)-99;
     nt.branches["tag_inner_phi"] = (float)-99;
@@ -118,7 +118,7 @@ inline void FillTagBranches(const MUON &muon,
     nt.branches["tag_tpfms_pterr"] = (float)muon.tpfmsTrack()->ptError();
     nt.branches["tag_tpfms_eta"] = (float)muon.tpfmsTrack()->eta();
     nt.branches["tag_tpfms_phi"] = (float)muon.tpfmsTrack()->phi();
-    nt.branches["tag_tpfms_muonHits"] = (float)muon.tpfmsTrack()->hitPattern().numberOfValidMuonHits();
+    nt.branches["tag_tpfms_muonHits"] = (int)muon.tpfmsTrack()->hitPattern().numberOfValidMuonHits();
   } else {
     nt.branches["tag_tpfms_charge"] = (int)0;
     nt.branches["tag_tpfms_pt"] = (float)-99.;
@@ -126,7 +126,7 @@ inline void FillTagBranches(const MUON &muon,
     nt.branches["tag_tpfms_eta"] = (float)-99.;
     nt.branches["tag_tpfms_phi"] = (float)-99.;
     nt.branches["tag_tpfms_pterr"] = (float)-99.;
-    nt.branches["tag_tpfms_muonHits"] = (float)-99.;
+    nt.branches["tag_tpfms_muonHits"] = (int)-99.;
   }
 
   if (muon.pickyTrack().isNonnull() && muon.pickyTrack().isAvailable()) {
@@ -135,7 +135,7 @@ inline void FillTagBranches(const MUON &muon,
     nt.branches["tag_picky_pterr"] = (float)muon.pickyTrack()->ptError();
     nt.branches["tag_picky_eta"] = (float)muon.pickyTrack()->eta();
     nt.branches["tag_picky_phi"] = (float)muon.pickyTrack()->phi();
-    nt.branches["tag_picky_muonHits"] = (float)muon.pickyTrack()->hitPattern().numberOfValidMuonHits();
+    nt.branches["tag_picky_muonHits"] = (int)muon.pickyTrack()->hitPattern().numberOfValidMuonHits();
   } else {
     nt.branches["tag_picky_charge"] = (int)0;
     nt.branches["tag_picky_pt"] = (float)-99.;
@@ -143,7 +143,7 @@ inline void FillTagBranches(const MUON &muon,
     nt.branches["tag_picky_eta"] = (float)-99.;
     nt.branches["tag_picky_phi"] = (float)-99.;
     nt.branches["tag_picky_pterr"] = (float)-99.;
-    nt.branches["tag_picky_muonHits"] = (float)-99.;
+    nt.branches["tag_picky_muonHits"] = (int)-99.;
   }
 
   if (muon.dytTrack().isNonnull() && muon.dytTrack().isAvailable()) {
@@ -152,7 +152,7 @@ inline void FillTagBranches(const MUON &muon,
     nt.branches["tag_dyt_pterr"] = (float)muon.dytTrack()->ptError();
     nt.branches["tag_dyt_eta"] = (float)muon.dytTrack()->eta();
     nt.branches["tag_dyt_phi"] = (float)muon.dytTrack()->phi();
-    nt.branches["tag_dyt_muonHits"] = (float)muon.dytTrack()->hitPattern().numberOfValidMuonHits();
+    nt.branches["tag_dyt_muonHits"] = (int)muon.dytTrack()->hitPattern().numberOfValidMuonHits();
   } else {
     nt.branches["tag_dyt_charge"] = (int)-99;
     nt.branches["tag_dyt_pt"] = (float)-99.;
@@ -160,7 +160,7 @@ inline void FillTagBranches(const MUON &muon,
     nt.branches["tag_dyt_eta"] = (float)-99.;
     nt.branches["tag_dyt_phi"] = (float)-99.;
     nt.branches["tag_dyt_pterr"] = (float)-99.;
-    nt.branches["tag_dyt_muonHits"] = (float)-99.;
+    nt.branches["tag_dyt_muonHits"] = (int)-99.;
   }
 
 
@@ -211,22 +211,22 @@ inline void FillProbeBranches(
     nt.branches["probe_stationMask"] = (int)mu.stationMask();
     nt.branches["probe_nShowers"] = (int)mu.numberOfShowers();
     if (mu.globalTrack().isNonnull()) {
-      nt.branches["probe_muonHits"] = (float)mu.globalTrack()->hitPattern().numberOfValidMuonHits();
+      nt.branches["probe_muonHits"] = (int)mu.globalTrack()->hitPattern().numberOfValidMuonHits();
       nt.branches["probe_trkChi2"] = (float)mu.globalTrack()->normalizedChi2();
     } else if (mu.innerTrack().isNonnull() && mu.innerTrack().isAvailable()) {
       nt.branches["probe_trkChi2"] = (float)mu.innerTrack()->normalizedChi2();
-      nt.branches["probe_muonHits"] = (float)mu.innerTrack()->hitPattern().numberOfValidMuonHits();
+      nt.branches["probe_muonHits"] = (int)mu.innerTrack()->hitPattern().numberOfValidMuonHits();
     } else {    
-    nt.branches["probe_muonHits"] = (float)-99;
+    nt.branches["probe_muonHits"] = (int)-99;
     nt.branches["probe_trkChi2"] = (float)-99;
     }
     if (mu.innerTrack().isNonnull() && mu.innerTrack().isAvailable()) {
-      nt.branches["probe_inner_validFraction"] = (int)mu.innerTrack()->validFraction();
+      nt.branches["probe_inner_validFraction"] = (float)mu.innerTrack()->validFraction();
       nt.branches["probe_inner_trackerLayers"] = (int)mu.innerTrack()->hitPattern().trackerLayersWithMeasurement();
       nt.branches["probe_inner_pixelLayers"] = (int)mu.innerTrack()->hitPattern().pixelLayersWithMeasurement();
       nt.branches["probe_inner_pterr"] = (float)mu.innerTrack()->ptError();
-      nt.branches["probe_dxy"] = (float)mu.innerTrack()->dxy(reco::TrackBase::Point(nt.pv_x, nt.pv_y, nt.pv_z));
-      nt.branches["probe_dz"] = (float)mu.innerTrack()->dz(reco::TrackBase::Point(nt.pv_x, nt.pv_y, nt.pv_z));
+      nt.branches["probe_dxy"] = (float)mu.innerTrack()->dxy(reco::TrackBase::Point(std::get<float>(nt.branches["pv_x"].value), std::get<float>(nt.branches["pv_y"].value), std::get<float>(nt.branches["pv_z"].value)));
+      nt.branches["probe_dz"] = (float)mu.innerTrack()->dz(reco::TrackBase::Point(std::get<float>(nt.branches["pv_x"].value), std::get<float>(nt.branches["pv_y"].value), std::get<float>(nt.branches["pv_z"].value)));
       nt.branches["probe_inner_pixelHits"] = (int)mu.innerTrack()->hitPattern().numberOfValidPixelHits();
       nt.branches["probe_inner_pt"] = (float)mu.innerTrack()->pt();
       nt.branches["probe_inner_eta"] = (float)mu.innerTrack()->eta();
@@ -324,7 +324,7 @@ inline void FillProbeBranches(
       nt.branches["probe_picky_phi"] = (float)mu.pickyTrack()->phi();
       nt.branches["probe_picky_muonHits"] = (int)mu.pickyTrack()->hitPattern().numberOfValidMuonHits();
     }else{
-      nt.branches["probe_picky_charge"] (int)= -99.;
+      nt.branches["probe_picky_charge"] = (int)-99.;
       nt.branches["probe_picky_pt"] = (float)-99.;
       nt.branches["probe_picky_pterr"] = (float)-99.;
       nt.branches["probe_picky_eta"] = (float)-99.;
@@ -454,8 +454,8 @@ inline void FillProbeBranchesdSA(const TRK &trk, NtupleContent &nt, bool passdSA
   if (passdSA) {
     nt.branches["probe_dsa_outerEta"] = (float)trk.outerEta();
     nt.branches["probe_dsa_outerPhi"] = (float)trk.outerPhi();
-    nt.branches["probe_dsa_dxy"] = (float)trk.dxy(reco::TrackBase::Point(nt.pv_x, nt.pv_y, nt.pv_z));
-    nt.branches["probe_dsa_dz"] = (float)trk.dz(reco::TrackBase::Point(nt.pv_x, nt.pv_y, nt.pv_z));
+    nt.branches["probe_dsa_dxy"] = (float)trk.dxy(reco::TrackBase::Point(std::get<float>(nt.branches["pv_x"].value), std::get<float>(nt.branches["pv_y"].value), std::get<float>(nt.branches["pv_z"].value)));
+    nt.branches["probe_dsa_dz"] = (float)trk.dz(reco::TrackBase::Point(std::get<float>(nt.branches["pv_x"].value), std::get<float>(nt.branches["pv_y"].value), std::get<float>(nt.branches["pv_z"].value)));
     nt.branches["probe_dsa_muonStations"] = (int)trk.hitPattern().muonStationsWithValidHits();
     nt.branches["probe_dsa_muonHits"] = (int)trk.hitPattern().numberOfValidMuonHits();
     nt.branches["probe_dsa_DTHits"] = (int)trk.hitPattern().numberOfValidMuonDTHits();
@@ -502,8 +502,8 @@ inline void FillTagBranchesdSA(const TRK &trk, NtupleContent &nt, bool passdSA) 
   if (passdSA) {
     nt.branches["tag_dsa_outerEta"] = (float)trk.outerEta();
     nt.branches["tag_dsa_outerPhi"] = (float)trk.outerPhi();
-    nt.branches["tag_dsa_dxy"] = (float)trk.dxy(reco::TrackBase::Point(nt.pv_x, nt.pv_y, nt.pv_z));
-    nt.branches["tag_dsa_dz"] = (float)trk.dz(reco::TrackBase::Point(nt.pv_x, nt.pv_y, nt.pv_z));
+    nt.branches["tag_dsa_dxy"] = (float)trk.dxy(reco::TrackBase::Point(std::get<float>(nt.branches["pv_x"].value), std::get<float>(nt.branches["pv_y"].value), std::get<float>(nt.branches["pv_z"].value)));
+    nt.branches["tag_dsa_dz"] = (float)trk.dz(reco::TrackBase::Point(std::get<float>(nt.branches["pv_x"].value), std::get<float>(nt.branches["pv_y"].value), std::get<float>(nt.branches["pv_z"].value)));
     nt.branches["tag_dsa_muonStations"] = (int)trk.hitPattern().muonStationsWithValidHits();
     nt.branches["tag_dsa_muonHits"] = (int)trk.hitPattern().numberOfValidMuonHits();
     nt.branches["tag_dsa_DTHits"] = (int)trk.hitPattern().numberOfValidMuonDTHits();
@@ -546,8 +546,8 @@ inline void FillProbeBranchesdgl(const TRK &trk, NtupleContent &nt, bool passdgl
   nt.branches["probe_dgl_phi"] = (float)trk.phi();
   nt.branches["probe_dgl_charge"] = (int)trk.charge();
   if (passdgl) {
-    nt.branches["probe_dgl_dxy"] = (float)trk.dxy(reco::TrackBase::Point(nt.pv_x, nt.pv_y, nt.pv_z));
-    nt.branches["probe_dgl_dz"] = (float)trk.dz(reco::TrackBase::Point(nt.pv_x, nt.pv_y, nt.pv_z));
+    nt.branches["probe_dgl_dxy"] = (float)trk.dxy(reco::TrackBase::Point(std::get<float>(nt.branches["pv_x"].value), std::get<float>(nt.branches["pv_y"].value), std::get<float>(nt.branches["pv_z"].value)));
+    nt.branches["probe_dgl_dz"] = (float)trk.dz(reco::TrackBase::Point(std::get<float>(nt.branches["pv_x"].value), std::get<float>(nt.branches["pv_y"].value), std::get<float>(nt.branches["pv_z"].value)));
     nt.branches["probe_dgl_muonStations"] = (int)trk.hitPattern().muonStationsWithValidHits();
     nt.branches["probe_dgl_muonHits"] = (int)trk.hitPattern().numberOfValidMuonHits();
     nt.branches["probe_dgl_outerTrackerHits"] = (int)trk.hitPattern().numberOfValidStripHits();
@@ -596,7 +596,7 @@ inline void FillPairBranches(const MUOTT &muon, const TRKTT &trk, NtupleContent 
   nt.branches["pair_mass"] = (float)(mu1 + mu2).mass();
   nt.branches["pair_eta"] = (float)(mu1 + mu2).eta();
   nt.branches["pair_phi"] = (float)(mu1 + mu2).phi();
-  nt.branches["pair_dz"] = (float)muon.first.vz() - trk.first.vz();
+  nt.branches["pair_dz"] = (float)(muon.first.vz() - trk.first.vz());
   nt.branches["pair_dR"] = (float)deltaR(muon.first.eta(), muon.first.phi(), trk.first.eta(), trk.first.phi());
   if (muon.second.impactPointStateAvailable() && trk.second.impactPointStateAvailable()) {
     FreeTrajectoryState trajectory_state_muon = muon.second.impactPointTSCP().theState();
@@ -622,7 +622,7 @@ inline void FillTunePPairBranches(const MUO &muon, const TRK &trk, NtupleContent
   nt.branches["pair_tuneP_mass"] = (float)(mu1 + mu2).mass();
   nt.branches["pair_tuneP_eta"] = (float)(mu1 + mu2).eta();
   nt.branches["pair_tuneP_phi"] = (float)(mu1 + mu2).phi();
-  nt.branches["pair_tuneP_dz"] = (float)muon.vz() - trk.vz();
+  nt.branches["pair_tuneP_dz"] = (float)(muon.vz() - trk.vz());
   nt.branches["pair_tuneP_dR"] = (float)deltaR(muon.eta(), muon.phi(), trk.eta(), trk.phi());
 }
 

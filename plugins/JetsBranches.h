@@ -32,6 +32,14 @@ template <typename JET>
 inline void FillJetBranches(const JET &jet, const JET &corrJet, NtupleContent &nt, std::string era) {
   // Jet ID
   bool jetTightID = true, jetTightLepVeto = true;
+
+  std::vector<bool> jets_isTight;
+  std::vector<bool> jets_isTightLepVeto;
+  std::vector<float> jets_pt;
+  std::vector<float> jets_eta;
+  std::vector<float> jets_phi;
+  std::vector<float> jets_mass;
+
   if (era.find("2016") != std::string::npos) {
     if (abs(jet.eta()) <= 2.7) {
       if (jet.neutralHadronEnergyFraction() >= 0.9 || jet.neutralEmEnergyFraction() >= 0.9 ||
@@ -108,17 +116,32 @@ inline void FillJetBranches(const JET &jet, const JET &corrJet, NtupleContent &n
   }
 
   if (jetTightID)
-    nt.nTightJets++;
+    nt.branches["nTightJets"] = (int)(std::get<int>(nt.branches["nTightJets"].value) + 1);
   if (jetTightLepVeto)
-    nt.nTightLepVetoJets++;
+    nt.branches["nTightLepVetoJets"] = (int)(std::get<int>(nt.branches["nTightLepVetoJets"].value) + 1);
+
+  jets_isTight = std::get<std::vector<bool>>(nt.branches["jets_isTight"].value);
+  jets_isTightLepVeto = std::get<std::vector<bool>>(nt.branches["jets_isTightLepVeto"].value);
+  jets_pt = std::get<std::vector<float>>(nt.branches["jets_pt"].value);
+  jets_eta = std::get<std::vector<float>>(nt.branches["jets_eta"].value);
+  jets_phi = std::get<std::vector<float>>(nt.branches["jets_phi"].value);
+  jets_mass = std::get<std::vector<float>>(nt.branches["jets_mass"].value);
+
+  jets_isTight.push_back(jetTightID);
+  jets_isTightLepVeto.push_back(jetTightLepVeto);
+  jets_pt.push_back(corrJet.pt());
+  jets_eta.push_back(corrJet.eta());
+  jets_phi.push_back(corrJet.phi());
+  jets_mass.push_back(corrJet.mass());
 
   // Store Jet Information
-  nt.branches["jets_isTight"].push_back((int)jetTightID);
-  nt.branches["jets_isTightLepVeto"].push_back((bool)jetTightLepVeto);
-  nt.branches["jets_pt"].push_back((float)corrJet.pt());
-  nt.branches["jets_eta"].push_back((float)corrJet.eta());
-  nt.branches["jets_phi"].push_back((float)corrJet.phi());
-  nt.branches["jets_mass"].push_back((float)corrJet.mass());
+  nt.branches["jets_isTight"] = (std::vector<bool>)jets_isTight;
+  nt.branches["jets_isTightLepVeto"] = (std::vector<bool>)jets_isTightLepVeto;
+  nt.branches["jets_pt"] = (std::vector<float>)jets_pt;
+  nt.branches["jets_eta"] = (std::vector<float>)jets_eta;
+  nt.branches["jets_phi"] = (std::vector<float>)jets_phi;
+  nt.branches["jets_mass"] = (std::vector<float>)jets_mass;
+
 }
 
 template <typename JET, typename MUON>
