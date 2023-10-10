@@ -50,7 +50,7 @@ options.register('numThreads', 1,
 )
 
 # this parameter is added for Jet Branches (ID varies for different era)
-options.register('era', 'Run2018',
+options.register('era', 'Run2022',
     VarParsing.multiplicity.singleton,
     VarParsing.varType.string,
     "era"
