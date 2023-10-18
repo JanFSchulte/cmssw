@@ -39,7 +39,7 @@ void KlFitter::fillNtuple(NtupleContent &nt, bool isTuneP) {
                                     refited[1].track().pt(),
                                     refited[1].track().eta(),
                                     refited[1].track().phi());
-      nt.branches["pair_normalchi2"] = (double)normalchi2_;
+      nt.branches["pair_normalchi2"] = (float)normalchi2_;
     } else {
       nt.branches["pair_svprob"] = (float)-1;
       nt.branches["pair_fit_mass"] = (float)-1;

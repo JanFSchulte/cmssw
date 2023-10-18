@@ -57,9 +57,6 @@ public:
 
   std::map<TString, BranchInfo> branches;
 
-  // Standard stuff
-  int ls;
-
 
   // Triggers
   static const int NTRIGGERMAX = 100;

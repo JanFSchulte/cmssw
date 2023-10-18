@@ -55,12 +55,12 @@ inline void FillTagBranches(const MUON &muon,
   nt.branches["tag_pfIso03_neutral"] = (float)muon.pfIsolationR03().sumNeutralHadronEt;
   nt.branches["tag_pfIso03_photon"] = (float)muon.pfIsolationR03().sumPhotonEt;
   nt.branches["tag_pfIso03_sumPU"] = (float)muon.pfIsolationR03().sumPUPt;
-  nt.branches["tag_combRelIsoPF03dBeta"] = (float)(muon.pfIsolationR03().sumChargedHadronPt + TMath::Max(muon.pfIsolationR03().sumNeutralHadronEt + muon.pfIsolationR03().sumPhotonEt - muon.pfIsolationR03().sumPUPt/2.0,0.0))/muon.pt();
+  nt.branches["tag_combRelIsoPF03dBeta"] = (float)((muon.pfIsolationR03().sumChargedHadronPt + TMath::Max(muon.pfIsolationR03().sumNeutralHadronEt + muon.pfIsolationR03().sumPhotonEt - muon.pfIsolationR03().sumPUPt/2.0,0.0))/muon.pt());
   nt.branches["tag_pfIso04_charged"] = (float)muon.pfIsolationR04().sumChargedHadronPt;
   nt.branches["tag_pfIso04_neutral"] = (float)muon.pfIsolationR04().sumNeutralHadronEt;
   nt.branches["tag_pfIso04_photon"] = (float)muon.pfIsolationR04().sumPhotonEt;
   nt.branches["tag_pfIso04_sumPU"] = (float)muon.pfIsolationR04().sumPUPt;
-  nt.branches["tag_combRelIsoPF04dBeta"] = (float)(muon.pfIsolationR04().sumChargedHadronPt + TMath::Max(muon.pfIsolationR04().sumNeutralHadronEt + muon.pfIsolationR04().sumPhotonEt - muon.pfIsolationR04().sumPUPt/2.0,0.0))/muon.pt();
+  nt.branches["tag_combRelIsoPF04dBeta"] = (float)((muon.pfIsolationR04().sumChargedHadronPt + TMath::Max(muon.pfIsolationR04().sumNeutralHadronEt + muon.pfIsolationR04().sumPhotonEt - muon.pfIsolationR04().sumPUPt/2.0,0.0))/muon.pt());
   if (muon.tunePMuonBestTrack().isNonnull()) {
     nt.branches["tag_tuneP_ExistingRefit"] = (bool)true;
     nt.branches["tag_tuneP_charge"] = (int)muon.tunePMuonBestTrack()->charge();
@@ -68,16 +68,16 @@ inline void FillTagBranches(const MUON &muon,
     nt.branches["tag_tuneP_pterr"] = (float)muon.tunePMuonBestTrack()->ptError();
     nt.branches["tag_tuneP_eta"] = (float)muon.tunePMuonBestTrack()->eta();
     nt.branches["tag_tuneP_phi"] = (float)muon.tunePMuonBestTrack()->phi();
-    nt.branches["tag_tuneP_muonHits"] = (float)muon.tunePMuonBestTrack()->hitPattern().numberOfValidMuonHits();
+    nt.branches["tag_tuneP_muonHits"] = (int)muon.tunePMuonBestTrack()->hitPattern().numberOfValidMuonHits();
   } else {
     nt.branches["tag_tuneP_ExistingRefit"] = (bool)false;
-    nt.branches["tag_tuneP_charge"] = (int)0;
+    nt.branches["tag_tuneP_charge"] = (int)-99;
     nt.branches["tag_tuneP_pt"] = (float)-99.;
     nt.branches["tag_tuneP_pterr"] = (float)-99.;
     nt.branches["tag_tuneP_eta"] = (float)-99.;
     nt.branches["tag_tuneP_phi"] = (float)-99.;
     nt.branches["tag_tuneP_pterr"] = (float)-99.;
-    nt.branches["tag_tuneP_muonHits"] = (float)-99.;
+    nt.branches["tag_tuneP_muonHits"] = (int)-99;
   }
   int nsegments = 0;
   for (auto &chamber : muon.matches()) {
@@ -120,7 +120,7 @@ inline void FillTagBranches(const MUON &muon,
     nt.branches["tag_tpfms_phi"] = (float)muon.tpfmsTrack()->phi();
     nt.branches["tag_tpfms_muonHits"] = (int)muon.tpfmsTrack()->hitPattern().numberOfValidMuonHits();
   } else {
-    nt.branches["tag_tpfms_charge"] = (int)0;
+    nt.branches["tag_tpfms_charge"] = (int)-99;
     nt.branches["tag_tpfms_pt"] = (float)-99.;
     nt.branches["tag_tpfms_pterr"] = (float)-99.;
     nt.branches["tag_tpfms_eta"] = (float)-99.;
@@ -137,7 +137,7 @@ inline void FillTagBranches(const MUON &muon,
     nt.branches["tag_picky_phi"] = (float)muon.pickyTrack()->phi();
     nt.branches["tag_picky_muonHits"] = (int)muon.pickyTrack()->hitPattern().numberOfValidMuonHits();
   } else {
-    nt.branches["tag_picky_charge"] = (int)0;
+    nt.branches["tag_picky_charge"] = (int)-99;
     nt.branches["tag_picky_pt"] = (float)-99.;
     nt.branches["tag_picky_pterr"] = (float)-99.;
     nt.branches["tag_picky_eta"] = (float)-99.;
@@ -217,8 +217,8 @@ inline void FillProbeBranches(
       nt.branches["probe_trkChi2"] = (float)mu.innerTrack()->normalizedChi2();
       nt.branches["probe_muonHits"] = (int)mu.innerTrack()->hitPattern().numberOfValidMuonHits();
     } else {    
-    nt.branches["probe_muonHits"] = (int)-99;
-    nt.branches["probe_trkChi2"] = (float)-99;
+      nt.branches["probe_muonHits"] = (int)-99;
+      nt.branches["probe_trkChi2"] = (float)-99;
     }
     if (mu.innerTrack().isNonnull() && mu.innerTrack().isAvailable()) {
       nt.branches["probe_inner_validFraction"] = (float)mu.innerTrack()->validFraction();
@@ -284,8 +284,9 @@ inline void FillProbeBranches(
       nt.branches["probe_best_phi"] = (float)-99;
       nt.branches["probe_best_charge"]   = (int)-99;
     }
+    
     if (mu.tunePMuonBestTrack().isNonnull() && mu.tunePMuonBestTrack().isAvailable()) {
-      nt.branches["probe_tuneP_ExistingRefit"] = (bool)true;
+      nt.branches["probe_tuneP_ExistingRefit"] = true;
       nt.branches["probe_tuneP_charge"] = (int)mu.tunePMuonBestTrack()->charge();
       nt.branches["probe_tuneP_pt"] = (float)mu.tunePMuonBestTrack()->pt();
       nt.branches["probe_tuneP_eta"] = (float)mu.tunePMuonBestTrack()->eta();
@@ -293,7 +294,7 @@ inline void FillProbeBranches(
       nt.branches["probe_tuneP_pterr"] = (float)mu.tunePMuonBestTrack()->ptError();
       nt.branches["probe_tuneP_muonHits"] = (int)mu.tunePMuonBestTrack()->hitPattern().numberOfValidMuonHits();
     }else{
-      nt.branches["probe_tuneP_ExistingRefit"] = (bool)false;
+      nt.branches["probe_tuneP_ExistingRefit"] = false;
       nt.branches["probe_tuneP_charge"] = (int)-99;
       nt.branches["probe_tuneP_pt"] = (float)-99;
       nt.branches["probe_tuneP_eta"] = (float)-99;
@@ -344,7 +345,7 @@ inline void FillProbeBranches(
       nt.branches["probe_dyt_pterr"] = (float)-99.;
       nt.branches["probe_dyt_eta"] = (float)-99.;
       nt.branches["probe_dyt_phi"] = (float)-99.;
-      nt.branches["probe_dyt_muonHits"] = (int)-99.;
+      nt.branches["probe_dyt_muonHits"] = (int)-99;
     }
     nt.branches["probe_positionChi2"] = (float)mu.combinedQuality().chi2LocalPosition;
     nt.branches["probe_trkKink"] = (float)mu.combinedQuality().trkKink;
@@ -426,6 +427,40 @@ inline void FillProbeBranches(
     nt.branches["probe_best_eta"] = (float)-99;
     nt.branches["probe_best_phi"] = (float)-99;
     nt.branches["probe_best_charge"] = (int)-99;
+
+
+    nt.branches["probe_SIP3D"] = (float)-99.0;
+    nt.branches["probe_SIP3D_err"] = (float)-99.0;
+    nt.branches["probe_dyt_eta"] = (float)-99.0;
+    nt.branches["probe_dyt_phi"] = (float)-99.0;
+    nt.branches["probe_dyt_pt"] = (float)-99.0;
+    nt.branches["probe_dyt_pterr"] = (float)-99.0;
+    nt.branches["probe_dyt_muonHits"] = (int)-99;
+    nt.branches["probe_picky_eta"] = (float)-99.0;
+    nt.branches["probe_picky_phi"] = (float)-99.0;
+    nt.branches["probe_picky_pt"] = (float)-99.0;
+    nt.branches["probe_picky_pterr"] = (float)-99.0;
+    nt.branches["probe_tpfms_eta"] = (float)-99.0;
+    nt.branches["probe_tpfms_phi"] = (float)-99.0;
+    nt.branches["probe_tpfms_pt"] = (float)-99.0;
+    nt.branches["probe_tpfms_pterr"] = (float)-99.0;
+    nt.branches["probe_tuneP_ExistingRefit"] = (float)-99.0;
+    nt.branches["probe_tuneP_charge"] = (int)-99;
+    nt.branches["probe_tuneP_eta"] = (float)-99.0;
+    nt.branches["probe_tuneP_phi"] = (float)-99.0;
+    nt.branches["probe_cosmic_minDR"] = (float)+99.0;
+    nt.branches["probe_dsa_minDR"] = (float)+99.0;
+    nt.branches["probe_isArbitratedTracker"] = (bool)false;
+    nt.branches["probe_isRPC"] = (bool)false;
+    nt.branches["probe_muonHits"] = (int)-99;
+    nt.branches["probe_picky_muonHits"] = (int)-99;
+    nt.branches["probe_tpfms_muonHits"] = (int)-99;
+    nt.branches["probe_dgl_outerTrackerHits"] = (int)-99;
+    nt.branches["probe_dgl_pterr"] = (float)0.0;
+    nt.branches["probe_dgl_segmentMatches"] = (float)-99.0;
+    nt.branches["probe_dgl_totalHits"] = (int)-99;
+    nt.branches["probe_dgl_trackerHits"] = (int)-99;
+    nt.branches["probe_dgl_minDR"] = (float)+99.0;
   }
 }
 
@@ -460,7 +495,7 @@ inline void FillProbeBranchesdSA(const TRK &trk, NtupleContent &nt, bool passdSA
     nt.branches["probe_dsa_muonHits"] = (int)trk.hitPattern().numberOfValidMuonHits();
     nt.branches["probe_dsa_DTHits"] = (int)trk.hitPattern().numberOfValidMuonDTHits();
     nt.branches["probe_dsa_CSCHits"] = (int)trk.hitPattern().numberOfValidMuonCSCHits();
-    nt.branches["probe_dsa_pterr"] = (float)trk.ptError() / trk.pt();
+    nt.branches["probe_dsa_pterr"] = (float)(trk.ptError() / trk.pt());
     nt.branches["probe_dsa_trkChi2"] = (float)trk.normalizedChi2();
     // [Adapted from displaced dimuon analysis]
     // Number of DT+CSC segments
@@ -508,7 +543,7 @@ inline void FillTagBranchesdSA(const TRK &trk, NtupleContent &nt, bool passdSA) 
     nt.branches["tag_dsa_muonHits"] = (int)trk.hitPattern().numberOfValidMuonHits();
     nt.branches["tag_dsa_DTHits"] = (int)trk.hitPattern().numberOfValidMuonDTHits();
     nt.branches["tag_dsa_CSCHits"] = (int)trk.hitPattern().numberOfValidMuonCSCHits();
-    nt.branches["tag_dsa_pterr"] = (float)trk.ptError() / trk.pt();
+    nt.branches["tag_dsa_pterr"] = (float)(trk.ptError() / trk.pt());
     nt.branches["tag_dsa_trkChi2"] = (float)trk.normalizedChi2();
     // [Adapted from displaced dimuon analysis]
     // Number of DT+CSC segments
@@ -555,7 +590,7 @@ inline void FillProbeBranchesdgl(const TRK &trk, NtupleContent &nt, bool passdgl
     nt.branches["probe_dgl_totalHits"] = (int)trk.hitPattern().numberOfValidHits();
     nt.branches["probe_dgl_DTHits"] = (int)trk.hitPattern().numberOfValidMuonDTHits();
     nt.branches["probe_dgl_CSCHits"] = (int)trk.hitPattern().numberOfValidMuonCSCHits();
-    nt.branches["probe_dgl_pterr"] = (float)trk.ptError() / trk.pt();
+    nt.branches["probe_dgl_pterr"] = (float)(trk.ptError() / trk.pt());
     nt.branches["probe_dgl_trkChi2"] = (float)trk.normalizedChi2();
     // [Adapted from displaced dimuon analysis]
     // Number of DT+CSC segments
@@ -577,7 +612,7 @@ inline void FillProbeBranchesdgl(const TRK &trk, NtupleContent &nt, bool passdgl
     nt.branches["probe_dgl_muonHits"] = (int)-99;
     nt.branches["probe_dgl_DTHits"] = (int)-99;
     nt.branches["probe_dgl_CSCHits"] = (int)-99;
-    nt.branches["probe_dgl_pterr"] = (float)-99;
+    nt.branches["probe_dgl_pterr"] = (float)-99.0;
     nt.branches["probe_dgl_trkChi2"] = (float)-99;
     nt.branches["probe_dgl_nsegments"] = (int)-99;
   }

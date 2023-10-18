@@ -348,8 +348,9 @@ void MuonFullAODAnalyzer::fillHLTmuon(const edm::Event& iEvent,
         trg_pt.push_back(foundObject.pt());
         trg_eta.push_back(foundObject.eta());
         trg_phi.push_back(foundObject.phi());
-        if (debug_ > 0)
+        if (debug_ > 0){
           std::cout << "Trg muon " << foundObject.pt() << std::endl;
+	}
       }
     }
   }
@@ -500,7 +501,7 @@ void MuonFullAODAnalyzer::analyze(const edm::Event& iEvent, const edm::EventSetu
   nt.branches["BSpot_y"] = (float)theBeamSpot->y0();
   nt.branches["BSpot_z"] = (float)theBeamSpot->z0();
   nt.branches["nVertices"] = (int)vertices->size();
-
+    
   // Gen weights, sim info
   bool simInfoIsAvailalbe = false;
   edm::Handle<edm::ValueMap<reco::MuonSimInfo>> simInfo;
@@ -517,7 +518,7 @@ void MuonFullAODAnalyzer::analyze(const edm::Event& iEvent, const edm::EventSetu
   // Pileup information
   edm::Handle<double> rhoHandle;
   iEvent.getByToken(rhoToken_, rhoHandle);
-  nt.branches["rho"] = (float)*rhoHandle;
+  nt.branches["rho"] = (double)*rhoHandle;
 
   float trueNumInteractions = -1;
   int puNumInteractions = -1;
@@ -535,9 +536,9 @@ void MuonFullAODAnalyzer::analyze(const edm::Event& iEvent, const edm::EventSetu
     }
   }
 
-  nt.branches["nTrueInteractions"] = (int)trueNumInteractions;
-  nt.branches["nPUInteractions"] = (int)puNumInteractions;
-
+  nt.branches["nTrueInteractions"] = (float)trueNumInteractions;
+  nt.branches["nPUInteractions"] = (float)puNumInteractions;
+  
   if (debug_ > 0)
     std::cout << "New Evt " << std::get<int>(nt.branches["run"].value) << std::endl;
 
@@ -561,9 +562,10 @@ void MuonFullAODAnalyzer::analyze(const edm::Event& iEvent, const edm::EventSetu
   // check if path fired, if so save hlt muons
   if (!HLTaccept(iEvent, nt, HLTPaths_))
     return;
+  
   fillHLTmuon(iEvent, nt.trg_filter, nt.trg_pt, nt.trg_eta, nt.trg_phi, tagFilters_, debug_);
   fillHLTmuon(iEvent, nt.prb_filter, nt.prb_pt, nt.prb_eta, nt.prb_phi, probeFilters_, debug_);
-
+  
   // gen information
   MuonGenAnalyzer genmu;
   std::vector<unsigned> matched_muon_idx;
@@ -596,6 +598,7 @@ void MuonFullAODAnalyzer::analyze(const edm::Event& iEvent, const edm::EventSetu
   // match hlt with offline muon
   std::vector<unsigned> trg_idx;
   for (unsigned itrg = 0; itrg < nt.trg_pt.size(); ++itrg) {
+    
     float minDR = 1000;
     unsigned idx = 0;
     for (auto& mu : *muons) {
@@ -604,8 +607,10 @@ void MuonFullAODAnalyzer::analyze(const edm::Event& iEvent, const edm::EventSetu
       minDR = deltaR(nt.trg_eta[itrg], nt.trg_phi[itrg], mu.eta(), mu.phi());
       idx = &mu - &muons->at(0);
     }
-    if (debug_ > 0)
+    if (debug_ > 0){
+      std::cout << tagFilters_[itrg] << std::endl;
       std::cout << "Trg " << itrg << ", min DR " << minDR << std::endl;
+    }
     if (minDR < trgDRwindow_)
       trg_idx.push_back(idx);
     if (minDR < trgDRwindow_ && debug_ > 0)
@@ -1152,6 +1157,9 @@ void MuonFullAODAnalyzer::analyze(const edm::Event& iEvent, const edm::EventSetu
     pair_dM_Z_Mmumu.pop();
   }
 
+  // Initialize some variables
+  nt.branches["iprobe"] = (int)0;
+  
   // now run again to select probes
   // loop over tags
   for (auto& tag : tag_trkttrk) {
@@ -1390,11 +1398,11 @@ void MuonFullAODAnalyzer::analyze(const edm::Event& iEvent, const edm::EventSetu
       }
 
       if (itdgl == probe_dGl_map.first.end()) {
-        nt.branches["probe_dgl_segmentMatches"] = (int)-1;
+        nt.branches["probe_dgl_segmentMatches"] = (float)-1;
         FillProbeBranchesdgl<reco::Track>(probe, nt, false);
       } else {
         unsigned idx = std::distance(probe_dGl_map.first.begin(), itdgl);
-        nt.branches["probe_dgl_segmentMatches"] = (int)probe_dGl_segmentmatches[idx];
+        nt.branches["probe_dgl_segmentMatches"] = (float)probe_dGl_segmentmatches[idx];
         nt.branches["probe_dgl_minDR"] = (float)probe_dGl_dRs[idx];
         if (debug_ > 0)
           std::cout << "Successful probe displaced global " << dGlmuons->at(probe_dGl_map.second[idx]).pt() << " eta "
@@ -1430,7 +1438,7 @@ void MuonFullAODAnalyzer::analyze(const edm::Event& iEvent, const edm::EventSetu
       nt.branches["pair_rank_dz_PV_SV"] = (float)pair_rank_dz_PV_SV[{&tag - &tag_trkttrk[0], &probe - &tracks->at(0)}];
       nt.branches["pair_rank_dPhi_muons"] = (float)pair_rank_dPhi_muons[{&tag - &tag_trkttrk[0], &probe - &tracks->at(0)}];
       nt.branches["pair_rank_dM_Z_Mmumu"] = (float)pair_rank_dM_Z_Mmumu[{&tag - &tag_trkttrk[0], &probe - &tracks->at(0)}];
-      nt.branches["probe_isHighPurity"] = (float)probe.quality(Track::highPurity);
+      nt.branches["probe_isHighPurity"] = (bool)probe.quality(Track::highPurity);
 
       for (auto it = map_tagIdx_nprobes.begin(); it != map_tagIdx_nprobes.end(); ++it) {
         if (it->first == tag_idx) {

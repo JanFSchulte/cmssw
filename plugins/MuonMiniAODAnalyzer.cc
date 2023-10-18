@@ -414,8 +414,8 @@ void MuonMiniAODAnalyzer::analyze(const edm::Event& iEvent, const edm::EventSetu
 
   // Information about run
   nt.ClearBranches();
-  nt.branches["lumi"] = (int)iEvent.luminosityBlock();
   nt.branches["run"] = (int)iEvent.id().run();
+  nt.branches["lumi"] = (int)iEvent.luminosityBlock();
   nt.branches["event"] = (int)iEvent.id().event();
   nt.branches["fromFullAOD"] = (bool)false;
   nt.branches["BSpot_x"] = (float)theBeamSpot->x0();
@@ -742,7 +742,7 @@ void MuonMiniAODAnalyzer::analyze(const edm::Event& iEvent, const edm::EventSetu
   for (size_t i = 0; i < pair_vtx_probs.size(); i++)
     pair_rank_vtx_prob[pair_vtx_probs[i].first] = i;
 
-
+  //Initialize iprobe branch
   nt.branches["iprobe"] = (int)0;
   
   // Final pair selection
@@ -770,6 +770,7 @@ void MuonMiniAODAnalyzer::analyze(const edm::Event& iEvent, const edm::EventSetu
           continue;
       }
 
+      nt.branches["probe_muonHits"] = (int)-99;
       auto it = std::find(trk_muon_map.first.begin(), trk_muon_map.first.end(), &probe - &tracks[0]);
       if (muonOnly_ && it == trk_muon_map.first.end())
         continue;
@@ -826,7 +827,7 @@ void MuonMiniAODAnalyzer::analyze(const edm::Event& iEvent, const edm::EventSetu
             muons->at(trk_muon_map.second[idx]), *rhoJetsNC, nt, false);
         if (includeJets_)
           FindJetProbePair<pat::Jet, pat::Muon>(*jets, muons->at(trk_muon_map.second[idx]), nt);
-
+	
         // Probe-trigger matching
         auto muRef = muonsView->refAt(trk_muon_map.second[idx]);
         pat::TriggerObjectStandAloneRef l1Match = (*l1Matches)[muRef];
@@ -880,9 +881,9 @@ void MuonMiniAODAnalyzer::analyze(const edm::Event& iEvent, const edm::EventSetu
         FillProbeBranches<reco::Muon, reco::Track>(fakeMuon, tracks, nt, false, *pv);
         FillProbeBranchesSelector<reco::Muon>(fakeMuon, nt, probeSelectorBits_, false);
         FillMiniIsov2<pat::Muon>(fakeMuon, *rhoJetsNC, nt, false);
-        if (includeJets_)
+	if (includeJets_)
           FindJetProbePair<pat::Jet, pat::Muon>(*jets, fakeMuon, nt);
-
+	
         // store dummy trigger variables if offline muon is not found
         for (const auto& path : probeFilters_) {
           nt.probe_trg[&path - &probeFilters_[0]] = false;
@@ -891,6 +892,7 @@ void MuonMiniAODAnalyzer::analyze(const edm::Event& iEvent, const edm::EventSetu
           nt.probe_trg_phi[&path - &probeFilters_[0]] = -99;
           nt.probe_trg_dr[&path - &probeFilters_[0]] = 99;
         }
+	
         nt.branches["l1pt"] = (float)-99.;
         nt.branches["l1q"] = (float)-99;
         nt.branches["l1dr"] = (float)99.;

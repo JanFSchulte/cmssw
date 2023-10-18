@@ -16,7 +16,7 @@ NtupleContent::NtupleContent() :
     {"nVertices", {0}},
     {"nTrueInteractions", {-99.f}},
     {"nPUInteractions", {-99.f}},
-    {"rho", {-1.f}},
+    {"rho", {-1.d}},
     {"nmuons", {0}},
     {"ntag", {0}},
     {"npairs", {0}},
@@ -98,8 +98,8 @@ NtupleContent::NtupleContent() :
     {"tag_tuneP_pt", {-99.f}},
     {"tag_tuneP_eta", {-99.f}},
     {"tag_tuneP_phi", {-99.f}},
-    {"tag_tuneP_muonHits", {0}},
-    {"tag_tuneP_charge", {0}},
+    {"tag_tuneP_muonHits", {-99}},
+    {"tag_tuneP_charge", {-99}},
     {"tag_tuneP_pterr", {-99.f}},
     {"tag_nsegments", {-99}},
     {"tag_inner_validFraction", {-99.f}},
@@ -116,19 +116,19 @@ NtupleContent::NtupleContent() :
     {"tag_tpfms_eta", {-99.f}},
     {"tag_tpfms_phi", {-99.f}},
     {"tag_tpfms_muonHits", {-99}},
-    {"tag_tpfms_charge", {0}},
+    {"tag_tpfms_charge", {-99}},
     {"tag_tpfms_pterr", {-99.f}},
     {"tag_picky_pt", {-99.f}},
     {"tag_picky_eta", {-99.f}},
     {"tag_picky_phi", {-99.f}},
     {"tag_picky_muonHits", {-99}},
-    {"tag_picky_charge", {0}},
+    {"tag_picky_charge", {-99}},
     {"tag_picky_pterr", {-99.f}},
     {"tag_dyt_pt", {-99.f}},
     {"tag_dyt_eta", {-99.f}},
     {"tag_dyt_phi", {-99.f}},
     {"tag_dyt_muonHits", {-99}},
-    {"tag_dyt_charge", {0}},
+    {"tag_dyt_charge", {-99}},
     {"tag_dyt_pterr", {-99.f}},
     {"iprobe", {0}},
     {"probe_pt", {-99.f}},
@@ -172,13 +172,11 @@ NtupleContent::NtupleContent() :
     {"probe_isCosmic", {false}},
     {"probe_ncosmic", {-99}},
     {"probe_cosmic_minDR", {+99.f}},
-    {"probe_isGood", {false}},
     {"probe_isHighPurity", {false}},
     {"probe_inner_validFraction", {-99.f}},
     {"probe_trkChi2", {-99.f}},
     {"probe_positionChi2", {-99.f}},
     {"probe_trkKink", {-99.f}},
-    {"probe_segmentCompatibility", {-99.f}},
     {"probe_inner_trackerLayers", {-99}},
     {"probe_inner_pixelLayers", {-99}},
     {"probe_muonStations", {-99}},
@@ -214,28 +212,28 @@ NtupleContent::NtupleContent() :
     {"probe_tuneP_pt", {-99.f}},
     {"probe_tuneP_eta", {-99.f}},
     {"probe_tuneP_phi", {-99.f}},
-    {"probe_tuneP_charge", {-99.f}},
+    {"probe_tuneP_charge", {-99}},
     {"probe_tuneP_pterr", {-99.f}},
-    {"probe_tuneP_muonHits", {-99.f}},
+    {"probe_tuneP_muonHits", {-99}},
     {"probe_nsegments", {-99}},
     {"probe_tpfms_pt", {-99.f}},
     {"probe_tpfms_eta", {-99.f}},
     {"probe_tpfms_phi", {-99.f}},
     {"probe_tpfms_charge", {-99.f}},
     {"probe_tpfms_pterr", {-99.f}},
-    {"probe_tpfms_muonHits", {-99.f}},
+    {"probe_tpfms_muonHits", {-99}},
     {"probe_picky_pt", {-99.f}},
     {"probe_picky_eta", {-99.f}},
     {"probe_picky_phi", {-99.f}},
     {"probe_picky_charge", {-99.f}},
     {"probe_picky_pterr", {-99.f}},
-    {"probe_picky_muonHits", {-99.f}},
+    {"probe_picky_muonHits", {-99}},
     {"probe_dyt_pt", {-99.f}},
     {"probe_dyt_eta", {-99.f}},
     {"probe_dyt_phi", {-99.f}},
     {"probe_dyt_charge", {-99.f}},
     {"probe_dyt_pterr", {-99.f}},
-    {"probe_dyt_muonHits", {-99.f}},
+    {"probe_dyt_muonHits", {-99}},
     {"l1pt", {-99.f}},
     {"l1q", {-99.f}},
     {"l1dr", {-99.f}},
@@ -248,12 +246,12 @@ NtupleContent::NtupleContent() :
     {"tag_l1ptByQ", {-99.f}},
     {"tag_l1qByQ", {-99.f}},
     {"tag_l1drByQ", {-99.f}},
-    {"probe_dsa_segmentMatches", {-99.f}},
+    {"probe_dsa_segmentMatches", {-99}},
     {"probe_dsa_nsegments", {-99}},
-    {"probe_dsa_muonStations", {-99.f}},
-    {"probe_dsa_muonHits", {-99.f}},
-    {"probe_dsa_DTHits", {-99.f}},
-    {"probe_dsa_CSCHits", {-99.f}},
+    {"probe_dsa_muonStations", {-99}},
+    {"probe_dsa_muonHits", {-99}},
+    {"probe_dsa_DTHits", {-99}},
+    {"probe_dsa_CSCHits", {-99}},
     {"probe_dsa_pterr", {0.f}},
     {"probe_dsa_dxy", {-99.f}},
     {"probe_dsa_dz", {-99.f}},
@@ -264,13 +262,13 @@ NtupleContent::NtupleContent() :
     {"probe_dsa_outerEta", {-99.f}},
     {"probe_dsa_outerPhi", {-99.f}},
     {"probe_dsa_minDR", {+99.f}},
-    {"probe_dsa_charge", {-99.f}},
-    {"tag_dsa_segmentMatches", {-99.f}},
+    {"probe_dsa_charge", {-99}},
+    {"tag_dsa_segmentMatches", {-99}},
     {"tag_dsa_nsegments", {-99}},
-    {"tag_dsa_muonStations", {-99.f}},
-    {"tag_dsa_muonHits", {-99.f}},
-    {"tag_dsa_DTHits", {-99.f}},
-    {"tag_dsa_CSCHits", {-99.f}},
+    {"tag_dsa_muonStations", {-99}},
+    {"tag_dsa_muonHits", {-99}},
+    {"tag_dsa_DTHits", {-99}},
+    {"tag_dsa_CSCHits", {-99}},
     {"tag_dsa_pterr", {0.f}},
     {"tag_dsa_dxy", {-99.f}},
     {"tag_dsa_dz", {-99.f}},
@@ -281,7 +279,7 @@ NtupleContent::NtupleContent() :
     {"tag_dsa_outerEta", {-99.f}},
     {"tag_dsa_outerPhi", {-99.f}},
     {"tag_dsa_minDR", {+99.f}},
-    {"tag_dsa_charge", {-99.f}},
+    {"tag_dsa_charge", {-99}},
     {"probe_dgl_segmentMatches", {-99.f}},
     {"probe_dgl_nsegments", {-99}},
     {"probe_dgl_muonStations", {-99}},
@@ -306,7 +304,7 @@ NtupleContent::NtupleContent() :
     {"pair_mass", {-99.f}},
     {"pair_fit_mass", {0.f}},
     {"pair_svprob", {0.f}},
-    {"pair_normalchi2", {0.d}},
+    {"pair_normalchi2", {0.f}},
     {"pair_dz", {-99.f}},
     {"pair_dR", {-99.f}},
     {"pair_drM1", {-99.f}},
@@ -341,7 +339,7 @@ NtupleContent::NtupleContent() :
     {"probe_simHeaviestMotherFlavour", {-99}},
     {"probe_simPdgId", {-99}},
     {"probe_simMotherPdgId", {-99}},
-    {"probe_simBX", {-99.f}},
+    {"probe_simBX", {-99}},
     {"probe_simProdRho", {-99.f}},
     {"probe_simProdZ", {-99.f}},
     {"probe_simPt", {-99.f}},
@@ -380,6 +378,17 @@ void NtupleContent::CreateBranches(const std::vector<std::string> &HLTs,
       t1->Branch(name, & std::get<std::vector<bool>>(branch.value));
   }
 
+  // Trigger info
+  for (unsigned int ihlt = 0; ihlt < HLTs.size(); ihlt++)
+    t1->Branch(TString(HLTs[ihlt]), &trigger[ihlt]);
+
+  // selectors for probe
+  for (unsigned int isel = 0; isel < selectorNames.size(); ++isel) {
+    t1->Branch(TString("probe_" + selectorNames[isel]), &probe_selectors[isel]);
+  }
+
+  
+
 }
 
 void NtupleContent::CreateExtraTrgBranches(const std::vector<std::string> &HLTs, bool isTag = false) {
@@ -401,8 +410,7 @@ void NtupleContent::CreateExtraTrgBranches(const std::vector<std::string> &HLTs,
 }
 
 void NtupleContent::ClearBranches() {
-
-
+ 
   for (unsigned int itrg = 0; itrg < NTRIGGERMAX; itrg++) {
     trigger[itrg] = false;
     tag_trg[itrg] = false;
@@ -416,6 +424,15 @@ void NtupleContent::ClearBranches() {
     probe_trg_phi[itrg] = -99;
     probe_trg_dr[itrg] = 99;
   }
+
+  trg_filter.clear();
+  trg_pt.clear();
+  trg_eta.clear();
+  trg_phi.clear();
+  prb_filter.clear();
+  prb_pt.clear();
+  prb_eta.clear();
+  prb_phi.clear();
 
   for (unsigned int isel = 0; isel < 100; isel++) {
     probe_selectors[isel] = false;
