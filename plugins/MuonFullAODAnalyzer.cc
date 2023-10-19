@@ -177,7 +177,10 @@ private:
   //  edm::EDGetToken deepFlavProbbbToken_;
   edm::EDGetTokenT<edm::ValueMap<reco::MuonSimInfo>> simInfoToken_;
   edm::ESGetToken<MagneticField, IdealMagneticFieldRecord> magfieldToken_;
-
+  // Jet resolution corrections
+  JME::JetResolution::Token t_jet_resolution_token;
+  JME::JetResolutionScaleFactor::Token t_jet_resolutionSF_token;
+  
   std::vector<std::string> HLTPaths_;      // trigger fired
   std::vector<std::string> tagFilters_;    // tag-trigger matching
   std::vector<std::string> probeFilters_;  // probe-trigger matching
@@ -289,6 +292,8 @@ MuonFullAODAnalyzer::MuonFullAODAnalyzer(const edm::ParameterSet& iConfig)
       propSetup1_(iConfig, consumesCollector()) {
   edm::ConsumesCollector iC = consumesCollector();
   magfieldToken_ = iC.esConsumes<MagneticField, IdealMagneticFieldRecord>();
+  t_jet_resolution_token = esConsumes(edm::ESInputTag("", "AK4PFPuppi_pt")); // Load jet resolution files
+  t_jet_resolutionSF_token = esConsumes(edm::ESInputTag("", "AK4PFPuppi"));
 
   if (probeSelectorNames_.size() != probeSelectorBits_.size()) {
     throw cms::Exception("ParameterError")
@@ -461,6 +466,10 @@ void MuonFullAODAnalyzer::analyze(const edm::Event& iEvent, const edm::EventSetu
   JME::JetResolution resolution;
   JME::JetResolutionScaleFactor resolution_sf;
   if (includeJets_) {
+
+    resolution = JME::JetResolution::get(iSetup, t_jet_resolution_token);
+    resolution_sf = JME::JetResolutionScaleFactor::get(iSetup, t_jet_resolutionSF_token);
+    /**
     iEvent.getByToken(jetsToken_, jets);
     iEvent.getByToken(jetCorrectorToken_, jetCorrector);
     iEvent.getByToken(deepCSVProbbToken_, deepCSVProbb);
@@ -474,6 +483,7 @@ void MuonFullAODAnalyzer::analyze(const edm::Event& iEvent, const edm::EventSetu
 
     resolution = iSetup.getData(t_jet_resolution_token);
     resolution_sf = iSetup.getData(t_jet_resolutionSF_token);
+    **/
   }
 
   edm::Handle<trigger::TriggerEvent> triggerObjects;
@@ -1068,16 +1078,23 @@ void MuonFullAODAnalyzer::analyze(const edm::Event& iEvent, const edm::EventSetu
   // this is necessary to use tag-probe pair with highest "quality" later on in spark_tnp.
   // Also calculate the total number of pairs per event to include in ntuple
   using t_pair_prob = std::pair<float, std::pair<int, int>>;
-  std::priority_queue<t_pair_prob> pair_vtx_probs;
   std::priority_queue<t_pair_prob> pair_dPhi_muons;
   std::priority_queue<t_pair_prob, vector<t_pair_prob>, std::greater<t_pair_prob>> pair_dz_PV_SV;    // inverse sort
   std::priority_queue<t_pair_prob, vector<t_pair_prob>, std::greater<t_pair_prob>> pair_dM_Z_Mmumu;  // inverse sort
   std::map<int, int> map_tagIdx_nprobes;
+
+  using pair_prob = std::pair<int, std::vector<std::pair<int, float>>>;
+  std::vector<pair_prob> pair_vtx_probs;
+  map<std::pair<int, int>, float> pair_rank_vtx_prob;
+  map<std::pair<int, int>, int> pair_rank_vtx_prob_idx;
+  map<int, std::vector<float>> probe_vtxP;
+
   int nprobes;
   // loop over tags
   for (auto& tag : tag_trkttrk) {
     auto tag_idx = &tag - &tag_trkttrk[0];
     nprobes = 0;
+    std::vector<std::pair<int, float>> tmp_vtx_probs;
     // loop over probes
     for (const reco::Track& probe : *tracks) {
       auto probe_idx = &probe - &tracks->at(0);
@@ -1122,25 +1139,34 @@ void MuonFullAODAnalyzer::analyze(const edm::Event& iEvent, const edm::EventSetu
       // save quantities to ordered heap
       auto pair_idx = std::make_pair(tag_idx, probe_idx);
       if (RequireVtxCreation_) {
-        pair_vtx_probs.push(std::make_pair(vtx.prob(), pair_idx));
         pair_dz_PV_SV.push(std::make_pair(vtx.dz_PV_SV(std::get<float>(nt.branches["pv_z"].value)), pair_idx));
+	if (vtx.prob()>0 && vtx.status()==1){
+          tmp_vtx_probs.emplace_back(std::make_pair(probe_idx, vtx.prob()));
+        }else{
+          tmp_vtx_probs.emplace_back(std::make_pair(probe_idx, -1));
+        }
       } else {
-        pair_vtx_probs.push(std::make_pair(0., std::make_pair(-1, -1)));
         pair_dz_PV_SV.push(std::make_pair(0., std::make_pair(-1, -1)));
+	tmp_vtx_probs.emplace_back(std::make_pair(probe_idx, 0.));
       }
+      probe_vtxP[probe_idx].emplace_back(vtx.prob());
       pair_dPhi_muons.push(std::make_pair(dPhi_muons, pair_idx));
       pair_dM_Z_Mmumu.push(std::make_pair(dM_Z_Mmumu, pair_idx));
     }
     map_tagIdx_nprobes.insert(std::pair<int, int>(tag_idx, nprobes));
+
+    auto compare_vtx = [=](std::pair<int, float>& a, std::pair<int, float>& b) { return a.second > b.second; };
+    std::sort(tmp_vtx_probs.begin(), tmp_vtx_probs.end(), compare_vtx);
+
+    pair_vtx_probs.emplace_back(pair_prob(tag_idx, tmp_vtx_probs));
+
+    for (size_t j = 0; j < tmp_vtx_probs.size(); j++){
+      pair_rank_vtx_prob[std::make_pair(tag_idx, tmp_vtx_probs[j].first)] = tmp_vtx_probs[j].second;
+      pair_rank_vtx_prob_idx[std::make_pair(tag_idx, tmp_vtx_probs[j].first)] = j;
+    }
   }
   nt.branches["npairs"] = (int)pair_vtx_probs.size();
 
-  // assign sorted vtx indices to ranking
-  map<std::pair<int, int>, int> pair_rank_vtx_prob;
-  while (!pair_vtx_probs.empty()) {
-    pair_rank_vtx_prob[pair_vtx_probs.top().second] = pair_rank_vtx_prob.size();  // careful: RHS evaluated first
-    pair_vtx_probs.pop();
-  }
   map<std::pair<int, int>, int> pair_rank_dz_PV_SV;
   while (!pair_dz_PV_SV.empty()) {
     pair_rank_dz_PV_SV[pair_dz_PV_SV.top().second] = pair_rank_dz_PV_SV.size();  // careful: RHS evaluated first
@@ -1162,17 +1188,20 @@ void MuonFullAODAnalyzer::analyze(const edm::Event& iEvent, const edm::EventSetu
   
   // now run again to select probes
   // loop over tags
-  for (auto& tag : tag_trkttrk) {
-    auto tag_idx = &tag - &tag_trkttrk[0];
-    if (debug_ > 0)
-      std::cout << "New tag pt " << tag.first.pt() << " eta " << tag.first.eta() << " phi " << tag.first.phi()
-                << std::endl;
-    // loop over probe tracks
-    for (const reco::Track& probe : *tracks) {
-      if (debug_ > 1)
-        std::cout << "    Probe pt " << probe.pt() << " eta " << probe.eta() << " phi " << probe.phi() << "  charge "
-                  << probe.charge() << std::endl;
-
+  //for (auto& tag : tag_trkttrk) {
+  //  auto tag_idx = &tag - &tag_trkttrk[0];
+  //  if (debug_ > 0)
+  //    std::cout << "New tag pt " << tag.first.pt() << " eta " << tag.first.eta() << " phi " << tag.first.phi()
+  //              << std::endl;
+  //  // loop over probe tracks
+  //  for (const reco::Track& probe : *tracks) {
+  //    if (debug_ > 1)
+  //      std::cout << "    Probe pt " << probe.pt() << " eta " << probe.eta() << " phi " << probe.phi() << "  charge "
+  //                << probe.charge() << std::endl;
+  for (const auto& tag_prob_vtx : pair_vtx_probs){
+    auto& tag = tag_trkttrk[tag_prob_vtx.first];
+    for (const auto& probe_vtx_vec : tag_prob_vtx.second){
+      const reco::Track& probe = tracks->at(probe_vtx_vec.first);      
       // apply cuts on probe
       if (HighPurity_ && !probe.quality(Track::highPurity))
         continue;
@@ -1434,18 +1463,26 @@ void MuonFullAODAnalyzer::analyze(const edm::Event& iEvent, const edm::EventSetu
       nt.branches["probe_isMatchedGen"] = (bool)(it_genmatch != matched_track_idx.end());
 
       nt.branches["iprobe"] = (int)(std::get<int>(nt.branches["iprobe"].value) + 1);
-      nt.branches["pair_rank_vtx_prob"] = (float)pair_rank_vtx_prob[{&tag - &tag_trkttrk[0], &probe - &tracks->at(0)}];
       nt.branches["pair_rank_dz_PV_SV"] = (float)pair_rank_dz_PV_SV[{&tag - &tag_trkttrk[0], &probe - &tracks->at(0)}];
       nt.branches["pair_rank_dPhi_muons"] = (float)pair_rank_dPhi_muons[{&tag - &tag_trkttrk[0], &probe - &tracks->at(0)}];
       nt.branches["pair_rank_dM_Z_Mmumu"] = (float)pair_rank_dM_Z_Mmumu[{&tag - &tag_trkttrk[0], &probe - &tracks->at(0)}];
       nt.branches["probe_isHighPurity"] = (bool)probe.quality(Track::highPurity);
 
-      for (auto it = map_tagIdx_nprobes.begin(); it != map_tagIdx_nprobes.end(); ++it) {
-        if (it->first == tag_idx) {
-          nt.branches["pair_probeMultiplicity"] = (int)it->second;
+      nt.branches["pair_rank_vtx_prob"] = (int)pair_rank_vtx_prob_idx[{&tag - &tag_trkttrk[0], &probe - &tracks->at(0)}];
+      std::vector vtxProbs = probe_vtxP[probe_vtx_vec.first];
+      float maximum_vtx = std::max_element(vtxProbs.begin(), vtxProbs.end())[0];
+      if (probe_vtxP[probe_vtx_vec.first].size()==1){
+        nt.branches["probe_isDuplicated"] = (bool)false;
+        nt.branches["probe_isBestPair"] = (bool)true;
+      }else{
+        nt.branches["probe_isDuplicated"] = (bool)true;
+        if (pair_rank_vtx_prob[std::make_pair(tag_prob_vtx.first, probe_vtx_vec.first)]>=maximum_vtx || !RequireVtxCreation_){
+          nt.branches["probe_isBestPair"] = (bool)true;
+        }else{
+          nt.branches["probe_isBestPair"] = (bool)false;
         }
       }
-
+      
       t1->Fill();
     }
   }
