@@ -104,15 +104,15 @@ inline void FillMiniIso(
   float miniIso = (chg + TMath::Max(0.0, neu + pho - (rho)*EA)) / mu.pt();
 
   if (isTag) {
-    nt.tag_miniIso = miniIso;
-    nt.tag_miniIsoCharged = chg / mu.pt();
-    nt.tag_miniIsoPhotons = pho / mu.pt();
-    nt.tag_miniIsoNeutrals = neu / mu.pt();
+    nt.branches["tag_miniIso"] = (float)miniIso;
+    nt.branches["tag_miniIsoCharged"] = (float)(chg / mu.pt());
+    nt.branches["tag_miniIsoPhotons"] = (float)(pho / mu.pt());
+    nt.branches["tag_miniIsoNeutrals"] = (float)(neu / mu.pt());
   } else {
-    nt.probe_miniIso = miniIso;
-    nt.probe_miniIsoCharged = chg / mu.pt();
-    nt.probe_miniIsoPhotons = pho / mu.pt();
-    nt.probe_miniIsoNeutrals = neu / mu.pt();
+    nt.branches["probe_miniIso"] = (float)miniIso;
+    nt.branches["probe_miniIsoCharged"] = (float)(chg / mu.pt());
+    nt.branches["probe_miniIsoPhotons"] = (float)(pho / mu.pt());
+    nt.branches["probe_miniIsoNeutrals"] = (float)(neu / mu.pt());
   }
 }
 
@@ -133,7 +133,7 @@ inline void FillMiniIsov2(
   auto chg = iso.chargedHadronIso();
   auto neu = iso.neutralHadronIso();
   auto pho = iso.photonIso();
-    
+
   if( TMath::Abs(mu.eta()) < 0.8 ) EA = Aeff_Fall17[0];
   else if( TMath::Abs(mu.eta()) < 1.3 ) EA = Aeff_Fall17[1];
   else if( TMath::Abs(mu.eta()) < 2.0 ) EA = Aeff_Fall17[2];
@@ -144,18 +144,20 @@ inline void FillMiniIsov2(
   EA *= std::pow( R / 0.3, 2 );
     
   float miniIso = ( chg + TMath::Max( 0.0, neu + pho - (rho) * EA ) ) / mu.pt();
-
+  
   if( isTag ){
-    nt.tag_miniIso = miniIso;
-    nt.tag_miniIsoCharged = chg / mu.pt();
-    nt.tag_miniIsoPhotons = pho / mu.pt();
-    nt.tag_miniIsoNeutrals = neu / mu.pt();
+
+    nt.branches["tag_miniIso"] = (float)miniIso;
+    nt.branches["tag_miniIsoCharged"] = (float)(chg / mu.pt());
+    nt.branches["tag_miniIsoPhotons"] = (float)(pho / mu.pt());
+    nt.branches["tag_miniIsoNeutrals"] = (float)(neu / mu.pt());
   }
   else {
-    nt.probe_miniIso = miniIso;
-    nt.probe_miniIsoCharged = chg / mu.pt();
-    nt.probe_miniIsoPhotons = pho / mu.pt();
-    nt.probe_miniIsoNeutrals = neu / mu.pt();
+
+    nt.branches["probe_miniIso"] = (float)miniIso;
+    nt.branches["probe_miniIsoCharged"] = (float)(chg / mu.pt());
+    nt.branches["probe_miniIsoPhotons"] = (float)(pho / mu.pt());
+    nt.branches["probe_miniIsoNeutrals"] = (float)(neu / mu.pt());
   }
 }
 

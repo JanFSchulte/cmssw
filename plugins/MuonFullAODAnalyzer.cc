@@ -1,3 +1,11 @@
+//======================================================//
+//                                                      //
+//                                                      //
+//                MUON POG TnP NTUPLIZER                //
+//                                                      //
+//                                                      //
+//======================================================//
+
 // Package:    MuonAnalyzer for Run 3
 //             version 2.0
 //
@@ -177,6 +185,9 @@ private:
   //  edm::EDGetToken deepFlavProbbbToken_;
   edm::EDGetTokenT<edm::ValueMap<reco::MuonSimInfo>> simInfoToken_;
   edm::ESGetToken<MagneticField, IdealMagneticFieldRecord> magfieldToken_;
+  // Jet resolution corrections
+  JME::JetResolution::Token t_jet_resolution_token;
+  JME::JetResolutionScaleFactor::Token t_jet_resolutionSF_token;
 
   std::vector<std::string> HLTPaths_;      // trigger fired
   std::vector<std::string> tagFilters_;    // tag-trigger matching
@@ -289,6 +300,8 @@ MuonFullAODAnalyzer::MuonFullAODAnalyzer(const edm::ParameterSet& iConfig)
       propSetup1_(iConfig, consumesCollector()) {
   edm::ConsumesCollector iC = consumesCollector();
   magfieldToken_ = iC.esConsumes<MagneticField, IdealMagneticFieldRecord>();
+  t_jet_resolution_token = esConsumes(edm::ESInputTag("", "AK4PFPuppi_pt"));  // Load jet resolution files
+  t_jet_resolutionSF_token = esConsumes(edm::ESInputTag("", "AK4PFPuppi"));
 
   if (probeSelectorNames_.size() != probeSelectorBits_.size()) {
     throw cms::Exception("ParameterError")
@@ -296,11 +309,16 @@ MuonFullAODAnalyzer::MuonFullAODAnalyzer(const edm::ParameterSet& iConfig)
   }
 }
 
-MuonFullAODAnalyzer::~MuonFullAODAnalyzer() {
-  // cout << "total " << trg_counter << " fires " << fire_counter << " l3"
-  // << l3_counter << endl; do anything here that needs to be done at
-  // desctruction time
-}
+MuonFullAODAnalyzer::~MuonFullAODAnalyzer() {}
+
+// MEMBER FUNCTIONS
+
+//
+//   ---- HLTaccept ----
+//
+//   Function that takes as input the HLT paths
+//   It check if they are fired and save the information in the ntuple
+//
 
 bool MuonFullAODAnalyzer::HLTaccept(const edm::Event& iEvent, NtupleContent& nt, std::vector<std::string>& HLTPaths) {
   edm::Handle<edm::TriggerResults> trigResults;
@@ -326,6 +344,12 @@ bool MuonFullAODAnalyzer::HLTaccept(const edm::Event& iEvent, NtupleContent& nt,
   return EvtFire;
 }
 
+//
+// ---- fillHLTmuon ----
+//
+// Fill branches for HLT muon objects
+//
+
 void MuonFullAODAnalyzer::fillHLTmuon(const edm::Event& iEvent,
                                       std::vector<TString>& trg_filter,
                                       std::vector<float>& trg_pt,
@@ -348,12 +372,20 @@ void MuonFullAODAnalyzer::fillHLTmuon(const edm::Event& iEvent,
         trg_pt.push_back(foundObject.pt());
         trg_eta.push_back(foundObject.eta());
         trg_phi.push_back(foundObject.phi());
-        if (debug_ > 0)
+        if (debug_ > 0) {
           std::cout << "Trg muon " << foundObject.pt() << std::endl;
+        }
       }
     }
   }
 }
+
+//
+// ---- embedTriggerMatching ----
+//
+// Function that takes as input the muon collection and trigger objects
+// It performs a matching between muon and trigger objects
+//
 
 void MuonFullAODAnalyzer::embedTriggerMatching(const reco::Muon& mu,
                                                std::vector<TString>& trg_filter,
@@ -365,7 +397,7 @@ void MuonFullAODAnalyzer::embedTriggerMatching(const reco::Muon& mu,
                                                const int& debug_ = 0) {
   for (const auto& thefilter : HLTFilters) {
     TString thefilter_tstr = TString(thefilter);
-    // temporary method to tag L2 filters for dSA paths...
+    // temporary method to tag L2 filters for dSA paths
     bool isL2DSA =
         thefilter_tstr.BeginsWith("hltL2") && (thefilter_tstr.Contains("NoVtx") || thefilter_tstr.Contains("NoVertex"));
 
@@ -412,7 +444,10 @@ void MuonFullAODAnalyzer::embedTriggerMatching(const reco::Muon& mu,
   return;
 }
 
-//
+// ------------------------------------
+// ------------ TnP method ------------
+// ------------------------------------
+
 void MuonFullAODAnalyzer::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetup) {
   using namespace std;
   using namespace edm;
@@ -421,7 +456,6 @@ void MuonFullAODAnalyzer::analyze(const edm::Event& iEvent, const edm::EventSetu
 
   prop1_ = propSetup1_.init(iSetup);
 
-  // Get data
   edm::Handle<reco::BeamSpot> theBeamSpot;
   iEvent.getByToken(beamSpotToken_, theBeamSpot);
   edm::Handle<reco::VertexCollection> vertices;
@@ -460,19 +494,8 @@ void MuonFullAODAnalyzer::analyze(const edm::Event& iEvent, const edm::EventSetu
   JME::JetResolution resolution;
   JME::JetResolutionScaleFactor resolution_sf;
   if (includeJets_) {
-    iEvent.getByToken(jetsToken_, jets);
-    iEvent.getByToken(jetCorrectorToken_, jetCorrector);
-    iEvent.getByToken(deepCSVProbbToken_, deepCSVProbb);
-    iEvent.getByToken(deepCSVProbbbToken_, deepCSVProbbb);
-
-    edm::ESGetToken<JME::JetResolutionObject, JetResolutionScaleFactorRcd> t_jet_resolution_token;
-    edm::ESGetToken<JME::JetResolutionObject, JetResolutionRcd> t_jet_resolutionSF_token;
-
-    t_jet_resolution_token = esConsumes(edm::ESInputTag("", "AK4PFchs_pt"));
-    t_jet_resolutionSF_token = esConsumes(edm::ESInputTag("", "AK4PFchs"));
-
-    resolution = iSetup.getData(t_jet_resolution_token);
-    resolution_sf = iSetup.getData(t_jet_resolutionSF_token);
+    resolution = JME::JetResolution::get(iSetup, t_jet_resolution_token);
+    resolution_sf = JME::JetResolutionScaleFactor::get(iSetup, t_jet_resolutionSF_token);
   }
 
   edm::Handle<trigger::TriggerEvent> triggerObjects;
@@ -490,34 +513,34 @@ void MuonFullAODAnalyzer::analyze(const edm::Event& iEvent, const edm::EventSetu
   edm::Handle<edm::ValueMap<float>> l1DrsByQ;
   iEvent.getByToken(l1MatchesByQDeltaRToken_, l1DrsByQ);
 
-  // Information about run
+  // Information about run -----------------------------------
   nt.ClearBranches();
-  nt.run = iEvent.id().run();
-  nt.ls = iEvent.luminosityBlock();
-  nt.event = iEvent.id().event();
-  nt.fromFullAOD = true;
-  nt.BSpot_x = theBeamSpot->x0();
-  nt.BSpot_y = theBeamSpot->y0();
-  nt.BSpot_z = theBeamSpot->z0();
-  nt.nvertices = vertices->size();
+  nt.branches["lumi"] = (int)iEvent.luminosityBlock();
+  nt.branches["run"] = (int)iEvent.id().run();
+  nt.branches["event"] = (int)iEvent.id().event();
+  nt.branches["fromFullAOD"] = (bool)true;
+  nt.branches["BSpot_x"] = (float)theBeamSpot->x0();
+  nt.branches["BSpot_y"] = (float)theBeamSpot->y0();
+  nt.branches["BSpot_z"] = (float)theBeamSpot->z0();
+  nt.branches["nVertices"] = (int)vertices->size();
 
-  // Gen weights, sim info
+  // Gen weights, sim info -----------------------------------
   bool simInfoIsAvailalbe = false;
   edm::Handle<edm::ValueMap<reco::MuonSimInfo>> simInfo;
   if (!iEvent.isRealData()) {
     edm::Handle<GenEventInfoProduct> genEventInfoHandle;
     iEvent.getByToken(genEventInfoToken_, genEventInfoHandle);
-    nt.genWeight = genEventInfoHandle->weight();
+    nt.branches["genWeight"] = (float)genEventInfoHandle->weight();
 
     simInfoIsAvailalbe = iEvent.getByToken(simInfoToken_, simInfo);
-  } else {  // data
-    nt.genWeight = 1.;
+  } else {
+    nt.branches["genWeight"] = (float)1.;
   }
 
-  // Pileup information
+  // Pileup information -----------------------------------
   edm::Handle<double> rhoHandle;
   iEvent.getByToken(rhoToken_, rhoHandle);
-  nt.Rho = *rhoHandle;
+  nt.branches["rho"] = (double)*rhoHandle;
 
   float trueNumInteractions = -1;
   int puNumInteractions = -1;
@@ -535,36 +558,40 @@ void MuonFullAODAnalyzer::analyze(const edm::Event& iEvent, const edm::EventSetu
     }
   }
 
-  nt.trueNumInteractions = trueNumInteractions;
-  nt.puNumInteractions = puNumInteractions;
+  nt.branches["nTrueInteractions"] = (float)trueNumInteractions;
+  nt.branches["nPUInteractions"] = (float)puNumInteractions;
 
   if (debug_ > 0)
-    std::cout << "New Evt " << nt.run << std::endl;
+    std::cout << "New Evt " << std::get<int>(nt.branches["run"].value) << std::endl;
 
+  // Vertex reconstruction -----------------------------------
   reco::TrackBase::Point vertex_point;
   bool goodVtx = false;
   reco::Vertex const* pv;
   for (const reco::Vertex& vtx : *vertices) {
     if (vtx.isFake() || !vtx.isValid())
       continue;
-    nt.pv_x = vtx.x();
-    nt.pv_y = vtx.y();
-    nt.pv_z = vtx.z();
+    nt.branches["pv_x"] = (float)vtx.x();
+    nt.branches["pv_y"] = (float)vtx.y();
+    nt.branches["pv_z"] = (float)vtx.z();
     goodVtx = true;
     pv = &vtx;
     break;
   }
   if (!goodVtx)
     return;  // skipping in absence of good vertex
-  vertex_point.SetCoordinates(nt.pv_x, nt.pv_y, nt.pv_z);
+  vertex_point.SetCoordinates(std::get<float>(nt.branches["pv_x"].value),
+                              std::get<float>(nt.branches["pv_y"].value),
+                              std::get<float>(nt.branches["pv_z"].value));
 
-  // check if path fired, if so save hlt muons
+  // check if path fired, if so save hlt muons -----------------------------------
   if (!HLTaccept(iEvent, nt, HLTPaths_))
     return;
+
   fillHLTmuon(iEvent, nt.trg_filter, nt.trg_pt, nt.trg_eta, nt.trg_phi, tagFilters_, debug_);
   fillHLTmuon(iEvent, nt.prb_filter, nt.prb_pt, nt.prb_eta, nt.prb_phi, probeFilters_, debug_);
 
-  // gen information
+  // gen information and matching -----------------------------------
   MuonGenAnalyzer genmu;
   std::vector<unsigned> matched_muon_idx;
   std::vector<unsigned> matched_track_idx;
@@ -572,21 +599,32 @@ void MuonFullAODAnalyzer::analyze(const edm::Event& iEvent, const edm::EventSetu
     genmu.SetInputs(iEvent, genToken_, momPdgId_);
     genmu.FillNtuple(nt);
 
-    auto reco_match_genmu1 =
-        MatchReco<reco::Muon>(*muons, nt.genmu1_eta, nt.genmu1_phi, nt.genmu1_charge, genRecoDrMatch_);
-    auto reco_match_genmu2 =
-        MatchReco<reco::Muon>(*muons, nt.genmu2_eta, nt.genmu2_phi, nt.genmu2_charge, genRecoDrMatch_);
-
+    auto reco_match_genmu1 = MatchReco<reco::Muon>(*muons,
+                                                   std::get<float>(nt.branches["genmu1_eta"].value),
+                                                   std::get<float>(nt.branches["genmu1_phi"].value),
+                                                   std::get<int>(nt.branches["genmu1_charge"].value),
+                                                   genRecoDrMatch_);
+    auto reco_match_genmu2 = MatchReco<reco::Muon>(*muons,
+                                                   std::get<float>(nt.branches["genmu2_eta"].value),
+                                                   std::get<float>(nt.branches["genmu2_phi"].value),
+                                                   std::get<int>(nt.branches["genmu2_charge"].value),
+                                                   genRecoDrMatch_);
     if (reco_match_genmu1.first)
       matched_muon_idx.push_back(reco_match_genmu1.second);
 
     if (reco_match_genmu2.first)
       matched_muon_idx.push_back(reco_match_genmu2.second);
 
-    reco_match_genmu1 =
-        MatchReco<reco::Track>(*tracks, nt.genmu1_eta, nt.genmu1_phi, nt.genmu1_charge, genRecoDrMatch_);
-    reco_match_genmu2 =
-        MatchReco<reco::Track>(*tracks, nt.genmu2_eta, nt.genmu2_phi, nt.genmu2_charge, genRecoDrMatch_);
+    reco_match_genmu1 = MatchReco<reco::Track>(*tracks,
+                                               std::get<float>(nt.branches["genmu1_eta"].value),
+                                               std::get<float>(nt.branches["genmu1_phi"].value),
+                                               std::get<int>(nt.branches["genmu1_charge"].value),
+                                               genRecoDrMatch_);
+    reco_match_genmu2 = MatchReco<reco::Track>(*tracks,
+                                               std::get<float>(nt.branches["genmu2_eta"].value),
+                                               std::get<float>(nt.branches["genmu2_phi"].value),
+                                               std::get<int>(nt.branches["genmu2_charge"].value),
+                                               genRecoDrMatch_);
 
     if (reco_match_genmu1.first)
       matched_track_idx.push_back(reco_match_genmu1.second);
@@ -594,7 +632,7 @@ void MuonFullAODAnalyzer::analyze(const edm::Event& iEvent, const edm::EventSetu
       matched_track_idx.push_back(reco_match_genmu2.second);
   }
 
-  // match hlt with offline muon
+  // Match between HLT and Reco::muon -----------------------------------
   std::vector<unsigned> trg_idx;
   for (unsigned itrg = 0; itrg < nt.trg_pt.size(); ++itrg) {
     float minDR = 1000;
@@ -605,16 +643,28 @@ void MuonFullAODAnalyzer::analyze(const edm::Event& iEvent, const edm::EventSetu
       minDR = deltaR(nt.trg_eta[itrg], nt.trg_phi[itrg], mu.eta(), mu.phi());
       idx = &mu - &muons->at(0);
     }
-    if (debug_ > 0)
+    if (debug_ > 0) {
+      std::cout << tagFilters_[itrg] << std::endl;
       std::cout << "Trg " << itrg << ", min DR " << minDR << std::endl;
+    }
     if (minDR < trgDRwindow_)
       trg_idx.push_back(idx);
     if (minDR < trgDRwindow_ && debug_ > 0)
       std::cout << "Matched!" << std::endl;
   }
-  nt.nmuons = muons->size();
+  nt.branches["nmuons"] = (int)muons->size();
 
-  // select tags
+  /**
+     
+     Tag muons
+     ---------
+     
+     Loop over Reco::Muons and find the tag muons
+     They must be at least looseID and fire a trigger path
+     This conditions are further tightened later
+   
+  **/
+
   std::vector<unsigned> tag_muon_map;  // idx of tag muon in muons
   RecoMuonAndTransientTrkCollection tag_trkttrk;
   std::vector<bool> genmatched_tag;
@@ -637,12 +687,21 @@ void MuonFullAODAnalyzer::analyze(const edm::Event& iEvent, const edm::EventSetu
     else
       genmatched_tag.push_back(false);
   }
-  nt.ntag = tag_trkttrk.size();
+  nt.branches["ntag"] = (int)tag_trkttrk.size();
 
   if (debug_ > 0)
     std::cout << "Tag muons " << tag_trkttrk.size() << std::endl;
 
-  // probe track mapping with muon object
+  /** 
+
+      Probe tracks
+      ------------  
+      
+      Loop over Reco::Muon and Reco::Track collections and perform a matching
+      Tracks are going to be used as probes
+      
+  **/
+
   std::pair<std::vector<unsigned>, std::vector<unsigned>> trk_muon_map;
   for (const auto& mu : *muons) {
     if (muonOnly_ && !probeMuonSelection_(mu))
@@ -652,11 +711,12 @@ void MuonFullAODAnalyzer::analyze(const edm::Event& iEvent, const edm::EventSetu
     if (debug_ > 1)
       std::cout << "New trk-muon map entry pt " << mu.pt() << " eta " << mu.eta() << " phi " << mu.phi() << std::endl;
     for (const reco::Track& trk : *tracks) {
-      if(mu.innerTrack().isNonnull() && mu.innerTrack().isAvailable()){
-	if (fabs(mu.innerTrack()->vz() - trk.vz()) > maxdz_trk_mu_ && maxdz_trk_mu_ > 0)
-	  continue;
-	if (fabs(mu.innerTrack()->pt() - trk.pt()) / mu.innerTrack()->pt() > maxpt_relative_dif_trk_mu_ && maxpt_relative_dif_trk_mu_ > 0)
-	  continue;
+      if (mu.innerTrack().isNonnull() && mu.innerTrack().isAvailable()) {
+        if (fabs(mu.innerTrack()->vz() - trk.vz()) > maxdz_trk_mu_ && maxdz_trk_mu_ > 0)
+          continue;
+        if (fabs(mu.innerTrack()->pt() - trk.pt()) / mu.innerTrack()->pt() > maxpt_relative_dif_trk_mu_ &&
+            maxpt_relative_dif_trk_mu_ > 0)
+          continue;
       }
       float DR = deltaR(mu.eta(), mu.phi(), trk.eta(), trk.phi());
       if (debug_ > 1)
@@ -677,11 +737,19 @@ void MuonFullAODAnalyzer::analyze(const edm::Event& iEvent, const edm::EventSetu
 
   using map_type = std::pair<std::vector<unsigned>, std::vector<unsigned>>;
 
-  // Generic functions to map probe track with a second collection of tracks (e.g. dSA, cosmics, dGl, etc)
+  /**
 
-  // Simple mapping (not currently used) -- just check for the closest match between collections
-  // If closest match has dR < config cone value, include match in mapping
-  // This is not flexible for later use in spark (see Inclusive function below)
+     Further map
+     -----------
+
+     Generic functions to map probe track with a second collection of tracks (e.g. dSA, cosmics, dGl, etc)
+     
+     Simple mapping (not currently used) -- just check for the closest match between collections
+     If closest match has dR < config cone value, include match in mapping
+     This is not flexible for later use in spark (see Inclusive function below)
+
+  **/
+
   auto mapTrackCollectionsSimple =
       [&](const std::vector<reco::Track>& coll_1, const std::vector<reco::Track>& coll_2, map_type& coll_map) {
         for (const reco::Track& trk_1 : coll_1) {
@@ -704,16 +772,25 @@ void MuonFullAODAnalyzer::analyze(const edm::Event& iEvent, const edm::EventSetu
       };
   (void)mapTrackCollectionsSimple;  // prevent "unused method" error
 
-  // Inclusive mapping (currently used for all) -- check and count all possible matches within a config dR cone value
-  // Also pick the pair with smallest dR, *even* if it is greater than config dR cone -- this allows to customize match criteria in spark later on
-  // Also this should work even for collimated muons where nmatched may be greater than 1
+  /**
+
+     Inclusive map
+     -------------
+  
+     Inclusive mapping (currently used for all) -- check and count all possible matches within a config dR cone value
+     Also pick the pair with smallest dR, *even* if it is greater than config dR cone -- this allows to customize match criteria in spark later on
+     Also this should work even for collimated muons where nmatched may be greater than 1
+
+     Start with probe at first loop level and dSA/cosmic/dGl at second level instead, to ensure each probe that has a match is actually recorded 
+     i.e. a dSA/cosmic/dGl track can be matched to more than one generalTrack probem, but all generalTrack probes that match should be pushed to the map
+
+  **/
+
   auto mapTrackCollectionsInclusive = [&]<typename T>(const vector<T>& coll_1,
                                                       const vector<reco::Track>& coll_2,
                                                       map_type& coll_map,
                                                       vector<float>& min_dRs,
                                                       vector<unsigned>& n_matched) {
-    // Start with probe at first loop level and dSA/cosmic/dGl at second level instead, to ensure each probe that has a match is actually recorded
-    // i.e. a dSA/cosmic/dGl track can be matched to more than one generalTrack probem, but all generalTrack probes that match should be pushed to the map
     for (const T& trk_1 : coll_1) {
       unsigned idx_1 = &trk_1 - &coll_1.at(0);
       unsigned matched = 0;
@@ -740,37 +817,34 @@ void MuonFullAODAnalyzer::analyze(const edm::Event& iEvent, const edm::EventSetu
     }
   };
 
-  // Map probe and dGl
-  map_type probe_dGl_map;
-  vector<float> probe_dGl_dRs;
-  vector<unsigned> probe_dGl_segmentmatches;
-  // Don't use dR matching anymore for dGl, use segment matching below
-  // mapTrackCollectionsInclusive(*tracks, *dGlmuons, probe_dGl_map, probe_dGl_dRs, probe_dGl_nmatched);
+  // Initialize different maps
 
-  // Map probe and cosmics
-  map_type probe_cosmic_map;
+  map_type probe_dGl_map;  // Map probe and dGl
+  vector<float> probe_dGl_dRs;
+  vector<unsigned> probe_dGl_segmentmatches;  // Not dR, segment matching instead
+  map_type probe_cosmic_map;                  // Map probe and cosmics
   vector<float> probe_cosmic_dRs;
   vector<unsigned> probe_cosmic_nmatched;
   mapTrackCollectionsInclusive(*tracks, *staCosmic, probe_cosmic_map, probe_cosmic_dRs, probe_cosmic_nmatched);
-
-  // Map probe and dSA
-  map_type probe_dSA_map;
+  map_type probe_dSA_map;  // Map probe and dSA
   vector<float> probe_dSA_dRs;
-  vector<unsigned> probe_dSA_segmentmatches;
-  // Don't use dR matching anymore for dSA, use segment matching below
-  // mapTrackCollectionsInclusive(*tracks, *dSAmuons, probe_dSA_map, probe_dSA_dRs, probe_dSA_nmatched);
-
-  // Map tag and dSA
-  map_type tag_dSA_map;
+  vector<unsigned> probe_dSA_segmentmatches;  // Not dR, segment matching instead
+  map_type tag_dSA_map;                       // Map tag and dSA
   vector<float> tag_dSA_dRs;
-  vector<unsigned> tag_dSA_segmentmatches;
-  // Don't use dR matching anymore for dSA, use segment matching below
-  // mapTrackCollectionsInclusive(*muons, *dSAmuons, tag_dSA_map, tag_dSA_dRs, tag_dSA_nmatched);
+  vector<unsigned> tag_dSA_segmentmatches;  // Not dR, segment matching instead
 
-  // [Adapted from displaced dimuon analysis]
-  // Segment match: consider probe reco::Muons and dSA tracks
-  // matched if the segments used to build the dSA are the
-  // same as or a subset of segments of the reco::Muons.
+  /**
+     
+     Displaced StandAlone matching
+     -----------------------------
+
+     [Adapted from displaced dimuon analysis]
+     Segment match: consider probe reco::Muons and dSA tracks
+     matched if the segments used to build the dSA are the
+     same as or a subset of segments of the reco::Muons.
+  
+  **/
+
   for (const auto& track : *tracks) {
     // can only do segment matching on probe tracks that are matched to muons
     auto it = std::find(trk_muon_map.first.begin(), trk_muon_map.first.end(), &track - &tracks->at(0));
@@ -839,10 +913,18 @@ void MuonFullAODAnalyzer::analyze(const edm::Event& iEvent, const edm::EventSetu
     }
   }
 
-  // [Adapted from displaced dimuon analysis]
-  // Segment match: consider probe reco::Muons and dGl tracks
-  // matched if the segments used to build the dGl are the
-  // same as or a subset of segments of the reco::Muons.
+  /**
+      
+     Displaced Global matching 
+     -------------------------
+    
+     [Adapted from displaced dimuon analysis]
+     Segment match: consider probe reco::Muons and dGl tracks
+     matched if the segments used to build the dGl are the
+     same as or a subset of segments of the reco::Muons.
+  
+  **/
+
   for (const auto& track : *tracks) {
     // can only do segment matching on probe tracks that are matched to muons
     auto it = std::find(trk_muon_map.first.begin(), trk_muon_map.first.end(), &track - &tracks->at(0));
@@ -911,10 +993,18 @@ void MuonFullAODAnalyzer::analyze(const edm::Event& iEvent, const edm::EventSetu
     }
   }
 
-  // [Adapted from displaced dimuon analysis]
-  // Segment match: consider tag reco::Muons and dSA tracks
-  // matched if the segments used to build the dSA are the
-  // same as or a subset of segments of the reco::Muons.
+  /**
+     
+     Displaced Standalone Tag matching 
+     ---------------------------------
+    
+     [Adapted from displaced dimuon analysis]
+     Segment match: consider tag reco::Muons and dSA tracks
+     matched if the segments used to build the dSA are the
+     same as or a subset of segments of the reco::Muons.
+
+  **/
+
   for (const auto& muon : *muons) {
     unsigned idx_muon = &muon - &muons->at(0);
 
@@ -982,8 +1072,31 @@ void MuonFullAODAnalyzer::analyze(const edm::Event& iEvent, const edm::EventSetu
   }
   sort(muForJetCleaning.begin(), muForJetCleaning.end(), [](const auto& l, const auto& r) { return l.pt() > r.pt(); });
 
+  // Fill Jet branches   /  If IncludeJets == True ------------
   std::vector<reco::PFJet> corrJets;
+  std::vector<float> genJets_pt;
+  std::vector<float> genJets_eta;
+  std::vector<float> genJets_phi;
+  std::vector<float> genJets_mass;
+  std::vector<float> jets_bTag_deepCSV;
   if (includeJets_) {
+    edm::Handle<std::vector<reco::GenJet>> genJets;
+
+    if (isMC_) {
+      // Gen Jet Info
+      iEvent.getByToken(genJetsToken_, genJets);
+      for (const auto& genJet : *genJets) {
+        genJets_pt.push_back((float)genJet.pt());
+        genJets_eta.push_back((float)genJet.eta());
+        genJets_phi.push_back((float)genJet.phi());
+        genJets_mass.push_back((float)genJet.mass());
+      }
+      nt.branches["genJets_pt"] = (std::vector<float>)genJets_pt;
+      nt.branches["genJets_eta"] = (std::vector<float>)genJets_eta;
+      nt.branches["genJets_phi"] = (std::vector<float>)genJets_phi;
+      nt.branches["genJets_mass"] = (std::vector<float>)genJets_mass;
+    }
+
     // Get selected jets and fill branches
     for (size_t i = 0; i < jets->size(); ++i) {
       reco::PFJetRef jet(jets, i);
@@ -994,16 +1107,6 @@ void MuonFullAODAnalyzer::analyze(const edm::Event& iEvent, const edm::EventSetu
       corrJet->scaleEnergy(jec);
       double smearFactor = 1.0;
       if (isMC_) {
-        // Gen Jet Info
-        edm::Handle<std::vector<reco::GenJet>> genJets;
-        iEvent.getByToken(genJetsToken_, genJets);
-        for (const auto& genJet : *genJets) {
-          nt.genJets_pt.push_back(genJet.pt());
-          nt.genJets_eta.push_back(genJet.eta());
-          nt.genJets_phi.push_back(genJet.phi());
-          nt.genJets_mass.push_back(genJet.mass());
-        }
-
         double jet_resolution = resolution.getResolution({{JME::Binning::JetPt, corrJet->pt()},
                                                           {JME::Binning::JetEta, corrJet->eta()},
                                                           {JME::Binning::Rho, *rhoHandle}});
@@ -1039,26 +1142,48 @@ void MuonFullAODAnalyzer::analyze(const edm::Event& iEvent, const edm::EventSetu
       corrJets.push_back(*corrJet);
       FillJetBranches(*jet, *corrJet, nt, era_);
       if (deepCSVProbb->size() > i && deepCSVProbbb->size() > i) {
-        nt.jets_bTag_deepCSV.push_back((*deepCSVProbb)[i].second + (*deepCSVProbbb)[i].second);
+        jets_bTag_deepCSV.push_back((*deepCSVProbb)[i].second + (*deepCSVProbbb)[i].second);
       } else
-        nt.jets_bTag_deepCSV.push_back(-9999.);
+        jets_bTag_deepCSV.push_back(-9999.);
     }
+    nt.branches["jets_bTag_deepCSV"] = (std::vector<float>)jets_bTag_deepCSV;
   }
 
-  // run over tracks and probes once prior to filling tree to determine ordering of pairs
-  // this is necessary to use tag-probe pair with highest "quality" later on in spark_tnp.
-  // Also calculate the total number of pairs per event to include in ntuple
+  /**
+
+     Find TnP pairs
+     --------------
+ 
+     run over tracks and probes once prior to filling tree to determine ordering of pairs
+     this is necessary to use tag-probe pair with highest "quality" later on in spark_tnp.
+     Also calculate the total number of pairs per event to include in ntuple
+
+     1 - Loop over tag muons and probe tracks
+     2 - Each Tag-Probe pair must pass a minimum dz and mass cuts and have opposite charge 
+         Pairs are discarded otherwise
+     3 - The Tag and Probe tracks are used to perform a fit to the primary vertex
+     4 - All the probe tracks associated to a tag are sorted as a funtion of the compatibility to the PV
+
+  **/
+
   using t_pair_prob = std::pair<float, std::pair<int, int>>;
-  std::priority_queue<t_pair_prob> pair_vtx_probs;
   std::priority_queue<t_pair_prob> pair_dPhi_muons;
   std::priority_queue<t_pair_prob, vector<t_pair_prob>, std::greater<t_pair_prob>> pair_dz_PV_SV;    // inverse sort
   std::priority_queue<t_pair_prob, vector<t_pair_prob>, std::greater<t_pair_prob>> pair_dM_Z_Mmumu;  // inverse sort
   std::map<int, int> map_tagIdx_nprobes;
+
+  using pair_prob = std::pair<int, std::vector<std::pair<int, float>>>;
+  std::vector<pair_prob> pair_vtx_probs;
+  map<std::pair<int, int>, float> pair_rank_vtx_prob;
+  map<std::pair<int, int>, int> pair_rank_vtx_prob_idx;
+  map<int, std::vector<float>> probe_vtxP;
+
   int nprobes;
   // loop over tags
   for (auto& tag : tag_trkttrk) {
     auto tag_idx = &tag - &tag_trkttrk[0];
     nprobes = 0;
+    std::vector<std::pair<int, float>> tmp_vtx_probs;
     // loop over probes
     for (const reco::Track& probe : *tracks) {
       auto probe_idx = &probe - &tracks->at(0);
@@ -1103,25 +1228,34 @@ void MuonFullAODAnalyzer::analyze(const edm::Event& iEvent, const edm::EventSetu
       // save quantities to ordered heap
       auto pair_idx = std::make_pair(tag_idx, probe_idx);
       if (RequireVtxCreation_) {
-        pair_vtx_probs.push(std::make_pair(vtx.prob(), pair_idx));
-        pair_dz_PV_SV.push(std::make_pair(vtx.dz_PV_SV(nt.pv_z), pair_idx));
+        pair_dz_PV_SV.push(std::make_pair(vtx.dz_PV_SV(std::get<float>(nt.branches["pv_z"].value)), pair_idx));
+        if (vtx.prob() > 0 && vtx.status() == 1) {
+          tmp_vtx_probs.emplace_back(std::make_pair(probe_idx, vtx.prob()));
+        } else {
+          tmp_vtx_probs.emplace_back(std::make_pair(probe_idx, -1));
+        }
       } else {
-        pair_vtx_probs.push(std::make_pair(0., std::make_pair(-1, -1)));
         pair_dz_PV_SV.push(std::make_pair(0., std::make_pair(-1, -1)));
+        tmp_vtx_probs.emplace_back(std::make_pair(probe_idx, 0.));
       }
+      probe_vtxP[probe_idx].emplace_back(vtx.prob());
       pair_dPhi_muons.push(std::make_pair(dPhi_muons, pair_idx));
       pair_dM_Z_Mmumu.push(std::make_pair(dM_Z_Mmumu, pair_idx));
     }
     map_tagIdx_nprobes.insert(std::pair<int, int>(tag_idx, nprobes));
-  }
-  nt.npairs = pair_vtx_probs.size();
 
-  // assign sorted vtx indices to ranking
-  map<std::pair<int, int>, int> pair_rank_vtx_prob;
-  while (!pair_vtx_probs.empty()) {
-    pair_rank_vtx_prob[pair_vtx_probs.top().second] = pair_rank_vtx_prob.size();  // careful: RHS evaluated first
-    pair_vtx_probs.pop();
+    auto compare_vtx = [=](std::pair<int, float>& a, std::pair<int, float>& b) { return a.second > b.second; };
+    std::sort(tmp_vtx_probs.begin(), tmp_vtx_probs.end(), compare_vtx);
+
+    pair_vtx_probs.emplace_back(pair_prob(tag_idx, tmp_vtx_probs));
+
+    for (size_t j = 0; j < tmp_vtx_probs.size(); j++) {
+      pair_rank_vtx_prob[std::make_pair(tag_idx, tmp_vtx_probs[j].first)] = tmp_vtx_probs[j].second;
+      pair_rank_vtx_prob_idx[std::make_pair(tag_idx, tmp_vtx_probs[j].first)] = j;
+    }
   }
+  nt.branches["npairs"] = (int)pair_vtx_probs.size();
+
   map<std::pair<int, int>, int> pair_rank_dz_PV_SV;
   while (!pair_dz_PV_SV.empty()) {
     pair_rank_dz_PV_SV[pair_dz_PV_SV.top().second] = pair_rank_dz_PV_SV.size();  // careful: RHS evaluated first
@@ -1138,19 +1272,33 @@ void MuonFullAODAnalyzer::analyze(const edm::Event& iEvent, const edm::EventSetu
     pair_dM_Z_Mmumu.pop();
   }
 
-  // now run again to select probes
-  // loop over tags
-  for (auto& tag : tag_trkttrk) {
-    auto tag_idx = &tag - &tag_trkttrk[0];
-    if (debug_ > 0)
-      std::cout << "New tag pt " << tag.first.pt() << " eta " << tag.first.eta() << " phi " << tag.first.phi()
-                << std::endl;
-    // loop over probe tracks
-    for (const reco::Track& probe : *tracks) {
-      if (debug_ > 1)
-        std::cout << "    Probe pt " << probe.pt() << " eta " << probe.eta() << " phi " << probe.phi() << "  charge "
-                  << probe.charge() << std::endl;
+  // Initialize some variables
+  nt.branches["iprobe"] = (int)0;
 
+  /**  
+       
+       Fill branches 
+       -------------
+       
+       Once we have created the Tag-Probe pairs, loop again and save all the information. 
+       The final output is a flat ntuple filled with pairs, not events.
+       
+       1 - Loop over Tag muons
+       2 - Loop over Probe tracks (only over those already matched to the tag muon)  
+       3 - Apply selection again. Redundant. 
+       4 - Fill Tag branches   
+       5 - Check if probe is a real muon in Reco::muon 
+       6 - If so, fill probe muon branches      
+       7 - If not, fill probe track branches, probe muon branches filled with -99 
+       8 - Check vertex sorting, duplication of probes, and best pairs 
+       9 - Write ntuple content and go for the next pair
+       
+  **/
+
+  for (const auto& tag_prob_vtx : pair_vtx_probs) {
+    auto& tag = tag_trkttrk[tag_prob_vtx.first];
+    for (const auto& probe_vtx_vec : tag_prob_vtx.second) {
+      const reco::Track& probe = tracks->at(probe_vtx_vec.first);
       // apply cuts on probe
       if (HighPurity_ && !probe.quality(Track::highPurity))
         continue;
@@ -1200,12 +1348,15 @@ void MuonFullAODAnalyzer::analyze(const edm::Event& iEvent, const edm::EventSetu
       math::PtEtaPhiMLorentzVector mu1(tag.first.pt(), tag.first.eta(), tag.first.phi(), MU_MASS);
       math::PtEtaPhiMLorentzVector mu2(probe.pt(), probe.eta(), probe.phi(), MU_MASS);
 
-      nt.tag_isMatchedGen = genmatched_tag[&tag - &tag_trkttrk[0]];
+      nt.branches["tag_isMatchedGen"] = (bool)genmatched_tag[&tag - &tag_trkttrk[0]];
 
       FillTagBranches<reco::Muon, reco::Track>(tag.first, *tracks, nt, *pv);
-      std::pair<bool, Measurement1D> sip3d = IPTools::signedImpactParameter3D(reco::TransientTrack(*tag.first.bestTrack(), &(*bField)), GlobalVector(tag.first.bestTrack()->px(), tag.first.bestTrack()->py(), tag.first.bestTrack()->pz()), *pv);
-      nt.tag_SIP3D = sip3d.second.value();
-      nt.tag_SIP3D_err = (pv->isValid() ? sip3d.second.error() : -1.0);
+      std::pair<bool, Measurement1D> sip3d = IPTools::signedImpactParameter3D(
+          reco::TransientTrack(*tag.first.bestTrack(), &(*bField)),
+          GlobalVector(tag.first.bestTrack()->px(), tag.first.bestTrack()->py(), tag.first.bestTrack()->pz()),
+          *pv);
+      nt.branches["tag_SIP3D"] = (float)sip3d.second.value();
+      nt.branches["tag_SIP3D_err"] = (float)(pv->isValid() ? sip3d.second.error() : -1.0);
 
       FillMiniIso<reco::Muon, pat::PackedCandidate>(patpfcands.product(), tag.first, *rhoJetsNC, nt, true);
 
@@ -1213,24 +1364,24 @@ void MuonFullAODAnalyzer::analyze(const edm::Event& iEvent, const edm::EventSetu
       auto tagRef = muonsView->refAt(tag_muon_map[&tag - &tag_trkttrk[0]]);
       pat::TriggerObjectStandAloneRef tagl1Match = (*l1Matches)[tagRef];
       if (tagl1Match.isNonnull()) {
-        nt.tag_l1pt = tagl1Match->pt();
-        nt.tag_l1q = (*l1Qualities)[tagRef];
-        nt.tag_l1dr = (*l1Drs)[tagRef];
+        nt.branches["tag_l1pt"] = (float)tagl1Match->pt();
+        nt.branches["tag_l1q"] = (float)(*l1Qualities)[tagRef];
+        nt.branches["tag_l1dr"] = (float)(*l1Drs)[tagRef];
       } else {
-        nt.tag_l1pt = -99.;
-        nt.tag_l1q = -99;
-        nt.tag_l1dr = 99.;
+        nt.branches["tag_l1pt"] = (float)-99.;
+        nt.branches["tag_l1q"] = (float)-99;
+        nt.branches["tag_l1dr"] = (float)99.;
       }
 
       pat::TriggerObjectStandAloneRef tagl1MatchByQ = (*l1MatchesByQ)[tagRef];
       if (tagl1MatchByQ.isNonnull()) {
-        nt.tag_l1ptByQ = tagl1MatchByQ->pt();
-        nt.tag_l1qByQ = (*l1QualitiesByQ)[tagRef];
-        nt.tag_l1drByQ = (*l1DrsByQ)[tagRef];
+        nt.branches["tag_l1ptByQ"] = (float)tagl1MatchByQ->pt();
+        nt.branches["tag_l1qByQ"] = (float)(*l1QualitiesByQ)[tagRef];
+        nt.branches["tag_l1drByQ"] = (float)(*l1DrsByQ)[tagRef];
       } else {
-        nt.tag_l1ptByQ = -99.;
-        nt.tag_l1qByQ = -99;
-        nt.tag_l1drByQ = 99.;
+        nt.branches["tag_l1ptByQ"] = (float)-99.;
+        nt.branches["tag_l1qByQ"] = (float)-99;
+        nt.branches["tag_l1drByQ"] = (float)99.;
       }
       embedTriggerMatching(tag.first, nt.trg_filter, nt.trg_pt, nt.trg_eta, nt.trg_phi, tagFilters_, true, debug_);
 
@@ -1246,6 +1397,7 @@ void MuonFullAODAnalyzer::analyze(const edm::Event& iEvent, const edm::EventSetu
       auto itdgl = std::find(probe_dGl_map.first.begin(), probe_dGl_map.first.end(), &probe - &tracks->at(0));
       auto itcosmic = std::find(probe_cosmic_map.first.begin(), probe_cosmic_map.first.end(), &probe - &tracks->at(0));
 
+      // If Probe track is also a Reco::Muon object -----------------------------------
       if (it == trk_muon_map.first.end()) {
         if (debug_ > 0)
           std::cout << "  Unsuccessful probe " << std::endl;
@@ -1266,17 +1418,19 @@ void MuonFullAODAnalyzer::analyze(const edm::Event& iEvent, const edm::EventSetu
           nt.probe_trg_phi[&path - &probeFilters_[0]] = -99;
           nt.probe_trg_dr[&path - &probeFilters_[0]] = 99;
         }
-        nt.l1pt = -99.;
-        nt.l1q = -99;
-        nt.l1dr = 99.;
-        nt.l1ptByQ = -99.;
-        nt.l1qByQ = -99;
-        nt.l1drByQ = 99.;
+        nt.branches["l1pt"] = (float)-99.;
+        nt.branches["l1q"] = (int)-99;
+        nt.branches["l1dr"] = (float)99.;
+        nt.branches["l1ptByQ"] = (float)-99.;
+        nt.branches["l1qByQ"] = (int)-99;
+        nt.branches["l1drByQ"] = (float)99.;
 
         FillSimMatchingBranchesDummy(nt, false);
 
         FillTunePPairBranchesDummy(nt);
-      } else {
+
+      } else {  // Probe track is not a real Reco::Muon -----------------------------------
+
         unsigned idx = std::distance(trk_muon_map.first.begin(), it);
         if (debug_ > 0)
           std::cout << "  Successful probe pt " << muons->at(trk_muon_map.second[idx]).pt() << " eta "
@@ -1284,9 +1438,14 @@ void MuonFullAODAnalyzer::analyze(const edm::Event& iEvent, const edm::EventSetu
                     << std::endl;
         FillProbeBranches<reco::Muon, reco::Track>(muons->at(trk_muon_map.second[idx]), *tracks, nt, true, *pv);
         FillProbeBranchesSelector<reco::Muon>(muons->at(trk_muon_map.second[idx]), nt, probeSelectorBits_, true);
-	std::pair<bool, Measurement1D> sip3d = IPTools::signedImpactParameter3D(reco::TransientTrack(*muons->at(trk_muon_map.second[idx]).bestTrack(), &(*bField)), GlobalVector(muons->at(trk_muon_map.second[idx]).bestTrack()->px(), muons->at(trk_muon_map.second[idx]).bestTrack()->py(), muons->at(trk_muon_map.second[idx]).bestTrack()->pz()), *pv);
-	nt.probe_SIP3D = sip3d.second.value();
-	nt.probe_SIP3D_err = (pv->isValid() ? sip3d.second.error() : -1.0);
+        std::pair<bool, Measurement1D> sip3d = IPTools::signedImpactParameter3D(
+            reco::TransientTrack(*muons->at(trk_muon_map.second[idx]).bestTrack(), &(*bField)),
+            GlobalVector(muons->at(trk_muon_map.second[idx]).bestTrack()->px(),
+                         muons->at(trk_muon_map.second[idx]).bestTrack()->py(),
+                         muons->at(trk_muon_map.second[idx]).bestTrack()->pz()),
+            *pv);
+        nt.branches["probe_SIP3D"] = (float)sip3d.second.value();
+        nt.branches["probe_SIP3D_err"] = (float)(pv->isValid() ? sip3d.second.error() : -1.0);
         FillMiniIso<reco::Muon, pat::PackedCandidate>(
             patpfcands.product(), muons->at(trk_muon_map.second[idx]), *rhoJetsNC, nt, false);
         if (includeJets_)
@@ -1296,24 +1455,24 @@ void MuonFullAODAnalyzer::analyze(const edm::Event& iEvent, const edm::EventSetu
         auto muRef = muonsView->refAt(trk_muon_map.second[idx]);
         pat::TriggerObjectStandAloneRef l1Match = (*l1Matches)[muRef];
         if (l1Match.isNonnull()) {
-          nt.l1pt = l1Match->pt();
-          nt.l1q = (*l1Qualities)[muRef];
-          nt.l1dr = (*l1Drs)[muRef];
+          nt.branches["l1pt"] = (float)l1Match->pt();
+          nt.branches["l1q"] = (float)(*l1Qualities)[muRef];
+          nt.branches["l1dr"] = (float)(*l1Drs)[muRef];
         } else {
-          nt.l1pt = -99.;
-          nt.l1q = -99;
-          nt.l1dr = 99.;
+          nt.branches["l1pt"] = (float)-99.;
+          nt.branches["l1q"] = (float)-99;
+          nt.branches["l1dr"] = (float)99.;
         }
 
         pat::TriggerObjectStandAloneRef l1MatchByQ = (*l1MatchesByQ)[muRef];
         if (l1MatchByQ.isNonnull()) {
-          nt.l1ptByQ = l1MatchByQ->pt();
-          nt.l1qByQ = (*l1QualitiesByQ)[muRef];
-          nt.l1drByQ = (*l1DrsByQ)[muRef];
+          nt.branches["l1ptByQ"] = (float)l1MatchByQ->pt();
+          nt.branches["l1qByQ"] = (float)(*l1QualitiesByQ)[muRef];
+          nt.branches["l1drByQ"] = (float)(*l1DrsByQ)[muRef];
         } else {
-          nt.l1ptByQ = -99.;
-          nt.l1qByQ = -99;
-          nt.l1drByQ = 99.;
+          nt.branches["l1ptByQ"] = (float)-99.;
+          nt.branches["l1qByQ"] = (float)-99;
+          nt.branches["l1drByQ"] = (float)99.;
         }
 
         embedTriggerMatching(muons->at(trk_muon_map.second[idx]),
@@ -1347,13 +1506,17 @@ void MuonFullAODAnalyzer::analyze(const edm::Event& iEvent, const edm::EventSetu
         }
       }
 
+      //
+      // Fill Displaced variables and check matching
+      //
+
       if (itdsa == probe_dSA_map.first.end()) {
-        nt.probe_dsa_segmentMatches = -1;
+        nt.branches["probe_dsa_segmentMatches"] = (int)-1;
         FillProbeBranchesdSA<reco::Track>(probe, nt, false);
       } else {
         unsigned idx = std::distance(probe_dSA_map.first.begin(), itdsa);
-        nt.probe_dsa_segmentMatches = probe_dSA_segmentmatches[idx];
-        nt.probe_dsa_minDR = probe_dSA_dRs[idx];
+        nt.branches["probe_dsa_segmentMatches"] = (int)probe_dSA_segmentmatches[idx];
+        nt.branches["probe_dsa_minDR"] = (float)probe_dSA_dRs[idx];
         if (debug_ > 0)
           std::cout << "Successful probe dSA " << dSAmuons->at(probe_dSA_map.second[idx]).pt() << " eta "
                     << dSAmuons->at(probe_dSA_map.second[idx]).eta() << " phi "
@@ -1362,12 +1525,12 @@ void MuonFullAODAnalyzer::analyze(const edm::Event& iEvent, const edm::EventSetu
       }
 
       if (itdsa_tag == tag_dSA_map.first.end()) {
-        nt.tag_dsa_segmentMatches = -1;
+        nt.branches["tag_dsa_segmentMatches"] = (int)-1;
         FillTagBranchesdSA<reco::Track>(probe, nt, false);
       } else {
         unsigned idx = std::distance(tag_dSA_map.first.begin(), itdsa_tag);
-        nt.tag_dsa_segmentMatches = tag_dSA_segmentmatches[idx];
-        nt.tag_dsa_minDR = tag_dSA_dRs[idx];
+        nt.branches["tag_dsa_segmentMatches"] = (int)tag_dSA_segmentmatches[idx];
+        nt.branches["tag_dsa_minDR"] = (float)tag_dSA_dRs[idx];
         if (debug_ > 0)
           std::cout << "Successful tag dSA " << dSAmuons->at(tag_dSA_map.second[idx]).pt() << " eta "
                     << dSAmuons->at(tag_dSA_map.second[idx]).eta() << " phi "
@@ -1376,12 +1539,12 @@ void MuonFullAODAnalyzer::analyze(const edm::Event& iEvent, const edm::EventSetu
       }
 
       if (itdgl == probe_dGl_map.first.end()) {
-        nt.probe_dgl_segmentMatches = -1;
+        nt.branches["probe_dgl_segmentMatches"] = (float)-1;
         FillProbeBranchesdgl<reco::Track>(probe, nt, false);
       } else {
         unsigned idx = std::distance(probe_dGl_map.first.begin(), itdgl);
-        nt.probe_dgl_segmentMatches = probe_dGl_segmentmatches[idx];
-        nt.probe_dgl_minDR = probe_dGl_dRs[idx];
+        nt.branches["probe_dgl_segmentMatches"] = (float)probe_dGl_segmentmatches[idx];
+        nt.branches["probe_dgl_minDR"] = (float)probe_dGl_dRs[idx];
         if (debug_ > 0)
           std::cout << "Successful probe displaced global " << dGlmuons->at(probe_dGl_map.second[idx]).pt() << " eta "
                     << dGlmuons->at(probe_dGl_map.second[idx]).eta() << " phi "
@@ -1390,12 +1553,12 @@ void MuonFullAODAnalyzer::analyze(const edm::Event& iEvent, const edm::EventSetu
       }
 
       if (itcosmic == probe_cosmic_map.first.end()) {
-        nt.probe_ncosmic = 0;
+        nt.branches["probe_ncosmic"] = (int)0;
         FillProbeBranchesCosmic<reco::Track>(probe, nt, false);
       } else {
         unsigned idx = std::distance(probe_cosmic_map.first.begin(), itcosmic);
-        nt.probe_ncosmic = probe_cosmic_nmatched[idx];
-        nt.probe_cosmic_minDR = probe_cosmic_dRs[idx];
+        nt.branches["probe_ncosmic"] = (int)probe_cosmic_nmatched[idx];
+        nt.branches["probe_cosmic_minDR"] = (float)probe_cosmic_dRs[idx];
         if (debug_ > 0)
           std::cout << "Successful probe cosmic " << staCosmic->at(probe_cosmic_map.second[idx]).pt() << " eta "
                     << staCosmic->at(probe_cosmic_map.second[idx]).eta() << " phi "
@@ -1403,24 +1566,39 @@ void MuonFullAODAnalyzer::analyze(const edm::Event& iEvent, const edm::EventSetu
         FillProbeBranchesCosmic<reco::Track>(staCosmic->at(probe_cosmic_map.second[idx]), nt, true);
       }
 
+      //Fill vertex variables
       RecoTrkAndTransientTrk probe_pair = std::make_pair(probe, reco::TransientTrack(probe, &(*bField)));
       FillPairBranches<RecoMuonAndTransientTrk, RecoTrkAndTransientTrk>(tag, probe_pair, nt, prop1_);
 
       vtx.fillNtuple(nt);
 
+      // Fill Gen variables
       auto it_genmatch = std::find(matched_track_idx.begin(), matched_track_idx.end(), &probe - &tracks->at(0));
-      nt.probe_isMatchedGen = (it_genmatch != matched_track_idx.end());
+      nt.branches["probe_isMatchedGen"] = (bool)(it_genmatch != matched_track_idx.end());
 
-      nt.iprobe++;
-      nt.pair_rank_vtx_prob = pair_rank_vtx_prob[{&tag - &tag_trkttrk[0], &probe - &tracks->at(0)}];
-      nt.pair_rank_dz_PV_SV = pair_rank_dz_PV_SV[{&tag - &tag_trkttrk[0], &probe - &tracks->at(0)}];
-      nt.pair_rank_dPhi_muons = pair_rank_dPhi_muons[{&tag - &tag_trkttrk[0], &probe - &tracks->at(0)}];
-      nt.pair_rank_dM_Z_Mmumu = pair_rank_dM_Z_Mmumu[{&tag - &tag_trkttrk[0], &probe - &tracks->at(0)}];
-      nt.probe_isHighPurity = probe.quality(Track::highPurity);
+      // Rank probes, check duplicates, and best fits
+      nt.branches["iprobe"] = (int)(std::get<int>(nt.branches["iprobe"].value) + 1);
+      nt.branches["pair_rank_dz_PV_SV"] = (float)pair_rank_dz_PV_SV[{&tag - &tag_trkttrk[0], &probe - &tracks->at(0)}];
+      nt.branches["pair_rank_dPhi_muons"] =
+          (float)pair_rank_dPhi_muons[{&tag - &tag_trkttrk[0], &probe - &tracks->at(0)}];
+      nt.branches["pair_rank_dM_Z_Mmumu"] =
+          (float)pair_rank_dM_Z_Mmumu[{&tag - &tag_trkttrk[0], &probe - &tracks->at(0)}];
+      nt.branches["probe_isHighPurity"] = (bool)probe.quality(Track::highPurity);
 
-      for (auto it = map_tagIdx_nprobes.begin(); it != map_tagIdx_nprobes.end(); ++it) {
-        if (it->first == tag_idx) {
-          nt.pair_probeMultiplicity = it->second;
+      nt.branches["pair_rank_vtx_prob"] =
+          (int)pair_rank_vtx_prob_idx[{&tag - &tag_trkttrk[0], &probe - &tracks->at(0)}];
+      std::vector vtxProbs = probe_vtxP[probe_vtx_vec.first];
+      float maximum_vtx = std::max_element(vtxProbs.begin(), vtxProbs.end())[0];
+      if (probe_vtxP[probe_vtx_vec.first].size() == 1) {
+        nt.branches["probe_isDuplicated"] = (bool)false;
+        nt.branches["probe_isBestPair"] = (bool)true;
+      } else {
+        nt.branches["probe_isDuplicated"] = (bool)true;
+        if (pair_rank_vtx_prob[std::make_pair(tag_prob_vtx.first, probe_vtx_vec.first)] >= maximum_vtx ||
+            !RequireVtxCreation_) {
+          nt.branches["probe_isBestPair"] = (bool)true;
+        } else {
+          nt.branches["probe_isBestPair"] = (bool)false;
         }
       }
 
