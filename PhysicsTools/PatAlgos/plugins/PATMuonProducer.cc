@@ -46,6 +46,7 @@
 #include "PhysicsTools/PatAlgos/interface/MuonMvaIDEstimator.h"
 #include "PhysicsTools/PatAlgos/interface/PATUserDataHelper.h"
 #include "PhysicsTools/PatAlgos/interface/SoftMuonMvaEstimator.h"
+#include "PhysicsTools/PatAlgos/interface/SoftMuonMvaEstimatorRun3.h"
 #include "PhysicsTools/PatUtils/interface/MiniIsolation.h"
 #include "TrackingTools/IPTools/interface/IPTools.h"
 #include "TrackingTools/Records/interface/TransientTrackRecord.h"
@@ -61,11 +62,13 @@ namespace pat {
     pat::CalculatePtRatioRel const& calculatePtRatioRel() const { return *calculatePtRatioRel_; }
     pat::MuonMvaIDEstimator const& muonMvaIDEstimator() const { return *muonMvaIDEstimator_; }
     pat::SoftMuonMvaEstimator const& softMuonMvaEstimator() const { return *softMuonMvaEstimator_; }
+    pat::SoftMuonMvaEstimatorRun3 const& softMuonMvaEstimatorRun3() const { return *softMuonMvaEstimatorRun3_; }
 
   private:
     std::unique_ptr<const pat::CalculatePtRatioRel> calculatePtRatioRel_;
     std::unique_ptr<const pat::MuonMvaIDEstimator> muonMvaIDEstimator_;
     std::unique_ptr<const pat::SoftMuonMvaEstimator> softMuonMvaEstimator_;
+    std::unique_ptr<const pat::SoftMuonMvaEstimatorRun3> softMuonMvaEstimatorRun3_;
   };
 
   /// foward declarations
@@ -234,6 +237,7 @@ namespace pat {
     /// standard muon selectors
     bool computeMuonIDMVA_;
     bool computeSoftMuonMVA_;
+    bool computeSoftMuonMVARun3_;
     bool recomputeBasicSelectors_;
     bool useJec_;
     edm::EDGetTokenT<reco::JetTagCollection> mvaBTagCollectionTag_;
@@ -336,6 +340,12 @@ PATMuonHeavyObjectCache::PATMuonHeavyObjectCache(const edm::ParameterSet& iConfi
     edm::FileInPath softMvaTrainingFile = iConfig.getParameter<edm::FileInPath>("softMvaTrainingFile");
     softMuonMvaEstimator_ = std::make_unique<SoftMuonMvaEstimator>(softMvaTrainingFile);
   }
+
+  if (iConfig.getParameter<bool>("computeSoftMuonMVARun3")) {
+    edm::FileInPath softMvaTrainingFile = iConfig.getParameter<edm::FileInPath>("softMvaTrainingFileRun3");
+    softMuonMvaEstimatorRun3_ = std::make_unique<SoftMuonMvaEstimatorRun3>(softMvaTrainingFile);
+  }
+
 }
 
 PATMuonProducer::PATMuonProducer(const edm::ParameterSet& iConfig, PATMuonHeavyObjectCache const*)
@@ -343,6 +353,7 @@ PATMuonProducer::PATMuonProducer(const edm::ParameterSet& iConfig, PATMuonHeavyO
       useUserData_(iConfig.exists("userData")),
       computeMuonIDMVA_(false),
       computeSoftMuonMVA_(false),
+      computeSoftMuonMVARun3_(false),
       recomputeBasicSelectors_(false),
       useJec_(false),
       isolator_(iConfig.getParameter<edm::ParameterSet>("userIsolation"), consumesCollector(), false),
@@ -465,6 +476,7 @@ PATMuonProducer::PATMuonProducer(const edm::ParameterSet& iConfig, PATMuonHeavyO
   }
 
   computeSoftMuonMVA_ = iConfig.getParameter<bool>("computeSoftMuonMVA");
+  computeSoftMuonMVARun3_ = iConfig.getParameter<bool>("computeSoftMuonMVARun3");
 
   // MC info
   simInfo_ = consumes<edm::ValueMap<reco::MuonSimInfo>>(iConfig.getParameter<edm::InputTag>("muonSimInfo"));
@@ -1014,6 +1026,14 @@ void PATMuonProducer::produce(edm::Event& iEvent, const edm::EventSetup& iSetup)
       //preselection in SoftMuonMvaEstimator.cc
       muon.setSelector(reco::Muon::SoftMvaId, muon.softMvaValue() > 0.58);  //WP choose for bmm4
     }
+    //SOFT MVA Run 3
+    else if (computeSoftMuonMVARun3_) {
+      float mva = globalCache()->softMuonMvaEstimatorRun3().computeMVAID(muon)[1];
+      muon.setSoftMvaValue(mva);
+      //preselection in SoftMuonMvaEstimator.cc
+      muon.setSelector(reco::Muon::SoftMvaId, muon.softMvaValue() > 0.58);  //WP choose for bmm4
+    }
+
   }
 
   // put products in Event
