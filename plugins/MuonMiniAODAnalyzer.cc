@@ -72,6 +72,8 @@
 #include "FWCore/PluginManager/interface/ModuleDef.h"
 #include "HLTrigger/HLTcore/interface/defaultModuleLabel.h"
 
+#include "PhysicsTools/PatAlgos/interface/SoftMuonMvaEstimatorRun3.h"
+
 #include <iostream>
 #include <string>
 #include <vector>
@@ -192,6 +194,8 @@ private:
   const bool isMC_, includeJets_;
   const std::string era_;
 
+  std::unique_ptr<const pat::SoftMuonMvaEstimatorRun3> softMuonMvaEstimatorRun3_;
+  std::unique_ptr<const pat::SoftMuonMvaEstimatorRun3> softMuonMvaEstimatorRun3Weighted_;
   // ----------member data ---------------------------
 };
 
@@ -265,6 +269,11 @@ MuonMiniAODAnalyzer::MuonMiniAODAnalyzer(const edm::ParameterSet& iConfig)
     throw cms::Exception("ParameterError")
         << "length of probeSelectorNames and probeSelectorBits should be identical\n";
   }
+  edm::FileInPath softMvaTrainingFile = iConfig.getParameter<edm::FileInPath>("softMvaTrainingFile");
+  softMuonMvaEstimatorRun3_ = std::make_unique<pat::SoftMuonMvaEstimatorRun3>(softMvaTrainingFile);
+  edm::FileInPath softMvaWeightedTrainingFile = iConfig.getParameter<edm::FileInPath>("softMvaWeightedTrainingFile");
+  softMuonMvaEstimatorRun3Weighted_ = std::make_unique<pat::SoftMuonMvaEstimatorRun3>(softMvaWeightedTrainingFile);
+
 }
 
 MuonMiniAODAnalyzer::~MuonMiniAODAnalyzer() {}
@@ -954,6 +963,8 @@ void MuonMiniAODAnalyzer::analyze(const edm::Event& iEvent, const edm::EventSetu
         nt.branches["probe_SIP3D"] = (float)sip3d.second.value();
         nt.branches["probe_SIP3D_err"] = (float)(pv->isValid() ? sip3d.second.error() : -1.0);
 
+        nt.branches["probe_softMuonMVARun3"] = (float) softMuonMvaEstimatorRun3_->computeMVAID(muons->at(trk_muon_map.second[idx]))[1];
+        nt.branches["probe_softMuonMVARun3Weighted"] = (float) softMuonMvaEstimatorRun3Weighted_->computeMVAID(muons->at(trk_muon_map.second[idx]))[1];
         // Fill miniIsolation -----------------------------------
         FillMiniIsov2<pat::Muon>(muons->at(trk_muon_map.second[idx]), *rhoJetsNC, nt, false);
 

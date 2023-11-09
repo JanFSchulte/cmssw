@@ -151,6 +151,8 @@ NtupleContent::NtupleContent() :
     {"probe_best_phi", {-99.f}},
     {"probe_best_charge", {0}},
     {"probe_inner_pterr", {-99.f}},
+    {"probe_softMuonMVARun3", {0.f}},
+    {"probe_softMuonMVARun3Weighted", {0.f}},
     {"probe_dxy", {-99.f}},
     {"probe_dz", {-99.f}},
     {"probe_isPF", {false}},

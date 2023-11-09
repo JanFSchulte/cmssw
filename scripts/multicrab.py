@@ -1,7 +1,8 @@
 #!/usr/bin/env python3
 
 """
-This is a small script that does the equivalent of multicrab.
+Thired = cms.int32(2),
+s is a small script that does the equivalent of multicrab.
 """
 
 import os

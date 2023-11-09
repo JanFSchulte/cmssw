@@ -1,3 +1,5 @@
+<use name="PhysicsTools/PatAlgos"/>
+<use name="PhysicsTools/ONNXRuntime"/>
 <export>
   <lib name="1"/>
 </export>

@@ -53,8 +53,9 @@ muon = cms.EDAnalyzer('MuonMiniAODAnalyzer',
            useStation2 = cms.bool(False),
            useTrack = cms.string("tracker"),
            useState = cms.string("atVertex"),  # in AOD
-           useSimpleGeometry = cms.bool(True), # use just one cylinder and two planes, not all the fancy chambers  
-
+           useSimpleGeometry = cms.bool(True), # use just one cylinder and two planes, not all the fancy chambers 
+           softMvaTrainingFile = cms.FileInPath("RecoMuon/MuonIdentification/data/rf_HGB.onnx"),
+           softMvaWeightedTrainingFile = cms.FileInPath("RecoMuon/MuonIdentification/data/rf_HGB_weighted.onnx"),
 )
 
 miniAODSequence=cms.Sequence(muon)

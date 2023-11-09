@@ -99,7 +99,7 @@ if len(options.inputFiles) == 0:
               options.inputFiles.append('/store/data/Run2018D/SingleMuon/AOD/12Nov2019_UL2018-v8/120000/00E9106D-CE60-5D4D-805A-E086AD3F6EEA.root')
         else:
             if options.isMC:
-                options.inputFiles.append('/store/mc/RunIIAutumn18DRPremix/JpsiToMuMu_JpsiPt8_TuneCP5_13TeV-pythia8/AODSIM/102X_upgrade2018_realistic_v15-v1/270001/FFF2FC1D-18CB-7244-9663-4E36963494B7.root')
+                options.inputFiles.append('/store/mc/Run3Summer22MiniAODv4/JpsiTo2Mu_JpsiPt8_TuneCP5_13p6TeV_pythia8/MINIAODSIM/MUO_POG_130X_mcRun3_2022_realistic_v5-v2/2550000/0188e39a-4815-4c2d-8062-c6fa17d70670.root')
             else:
                 options.inputFiles.append('/store/data/Run2018C/SingleMuon/MINIAOD/UL2018_MiniAODv2-v2/130000/644CB07D-0BBF-5E4B-A8CA-79FA2AA576D4.root')
 
