@@ -22,6 +22,68 @@
 #include "NtupleContent.h"
 #include "helper.h"
 
+
+typedef std::pair<const reco::MuonChamberMatch*, const reco::MuonSegmentMatch*> MatchPair;
+
+inline const MatchPair& getBetterMatch(const MatchPair& match1, const MatchPair& match2) {
+
+  if (match2.first->detector() == MuonSubdetId::DT and
+      match1.first->detector() != MuonSubdetId::DT)
+    return match2;
+
+  if ( abs(match1.first->x - match1.second->x) >
+       abs(match2.first->x - match2.second->x) )
+    return match2;
+
+  return match1;
+}
+
+inline float dX(const MatchPair& match) {
+  if (match.first and match.second->hasPhi())
+    return (match.first->x - match.second->x);
+  else
+    return 9999.;
+}
+
+inline float pullX(const MatchPair& match) {
+  if (match.first and match.second->hasPhi())
+    return dX(match) /
+      sqrt(pow(match.first->xErr, 2) + pow(match.second->xErr, 2));
+  else
+    return 9999.;
+}
+
+inline float pullDxDz(const MatchPair& match) {
+  if (match.first and match.second->hasPhi())
+    return (match.first->dXdZ - match.second->dXdZ) /
+           sqrt(pow(match.first->dXdZErr, 2) + pow(match.second->dXdZErr, 2));
+  else
+    return 9999.;
+}
+
+inline float dY(const MatchPair& match) {
+  if (match.first and match.second->hasZed())
+    return (match.first->y - match.second->y);
+  else
+    return 9999.;
+}
+
+inline float pullY(const MatchPair& match) {
+  if (match.first and match.second->hasZed())
+    return dY(match) /
+      sqrt(pow(match.first->yErr, 2) + pow(match.second->yErr, 2));
+  else
+    return 9999.;
+}
+
+inline float pullDyDz(const MatchPair& match) {
+  if (match.first and match.second->hasZed())
+    return (match.first->dYdZ - match.second->dYdZ) /
+           sqrt(pow(match.first->dYdZErr, 2) + pow(match.second->dYdZErr, 2));
+  else
+    return 9999.;
+}
+
 template <typename MUON, typename TRK>
 inline void FillTagBranches(const MUON &muon,
                             const std::vector<TRK> &tracks,
@@ -210,6 +272,24 @@ inline void FillProbeBranches(
     nt.branches["probe_RPCLayers"] = (int)mu.numberOfMatchedRPCLayers();
     nt.branches["probe_stationMask"] = (int)mu.stationMask();
     nt.branches["probe_nShowers"] = (int)mu.numberOfShowers();
+
+
+    if (mu.isGlobalMuon()){
+
+      nt.branches["probe_chargeProduct"] = (float)mu.innerTrack()->charge()*mu.outerTrack()->charge();
+      nt.branches["probe_glbNormChi2"] = (float)mu.globalTrack()->normalizedChi2();
+      nt.branches["probe_staNormChi2"] = (float)mu.outerTrack()->normalizedChi2();
+
+    }
+    else{
+
+      nt.branches["probe_chargeProduct"] = 0;
+      nt.branches["probe_glbNormChi2"] = 9999;
+      nt.branches["probe_staNormChi2"] = 9999;
+
+    }
+
+
     if (mu.globalTrack().isNonnull()) {
       nt.branches["probe_muonHits"] = (int)mu.globalTrack()->hitPattern().numberOfValidMuonHits();
       nt.branches["probe_trkChi2"] = (float)mu.globalTrack()->normalizedChi2();
@@ -220,7 +300,9 @@ inline void FillProbeBranches(
       nt.branches["probe_muonHits"] = (int)-99;
       nt.branches["probe_trkChi2"] = (float)-99;
     }
+
     if (mu.innerTrack().isNonnull() && mu.innerTrack().isAvailable()) {
+      nt.branches["probe_inner_normalizedChi2"] = (float)mu.innerTrack()->normalizedChi2();
       nt.branches["probe_inner_validFraction"] = (float)mu.innerTrack()->validFraction();
       nt.branches["probe_inner_trackerLayers"] = (int)mu.innerTrack()->hitPattern().trackerLayersWithMeasurement();
       nt.branches["probe_inner_pixelLayers"] = (int)mu.innerTrack()->hitPattern().pixelLayersWithMeasurement();
@@ -228,11 +310,20 @@ inline void FillProbeBranches(
       nt.branches["probe_dxy"] = (float)mu.innerTrack()->dxy(reco::TrackBase::Point(std::get<float>(nt.branches["pv_x"].value), std::get<float>(nt.branches["pv_y"].value), std::get<float>(nt.branches["pv_z"].value)));
       nt.branches["probe_dz"] = (float)mu.innerTrack()->dz(reco::TrackBase::Point(std::get<float>(nt.branches["pv_x"].value), std::get<float>(nt.branches["pv_y"].value), std::get<float>(nt.branches["pv_z"].value)));
       nt.branches["probe_inner_pixelHits"] = (int)mu.innerTrack()->hitPattern().numberOfValidPixelHits();
+      nt.branches["probe_inner_validHits"] = (int)mu.innerTrack()->hitPattern().numberOfValidTrackerHits();
       nt.branches["probe_inner_pt"] = (float)mu.innerTrack()->pt();
       nt.branches["probe_inner_eta"] = (float)mu.innerTrack()->eta();
       nt.branches["probe_inner_phi"] = (float)mu.innerTrack()->phi();
       nt.branches["probe_inner_charge"] = (int)mu.innerTrack()->charge();
+      nt.branches["probe_inner_nLostHitsInner"] = (int)mu.innerTrack()->hitPattern().numberOfLostTrackerHits(reco::HitPattern::MISSING_INNER_HITS);
+      nt.branches["probe_inner_nLostHitsOn"] = (int)mu.innerTrack()->hitPattern().numberOfLostTrackerHits(reco::HitPattern::TRACK_HITS);
+      nt.branches["probe_inner_nLostHitsOuter"] = (int)mu.innerTrack()->hitPattern().numberOfLostTrackerHits(reco::HitPattern::MISSING_OUTER_HITS);
+      nt.branches["probe_inner_trkLostLayersInner"] = (int)mu.innerTrack()->hitPattern().trackerLayersWithoutMeasurement(reco::HitPattern::MISSING_INNER_HITS);
+      nt.branches["probe_inner_trkLostLayersOn"] = (int)mu.innerTrack()->hitPattern().trackerLayersWithoutMeasurement(reco::HitPattern::TRACK_HITS);
+      nt.branches["probe_inner_trkLostLayersOuter"] = (int)mu.innerTrack()->hitPattern().trackerLayersWithoutMeasurement(reco::HitPattern::MISSING_OUTER_HITS);
+      nt.branches["probe_inner_highPurity"] = (bool)mu.innerTrack()->quality(reco::Track::highPurity);
     } else {
+      nt.branches["probe_inner_normalizedChi2"] = (int)-99;
       nt.branches["probe_inner_validFraction"] = (int)-99;
       nt.branches["probe_inner_trackerLayers"] = (int)-99;
       nt.branches["probe_inner_pixelLayers"] = (int)-99;
@@ -240,10 +331,18 @@ inline void FillProbeBranches(
       nt.branches["probe_dxy"] = (float)-99;
       nt.branches["probe_dz"] = (float)-99;
       nt.branches["probe_inner_pixelHits"] = (int)-99;
+      nt.branches["probe_inner_validHits"] = (int)-99;
       nt.branches["probe_inner_pt"] = (float)-99;
       nt.branches["probe_inner_eta"] = (float)-99;
       nt.branches["probe_inner_phi"] = (float)-99;
       nt.branches["probe_inner_charge"] = (int)-99;
+      nt.branches["probe_inner_nLostHitsInner"] = (int)-99;
+      nt.branches["probe_inner_nLostHitsOn"] = (int)-99;
+      nt.branches["probe_inner_nLostHitsOuter"] = (int)-99;
+      nt.branches["probe_inner_trkLostLayersInner"] = (int)-99;
+      nt.branches["probe_inner_trkLostLayersOn"] = (int)-99;
+      nt.branches["probe_inner_trkLostLayersOuter"] = (int)-99;
+      nt.branches["probe_inner_highPurity"] = (bool)0;
     }
     if (mu.outerTrack().isNonnull() && mu.outerTrack().isAvailable()) {
       nt.branches["probe_muonStations"] = (int)mu.outerTrack()->hitPattern().muonStationsWithValidHits();
@@ -347,7 +446,12 @@ inline void FillProbeBranches(
       nt.branches["probe_dyt_phi"] = (float)-99.;
       nt.branches["probe_dyt_muonHits"] = (int)-99;
     }
+
+    nt.branches["probe_glbTrackProbability"] = (float)mu.combinedQuality().glbTrackProbability;
     nt.branches["probe_positionChi2"] = (float)mu.combinedQuality().chi2LocalPosition;
+    nt.branches["probe_momentumChi2"] = (float)mu.combinedQuality().chi2LocalMomentum;
+    nt.branches["probe_trkRelChi2"] = (float)mu.combinedQuality().trkRelChi2;
+    nt.branches["probe_staRelChi2"] = (float)mu.combinedQuality().staRelChi2;
     nt.branches["probe_trkKink"] = (float)mu.combinedQuality().trkKink;
     nt.branches["probe_segmentCompatibility"] = (float)muon::segmentCompatibility(mu);
     nt.branches["probe_isMuMatched"] = (bool)true;
@@ -360,6 +464,43 @@ inline void FillProbeBranches(
       nsegments += chamber.segmentMatches.size();
     }
     nt.branches["probe_nsegments"] = (int)nsegments;
+
+  // do matching magic
+  const int n_stations = 2;
+  std::vector<MatchPair> matches;
+  for (unsigned int i=0; i < n_stations; ++i)
+    matches.push_back(std::pair(nullptr, nullptr));
+
+  for (auto& chamberMatch : mu.matches()){
+    unsigned int station = chamberMatch.station() - 1;
+    if (station >= n_stations) continue;
+
+    for (auto& segmentMatch : chamberMatch.segmentMatches){
+      if ( not segmentMatch.isMask(reco::MuonSegmentMatch::BestInStationByDR) ||
+	   not segmentMatch.isMask(reco::MuonSegmentMatch::BelongsToTrackByDR) )
+	continue;
+
+
+      auto match_pair = MatchPair(&chamberMatch, &segmentMatch);
+      
+      if (matches[station].first)
+	matches[station] = getBetterMatch(matches[station], match_pair);
+      else
+       	matches[station] = match_pair;
+      }
+    }
+    nt.branches["probe_match1_dX"] = dX(matches[0]);
+    nt.branches["probe_match1_pullX"] = pullX(matches[0]);
+    nt.branches["probe_match1_pullDxDz"] = pullDxDz(matches[0]);
+    nt.branches["probe_match1_dY"] = dY(matches[0]);
+    nt.branches["probe_match1_pullY"] = pullY(matches[0]);
+    nt.branches["probe_match1_pullDyDz"] = pullDyDz(matches[0]);
+    nt.branches["probe_match2_dX"] = dX(matches[1]);
+    nt.branches["probe_match2_pullX"] = pullX(matches[1]);
+    nt.branches["probe_match2_pullDxDz"] = pullDxDz(matches[1]);
+    nt.branches["probe_match2_dY"] = dY(matches[1]);
+    nt.branches["probe_match2_pullY"] = pullY(matches[1]);
+    nt.branches["probe_match2_pullDyDz"] = pullDyDz(matches[1]);
   }
   // no successs (no match)
   else {

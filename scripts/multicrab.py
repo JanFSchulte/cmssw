@@ -14,8 +14,7 @@ from multiprocessing import Process
 
 from CRABAPI.RawCommand import crabCommand
 from CRABClient.ClientExceptions import ClientException
-import http.client as httplib
-
+#import http.client as httplib
 
 def merge_dicts(*dict_args):
     """
@@ -205,7 +204,7 @@ def main():
         # This is the base config:
         #--------------------------------------------------------
 
-        from CRABClient.UserUtilities import config, getUsernameFromCRIC
+        from CRABClient.UserUtilities import config
         config = config()
 
         config.General.workArea = workArea
@@ -224,15 +223,15 @@ def main():
         if storageSite == 'FNAL':
             # Requires write access to FNAL EOS space
             config.Site.storageSite = 'T3_US_FNALLPC'
-            config.Data.outLFNDirBase = '/store/user/%s/TnP_ntuples/%s/%s/%s/%s' % (getUsernameFromCRIC(), particle, resonance, era, dataTier)
+            config.Data.outLFNDirBase = '/store/user/%s/TnP_ntuples/%s/%s/%s/%s' % ('jschulte', particle, resonance, era, dataTier)
         elif storageSite == 'CERN': # default option
             # Requires write access to Muon POG EOS space at CERN
             config.Site.storageSite = 'T2_CH_CERN'
-            config.Data.outLFNDirBase = '/store/group/phys_muon/%s/TnP_ntuples/%s/%s/%s/%s' % (getUsernameFromCRIC(), particle, resonance, era, dataTier)
+            config.Data.outLFNDirBase = '/store/group/phys_muon/%s/TnP_ntuples/%s/%s/%s/%s' % ('jschulte', particle, resonance, era, dataTier)
         elif storageSite == 'CERNBOX':
             # See https://twiki.cern.ch/twiki/bin/view/CMSPublic/CRAB3FAQ#Can_I_send_CRAB_output_to_CERNBO
             config.Site.storageSite = 'T3_CH_CERNBOX'
-            config.Data.outLFNDirBase = '/store/user/%s/TnP_ntuples/%s/%s/%s/%s' % (getUsernameFromCRIC(), particle, resonance, era, dataTier)
+            config.Data.outLFNDirBase = '/store/user/%s/TnP_ntuples/%s/%s/%s/%s' % ('jschulte', particle, resonance, era, dataTier)
 
         #config.Site.ignoreGlobalBlacklist = True
         #config.Data.ignoreLocality = True
@@ -344,17 +343,17 @@ def main():
 
             # Submit.
             def submit(config, options):
-                try:
+               
                     print ("Submitting for input dataset %s with options %s" % (input_dataset, options.crabCmdOpts))
                     if options.dryrun:
                         print ('-'*50)
                         print (config)
                     else:
                         crabCommand(options.crabCmd, config = config, *options.crabCmdOpts.split())
-                except HTTPException as hte:
-                    print ("Submission for input dataset %s failed: %s" % (input_dataset, hte.headers))
-                except ClientException as cle:
-                    print ("Submission for input dataset %s failed: %s" % (input_dataset, cle))
+                #except HTTPException as hte:
+                #    print ("Submission for input dataset %s failed: %s" % (input_dataset, hte.headers))
+                #except ClientException as cle:
+                #    print ("Submission for input dataset %s failed: %s" % (input_dataset, cle))
 
             # Need to submit using multiprocessing module because of CRAB issue with different configs
             p = Process(target=submit, args=(config,options,))

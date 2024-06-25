@@ -73,6 +73,8 @@
 #include "HLTrigger/HLTcore/interface/defaultModuleLabel.h"
 
 #include "PhysicsTools/PatAlgos/interface/SoftMuonMvaEstimatorRun3.h"
+#include "PhysicsTools/PatAlgos/interface/SoftMuonMvaRun3Estimator.h"
+#include "PhysicsTools/PatAlgos/interface/XGBooster.h"
 
 #include <iostream>
 #include <string>
@@ -196,6 +198,7 @@ private:
 
   std::unique_ptr<const pat::SoftMuonMvaEstimatorRun3> softMuonMvaEstimatorRun3_;
   std::unique_ptr<const pat::SoftMuonMvaEstimatorRun3> softMuonMvaEstimatorRun3Weighted_;
+  std::unique_ptr<pat::XGBooster> softMuonMvaRun3Booster_;
   // ----------member data ---------------------------
 };
 
@@ -273,7 +276,10 @@ MuonMiniAODAnalyzer::MuonMiniAODAnalyzer(const edm::ParameterSet& iConfig)
   softMuonMvaEstimatorRun3_ = std::make_unique<pat::SoftMuonMvaEstimatorRun3>(softMvaTrainingFile);
   edm::FileInPath softMvaWeightedTrainingFile = iConfig.getParameter<edm::FileInPath>("softMvaWeightedTrainingFile");
   softMuonMvaEstimatorRun3Weighted_ = std::make_unique<pat::SoftMuonMvaEstimatorRun3>(softMvaWeightedTrainingFile);
-
+  std::string softMvaRun3Model = iConfig.getParameter<string>("softMvaRun3Model");
+  softMuonMvaRun3Booster_ =
+  std::make_unique<pat::XGBooster>(edm::FileInPath(softMvaRun3Model + ".model").fullPath(),
+				       edm::FileInPath(softMvaRun3Model + ".features").fullPath());
 }
 
 MuonMiniAODAnalyzer::~MuonMiniAODAnalyzer() {}
@@ -963,7 +969,9 @@ void MuonMiniAODAnalyzer::analyze(const edm::Event& iEvent, const edm::EventSetu
         nt.branches["probe_SIP3D"] = (float)sip3d.second.value();
         nt.branches["probe_SIP3D_err"] = (float)(pv->isValid() ? sip3d.second.error() : -1.0);
 
+        nt.branches["probe_softMuonMVARun2"] = (float) muons->at(trk_muon_map.second[idx]).softMvaValue();
         nt.branches["probe_softMuonMVARun3"] = (float) softMuonMvaEstimatorRun3_->computeMVAID(muons->at(trk_muon_map.second[idx]))[1];
+        nt.branches["probe_softMuonMVARun3XGB"] = (float) computeSoftMvaRun3(*softMuonMvaRun3Booster_, muons->at(trk_muon_map.second[idx]));
         nt.branches["probe_softMuonMVARun3Weighted"] = (float) softMuonMvaEstimatorRun3Weighted_->computeMVAID(muons->at(trk_muon_map.second[idx]))[1];
         // Fill miniIsolation -----------------------------------
         FillMiniIsov2<pat::Muon>(muons->at(trk_muon_map.second[idx]), *rhoJetsNC, nt, false);
