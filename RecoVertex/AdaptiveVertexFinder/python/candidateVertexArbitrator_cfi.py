@@ -4,4 +4,8 @@ from RecoVertex.AdaptiveVertexFinder.candidateVertexArbitratorDefault_cfi import
 
 candidateVertexArbitrator = candidateVertexArbitratorDefault.clone()
 
+from RecoVertex.AdaptiveVertexFinder.candidateVertexArbitratorScoutingDefault_cfi import candidateVertexArbitratorScoutingDefault
+
+candidateVertexArbitratorScouting = candidateVertexArbitratorScoutingDefault.clone()
+
 

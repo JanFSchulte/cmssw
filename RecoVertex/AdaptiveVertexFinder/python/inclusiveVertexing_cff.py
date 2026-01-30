@@ -17,6 +17,7 @@ inclusiveVertexingTask = cms.Task(inclusiveVertexFinder,
 inclusiveVertexing = cms.Sequence(inclusiveVertexingTask)
 
 from RecoVertex.AdaptiveVertexFinder.inclusiveCandidateVertexFinder_cfi import *
+from RecoVertex.AdaptiveVertexFinder.inclusiveCandidateVertexFinderScouting_cfi import *
 from RecoVertex.AdaptiveVertexFinder.candidateVertexMerger_cfi import *
 from RecoVertex.AdaptiveVertexFinder.candidateVertexArbitrator_cfi import *
 
@@ -31,6 +32,20 @@ inclusiveCandidateVertexingTask = cms.Task(inclusiveCandidateVertexFinder,
                                            candidateVertexArbitrator,
                                            inclusiveCandidateSecondaryVertices)
 inclusiveCandidateVertexing = cms.Sequence(inclusiveCandidateVertexingTask)
+
+inclusiveCandidateSecondaryVerticesScouting = candidateVertexMerger.clone(
+    secondaryVertices = "candidateVertexArbitratorScouting",
+    maxFraction = 0.2,
+    minSignificance = 10.
+)
+
+inclusiveCandidateVertexingScoutingTask = cms.Task(inclusiveCandidateVertexFinderScouting,
+                                           candidateVertexMergerScouting,
+                                           candidateVertexArbitratorScouting,
+                                           inclusiveCandidateSecondaryVerticesScouting)
+inclusiveCandidateVertexingScouting = cms.Sequence(inclusiveCandidateVertexingScoutingTask)
+
+
 
 #relaxed IVF reconstruction cuts for candidate-based ctagging
 inclusiveCandidateVertexFinderCvsL = inclusiveCandidateVertexFinder.clone(

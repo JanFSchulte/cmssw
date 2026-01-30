@@ -1,0 +1,8 @@
+import FWCore.ParameterSet.Config as cms
+
+from RecoVertex.AdaptiveVertexFinder.inclusiveCandidateVertexFinderScoutingDefault_cfi import inclusiveCandidateVertexFinderScoutingDefault
+
+inclusiveCandidateVertexFinderScouting  = inclusiveCandidateVertexFinderScoutingDefault.clone()
+
+
+

@@ -1,3 +1,6 @@
+#ifndef TRACKSCLUSTERINGFROMDISPLACEDSEED_H
+#define TRACKSCLUSTERINGFROMDISPLACEDSEED_H
+
 #include <memory>
 
 #include "FWCore/Framework/interface/Event.h"
@@ -49,3 +52,6 @@ private:
   double clusterMinAngleCosine;
   double maxTimeSignificance;
 };
+
+
+#endif // TRACKSCLUSTERINGFROMDISPLACEDSEED_H

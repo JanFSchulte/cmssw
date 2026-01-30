@@ -6,4 +6,10 @@ candidateVertexMerger = cms.EDProducer("CandidateVertexMerger",
        minSignificance = cms.double(2)
 )
 
+candidateVertexMergerScouting = cms.EDProducer("CandidateVertexMerger",
+       secondaryVertices = cms.InputTag("inclusiveCandidateVertexFinderScouting"),
+       maxFraction = cms.double(0.7),
+       minSignificance = cms.double(2)
+)
+
 

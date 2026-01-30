@@ -1,20 +1,28 @@
 import FWCore.ParameterSet.Config as cms
 
-generalV0Candidates = cms.EDProducer("V0Producer",
-                                     
-   # which beamSpot to reference
+generalV0CandidatesScouting = cms.EDProducer("V0Producer",
+                                # which beamSpot to reference
+
    beamSpot = cms.InputTag('offlineBeamSpot'),
 
+        
+   # which beamSpot to reference
    # reference primary vertex instead of beamSpot
-   useVertex = cms.bool(False),
+   useVertex = cms.bool(True),
    # which vertex collection to use
-   vertices = cms.InputTag('offlinePrimaryVertices'),
+   vertices = cms.InputTag('scoutingPrimaryVertexReco'),
 
    # which TrackCollection to use for vertexing
-   trackRecoAlgorithm = cms.InputTag('generalTracks'),
+   trackRecoAlgorithm = cms.InputTag('scoutingTrackReco'),
+
+   valueMapNValidPixelHits = cms.InputTag("scoutingTrackReco", "nValidPixelHits"),
+   valueMapNTrackerLayersWithMeasurement = cms.InputTag("scoutingTrackReco", "nTrackerLayersWithMeasurement"),
+   valueMapNValidStripHits = cms.InputTag("scoutingTrackReco", "nValidStripHits" ),
+
+
 
    # use Run 3 scouting inputs?
-   isScouting = cms.bool(False),
+   isScouting = cms.bool(True),
 
    # which V0s to reconstruct
    doKShorts = cms.bool(True),

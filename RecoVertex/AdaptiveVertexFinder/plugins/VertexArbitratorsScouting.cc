@@ -37,6 +37,7 @@
 #include "RecoVertex/AdaptiveVertexFinder/interface/TrackVertexArbitrationNoBeamSpot.h"
 #include "DataFormats/Candidate/interface/VertexCompositePtrCandidate.h"
 
+#include "DataFormats/ParticleFlowCandidate/interface/PFCandidate.h"
 #include "RecoVertex/AdaptiveVertexFinder/interface/TTHelpers.h"
 
 //#define VTXDEBUG
@@ -47,25 +48,27 @@ inline const unsigned int nTracks(const reco::VertexCompositePtrCandidate &sv) {
 }
 
 template <class InputContainer, class VTX>
-class TemplatedVertexArbitrator : public edm::stream::EDProducer<> {
+class TemplatedVertexArbitratorScouting : public edm::stream::EDProducer<> {
 public:
   typedef std::vector<VTX> Product;
-  TemplatedVertexArbitrator(const edm::ParameterSet &params);
+  TemplatedVertexArbitratorScouting(const edm::ParameterSet &params);
 
   static void fillDescriptions(edm::ConfigurationDescriptions &cdesc) {
     edm::ParameterSetDescription pdesc;
-    pdesc.add<edm::InputTag>("beamSpot", edm::InputTag("offlineBeamSpot"));
-    pdesc.add<edm::InputTag>("primaryVertices", edm::InputTag("offlinePrimaryVertices"));
+    pdesc.add<edm::InputTag>("primaryVertices", edm::InputTag("scoutingPrimaryVertexReco"));
     if (std::is_same<VTX, reco::Vertex>::value) {
-      pdesc.add<edm::InputTag>("tracks", edm::InputTag("generalTracks"));
-      pdesc.add<edm::InputTag>("secondaryVertices", edm::InputTag("vertexMerger"));
+      pdesc.add<edm::InputTag>("tracks", edm::InputTag("scoutingTrackReco"));
+      pdesc.add<edm::InputTag>("secondaryVertices", edm::InputTag("vertexMergerScouting"));
     } else if (std::is_same<VTX, reco::VertexCompositePtrCandidate>::value) {
-      pdesc.add<edm::InputTag>("tracks", edm::InputTag("particleFlow"));
-      pdesc.add<edm::InputTag>("secondaryVertices", edm::InputTag("candidateVertexMerger"));
+      pdesc.add<edm::InputTag>("tracks", edm::InputTag("scoutingPFCandidateReco"));
+      pdesc.add<edm::InputTag>("secondaryVertices", edm::InputTag("candidateVertexMergerScouting"));
     } else {
       pdesc.add<edm::InputTag>("tracks", edm::InputTag("generalTracks"));
       pdesc.add<edm::InputTag>("secondaryVertices", edm::InputTag("vertexMerger"));
     }
+    pdesc.add<edm::InputTag>("valueMapNValidPixelHits", edm::InputTag("scoutingTrackReco", "nValidPixelHits"));
+    pdesc.add<edm::InputTag>("valueMapNTrackerLayersWithMeasurements", edm::InputTag("scoutingTrackReco", "nTrackerLayersWithMeasurement"));
+
     pdesc.add<double>("dLenFraction", 0.333);
     pdesc.add<double>("dRCut", 0.4);
     pdesc.add<double>("distCut", 0.04);
@@ -79,9 +82,9 @@ public:
     pdesc.add<double>("maxTimeSignificance", 3.5);
     pdesc.add<bool>("isScouting", false);
     if (std::is_same<VTX, reco::Vertex>::value) {
-      cdesc.add("trackVertexArbitratorDefault", pdesc);
+      cdesc.add("trackVertexArbitratorScoutingDefault", pdesc);
     } else if (std::is_same<VTX, reco::VertexCompositePtrCandidate>::value) {
-      cdesc.add("candidateVertexArbitratorDefault", pdesc);
+      cdesc.add("candidateVertexArbitratorScoutingDefault", pdesc);
     } else {
       cdesc.addDefault(pdesc);
     }
@@ -95,31 +98,31 @@ private:
   edm::EDGetTokenT<reco::VertexCollection> token_primaryVertex;
   edm::EDGetTokenT<Product> token_secondaryVertex;
   edm::EDGetTokenT<InputContainer> token_tracks;
-  edm::EDGetTokenT<reco::BeamSpot> token_beamSpot;
   edm::ESGetToken<TransientTrackBuilder, TransientTrackRecord> token_trackBuilder;
+  edm::EDGetTokenT<edm::ValueMap<int> > nValidPixelHitsValueMapToken_;
+  edm::EDGetTokenT<edm::ValueMap<int> > nTrackerLayersWithMeasurementsValueMapToken_;
 
-  std::unique_ptr<TrackVertexArbitration<VTX> > theArbitrator;
+  const edm::ESGetToken<MagneticField, IdealMagneticFieldRecord> esTokenMF_;
   std::unique_ptr<TrackVertexArbitrationNoBeamSpot<VTX> > theArbitratorNoBS;
 
   bool isScouting;
 };
 
 template <class InputContainer, class VTX>
-TemplatedVertexArbitrator<InputContainer, VTX>::TemplatedVertexArbitrator(const edm::ParameterSet &params) {
+TemplatedVertexArbitratorScouting<InputContainer, VTX>::TemplatedVertexArbitratorScouting(const edm::ParameterSet &params) : esTokenMF_(esConsumes()) {
   token_primaryVertex = consumes<reco::VertexCollection>(params.getParameter<edm::InputTag>("primaryVertices"));
   token_secondaryVertex = consumes<Product>(params.getParameter<edm::InputTag>("secondaryVertices"));
-  token_beamSpot = consumes<reco::BeamSpot>(params.getParameter<edm::InputTag>("beamSpot"));
   token_tracks = consumes<InputContainer>(params.getParameter<edm::InputTag>("tracks"));
+  nValidPixelHitsValueMapToken_ = consumes<edm::ValueMap<int> >(params.getParameter<edm::InputTag>("valueMapNValidPixelHits"));
+  nTrackerLayersWithMeasurementsValueMapToken_ = consumes<edm::ValueMap<int> >(params.getParameter<edm::InputTag>("valueMapNTrackerLayersWithMeasurements"));
   token_trackBuilder =
       esConsumes<TransientTrackBuilder, TransientTrackRecord>(edm::ESInputTag("", "TransientTrackBuilder"));
   produces<Product>();
-  isScouting = params.getParameter<bool>("isScouting");
-  theArbitrator.reset(new TrackVertexArbitration<VTX>(params));
   theArbitratorNoBS.reset(new TrackVertexArbitrationNoBeamSpot<VTX>(params));
 }
 
 template <class InputContainer, class VTX>
-void TemplatedVertexArbitrator<InputContainer, VTX>::produce(edm::Event &event, const edm::EventSetup &es) {
+void TemplatedVertexArbitratorScouting<InputContainer, VTX>::produce(edm::Event &event, const edm::EventSetup &es) {
   using namespace reco;
 
   edm::Handle<Product> secondaryVertices;
@@ -129,6 +132,7 @@ void TemplatedVertexArbitrator<InputContainer, VTX>::produce(edm::Event &event, 
   edm::Handle<VertexCollection> primaryVertices;
   event.getByToken(token_primaryVertex, primaryVertices);
 
+  const MagneticField* theMagneticField = &es.getData(esTokenMF_);
 
 
   auto recoVertices = std::make_unique<Product>();
@@ -144,16 +148,51 @@ void TemplatedVertexArbitrator<InputContainer, VTX>::produce(edm::Event &event, 
     //        const edm::RefVector< TrackCollection > tracksForArbitration= selectedTracks;:/
     //
     Product theRecoVertices;
-    edm::Handle<BeamSpot> beamSpot;
-    event.getByToken(token_beamSpot, beamSpot);
 
+    edm::Handle<edm::ValueMap<int> > nValidPixelHitsValueMap;
+    edm::Handle<edm::ValueMap<int> > nTrackerLayersWithMeasurementsValueMap;
+
+    event.getByToken(nValidPixelHitsValueMapToken_, nValidPixelHitsValueMap);
+    event.getByToken(nTrackerLayersWithMeasurementsValueMapToken_, nTrackerLayersWithMeasurementsValueMap);
+    const edm::ValueMap<int>& nValidPixelHitsMap = *nValidPixelHitsValueMap;
+    const edm::ValueMap<int>& nTrackerLayersWithMeasurementsMap = *nTrackerLayersWithMeasurementsValueMap;
+
+
+    std::vector<int> n_pixel_hits;
+    std::vector<int> n_tracker_layers;
     std::vector<TransientTrack> selectedTracks;
     for (typename InputContainer::const_iterator track = tracks->begin(); track != tracks->end(); ++track) {
 
-       selectedTracks.push_back(tthelpers::buildTT(tracks, trackBuilder, track - tracks->begin()));
-    }
+        reco::TrackRef ref;
+        if constexpr (std::is_same_v<InputContainer, reco::TrackCollection>) {
+            ref = reco::TrackRef(tracks, track - tracks->begin());
+        }
+        else if constexpr (std::is_same_v<InputContainer, edm::View<reco::Candidate>>) {
+	      const reco::Candidate& cand = *track;
+	      const reco::PFCandidate* tmpCand = dynamic_cast<const reco::PFCandidate*>(&cand);
+	      ref = tmpCand->trackRef();
+        }
 
-    theRecoVertices = theArbitrator->trackVertexArbitrator(beamSpot, pv, selectedTracks, theSecVertexColl);
+        //else if constexpr (std::is_same_v<InputContainer, edm::View<reco::PFCandidate>>) {
+	//   ref = track->trackRef();
+       // }
+       //
+        int n_ph = 99;
+        int n_tl = 99;
+        if (ref.isNonnull()) {
+	    n_ph = nValidPixelHitsMap[ref];
+	    n_tl = nTrackerLayersWithMeasurementsMap[ref];
+	}
+	n_pixel_hits.push_back(n_ph);
+	n_tracker_layers.push_back(n_tl);
+
+        TransientTrack tt(tthelpers::buildTT(tracks, trackBuilder, track - tracks->begin()));
+       // reco::TransientTrack tt(*ref, theMagneticField);
+        selectedTracks.push_back(tt);
+    }
+    
+    theRecoVertices = theArbitratorNoBS->trackVertexArbitratorNoBeamSpot(pv, selectedTracks, n_pixel_hits, n_tracker_layers, theSecVertexColl);
+	
 
     for (unsigned int ivtx = 0; ivtx < theRecoVertices.size(); ivtx++) {
       if (!(nTracks(theRecoVertices[ivtx]) > 1))
@@ -164,9 +203,9 @@ void TemplatedVertexArbitrator<InputContainer, VTX>::produce(edm::Event &event, 
   event.put(std::move(recoVertices));
 }
 
-typedef TemplatedVertexArbitrator<reco::TrackCollection, reco::Vertex> TrackVertexArbitrator;
-typedef TemplatedVertexArbitrator<edm::View<reco::Candidate>, reco::VertexCompositePtrCandidate>
-    CandidateVertexArbitrator;
+typedef TemplatedVertexArbitratorScouting<reco::TrackCollection, reco::Vertex> TrackVertexArbitratorScouting;
+typedef TemplatedVertexArbitratorScouting<edm::View<reco::Candidate>, reco::VertexCompositePtrCandidate>
+    CandidateVertexArbitratorScouting;
 
-DEFINE_FWK_MODULE(TrackVertexArbitrator);
-DEFINE_FWK_MODULE(CandidateVertexArbitrator);
+DEFINE_FWK_MODULE(TrackVertexArbitratorScouting);
+DEFINE_FWK_MODULE(CandidateVertexArbitratorScouting);

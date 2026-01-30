@@ -34,6 +34,7 @@
 #include "DataFormats/Candidate/interface/VertexCompositeCandidate.h"
 
 #include "V0Fitter.h"
+#include "V0FitterScouting.h"
 
 class dso_hidden V0Producer final : public edm::stream::EDProducer<> {
 public:
@@ -43,10 +44,16 @@ private:
   void produce(edm::Event&, const edm::EventSetup&) override;
 
   V0Fitter theVees;
+  V0FitterScouting theVeesScouting;
+
+  bool isScouting;
 };
 
 // Constructor
-V0Producer::V0Producer(const edm::ParameterSet& iConfig) : theVees(iConfig, consumesCollector()) {
+V0Producer::V0Producer(const edm::ParameterSet& iConfig) : theVees(iConfig, consumesCollector()), theVeesScouting(iConfig, consumesCollector()) {
+
+  isScouting = iConfig.getParameter<bool>("isScouting");
+	
   produces<reco::VertexCompositeCandidateCollection>("Kshort");
   produces<reco::VertexCompositeCandidateCollection>("Lambda");
   //produces< reco::VertexCompositeCandidateCollection >("LambdaBar");
@@ -67,7 +74,8 @@ void V0Producer::produce(edm::Event& iEvent, const edm::EventSetup& iSetup) {
 
   // invoke the fitter which reconstructs the vertices and fills,
   //  collections of Kshorts, Lambda0s
-  theVees.fitAll(iEvent, iSetup, *kShortCandidates, *lambdaCandidates);
+  if (isScouting) theVeesScouting.fitAll(iEvent, iSetup, *kShortCandidates, *lambdaCandidates);
+  else theVees.fitAll(iEvent, iSetup, *kShortCandidates, *lambdaCandidates);
 
   // Write the collections to the Event
   kShortCandidates->shrink_to_fit();

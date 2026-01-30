@@ -1,5 +1,5 @@
-#ifndef InclusiveVertexFinder_h
-#define InclusiveVertexFinder_h
+#ifndef InclusiveVertexFinderScouting_h
+#define InclusiveVertexFinderScouting_h
 #include <memory>
 
 #include "FWCore/Framework/interface/stream/EDProducer.h"
@@ -13,6 +13,7 @@
 #include "TrackingTools/TransientTrack/interface/TransientTrackBuilder.h"
 #include "TrackingTools/Records/interface/TransientTrackRecord.h"
 
+#include "MagneticField/VolumeBasedEngine/interface/VolumeBasedMagneticField.h"
 #include "DataFormats/Common/interface/Handle.h"
 #include "DataFormats/TrackReco/interface/Track.h"
 #include "DataFormats/TrackReco/interface/TrackFwd.h"
@@ -20,6 +21,7 @@
 #include "DataFormats/VertexReco/interface/VertexFwd.h"
 #include "DataFormats/BeamSpot/interface/BeamSpot.h"
 
+#include "DataFormats/ParticleFlowCandidate/interface/PFCandidate.h"
 #include "RecoVertex/ConfigurableVertexReco/interface/ConfigurableVertexReconstructor.h"
 #include "TrackingTools/PatternTools/interface/TwoTrackMinimumDistance.h"
 #include "TrackingTools/IPTools/interface/IPTools.h"
@@ -39,15 +41,14 @@
 
 //#define VTXDEBUG 1
 template <class InputContainer, class VTX>
-class TemplatedInclusiveVertexFinder : public edm::stream::EDProducer<> {
+class TemplatedInclusiveVertexFinderScouting : public edm::stream::EDProducer<> {
 public:
   typedef std::vector<VTX> Product;
   typedef typename InputContainer::value_type TRK;
-  TemplatedInclusiveVertexFinder(const edm::ParameterSet &params);
+  TemplatedInclusiveVertexFinderScouting(const edm::ParameterSet &params);
 
   static void fillDescriptions(edm::ConfigurationDescriptions &cdesc) {
     edm::ParameterSetDescription pdesc;
-    pdesc.add<edm::InputTag>("beamSpot", edm::InputTag("offlineBeamSpot"));
     pdesc.add<edm::InputTag>("primaryVertices", edm::InputTag("offlinePrimaryVertices"));
     if (std::is_same<VTX, reco::Vertex>::value) {
       pdesc.add<edm::InputTag>("tracks", edm::InputTag("generalTracks"));
@@ -58,7 +59,8 @@ public:
     } else {
       pdesc.add<edm::InputTag>("tracks", edm::InputTag("generalTracks"));
     }
-
+    pdesc.add<edm::InputTag>("valueMapNValidPixelHits", edm::InputTag("scoutingTrackReco", "nValidPixelHits"));
+    pdesc.add<edm::InputTag>("valueMapNValidStripHits", edm::InputTag("scoutingTrackReco", "nValidStripHits"));
     pdesc.add<double>("maximumLongitudinalImpactParameter", 0.3);
     pdesc.add<double>("maximumTimeSignificance", 3.0);
     pdesc.add<double>("minPt", 0.8);
@@ -92,9 +94,9 @@ public:
     vertexReco.add<bool>("smoothing", true);
     pdesc.add<edm::ParameterSetDescription>("vertexReco", vertexReco);
     if (std::is_same<VTX, reco::Vertex>::value) {
-      cdesc.add("inclusiveVertexFinderDefault", pdesc);
+      cdesc.add("inclusiveVertexFinderScoutingDefault", pdesc);
     } else if (std::is_same<VTX, reco::VertexCompositePtrCandidate>::value) {
-      cdesc.add("inclusiveCandidateVertexFinderDefault", pdesc);
+      cdesc.add("inclusiveCandidateVertexFinderScoutingDefault", pdesc);
     } else {
       cdesc.addDefault(pdesc);
     }
@@ -103,15 +105,19 @@ public:
   void produce(edm::Event &event, const edm::EventSetup &es) override;
 
 private:
-  bool trackFilter(const reco::Track &track) const;
+  bool trackFilter(const reco::Track &track, int n_valid_hits) const;
   std::pair<std::vector<reco::TransientTrack>, GlobalPoint> nearTracks(const reco::TransientTrack &seed,
                                                                        const std::vector<reco::TransientTrack> &tracks,
                                                                        const reco::Vertex &primaryVertex) const;
 
-  edm::EDGetTokenT<reco::BeamSpot> token_beamSpot;
+  //edm::EDGetTokenT<reco::BeamSpot> token_beamSpot;
   edm::EDGetTokenT<reco::VertexCollection> token_primaryVertex;
   edm::EDGetTokenT<InputContainer> token_tracks;
   edm::ESGetToken<TransientTrackBuilder, TransientTrackRecord> token_trackBuilder;
+  const edm::ESGetToken<MagneticField, IdealMagneticFieldRecord> esTokenMF_;
+
+  edm::EDGetTokenT<edm::ValueMap<int> > nValidPixelHitsValueMapToken_;
+  edm::EDGetTokenT<edm::ValueMap<int> > nValidStripHitsValueMapToken_;
   unsigned int minHits;
   unsigned int maxNTracks;
   double maxLIP;
@@ -129,8 +135,9 @@ private:
   std::unique_ptr<TracksClusteringFromDisplacedSeed> clusterizer;
 };
 template <class InputContainer, class VTX>
-TemplatedInclusiveVertexFinder<InputContainer, VTX>::TemplatedInclusiveVertexFinder(const edm::ParameterSet &params)
-    : minHits(params.getParameter<unsigned int>("minHits")),
+TemplatedInclusiveVertexFinderScouting<InputContainer, VTX>::TemplatedInclusiveVertexFinderScouting(const edm::ParameterSet &params)
+    : esTokenMF_(esConsumes()),
+      minHits(params.getParameter<unsigned int>("minHits")),
       maxNTracks(params.getParameter<unsigned int>("maxNTracks")),
       maxLIP(params.getParameter<double>("maximumLongitudinalImpactParameter")),
       maxTimeSig(params.getParameter<double>("maximumTimeSignificance")),
@@ -147,17 +154,22 @@ TemplatedInclusiveVertexFinder<InputContainer, VTX>::TemplatedInclusiveVertexFin
       clusterizer(new TracksClusteringFromDisplacedSeed(params.getParameter<edm::ParameterSet>("clusterizer")))
 
 {
-  token_beamSpot = consumes<reco::BeamSpot>(params.getParameter<edm::InputTag>("beamSpot"));
+  //token_beamSpot = consumes<reco::BeamSpot>(params.getParameter<edm::InputTag>("beamSpot"));
   token_primaryVertex = consumes<reco::VertexCollection>(params.getParameter<edm::InputTag>("primaryVertices"));
   token_tracks = consumes<InputContainer>(params.getParameter<edm::InputTag>("tracks"));
+
+  nValidPixelHitsValueMapToken_ = consumes<edm::ValueMap<int> >(params.getParameter<edm::InputTag>("valueMapNValidPixelHits"));
+  nValidStripHitsValueMapToken_ = consumes<edm::ValueMap<int> >(params.getParameter<edm::InputTag>("valueMapNValidStripHits"));
+
   token_trackBuilder =
       esConsumes<TransientTrackBuilder, TransientTrackRecord>(edm::ESInputTag("", "TransientTrackBuilder"));
+
   produces<Product>();
   //produces<reco::VertexCollection>("multi");
 }
 template <class InputContainer, class VTX>
-bool TemplatedInclusiveVertexFinder<InputContainer, VTX>::trackFilter(const reco::Track &track) const {
-  if (track.hitPattern().numberOfValidHits() < (int)minHits)
+bool TemplatedInclusiveVertexFinderScouting<InputContainer, VTX>::trackFilter(const reco::Track &track, int n_valid_hits) const {
+  if (n_valid_hits < (int)minHits)
     return false;
   if (track.pt() < minPt)
     return false;
@@ -166,7 +178,7 @@ bool TemplatedInclusiveVertexFinder<InputContainer, VTX>::trackFilter(const reco
 }
 
 template <class InputContainer, class VTX>
-void TemplatedInclusiveVertexFinder<InputContainer, VTX>::produce(edm::Event &event, const edm::EventSetup &es) {
+void TemplatedInclusiveVertexFinderScouting<InputContainer, VTX>::produce(edm::Event &event, const edm::EventSetup &es) {
   using namespace reco;
 
   VertexDistance3D vdist;
@@ -178,16 +190,24 @@ void TemplatedInclusiveVertexFinder<InputContainer, VTX>::produce(edm::Event &ev
                                          KalmanVertexTrackCompatibilityEstimator<5>(),
                                          KalmanVertexSmoother());
 
-  edm::Handle<BeamSpot> beamSpot;
-  event.getByToken(token_beamSpot, beamSpot);
-
   edm::Handle<VertexCollection> primaryVertices;
   event.getByToken(token_primaryVertex, primaryVertices);
 
   edm::Handle<InputContainer> tracks;
   event.getByToken(token_tracks, tracks);
 
+  edm::Handle<edm::ValueMap<int> > nValidPixelHitsValueMap;
+  edm::Handle<edm::ValueMap<int> > nValidStripHitsValueMap;
+
+  event.getByToken(nValidPixelHitsValueMapToken_, nValidPixelHitsValueMap);
+  event.getByToken(nValidStripHitsValueMapToken_, nValidStripHitsValueMap);
+  const edm::ValueMap<int>& nValidPixelHitsMap = *nValidPixelHitsValueMap;
+  const edm::ValueMap<int>& nValidStripHitsMap = *nValidStripHitsValueMap;
+
+
   edm::ESHandle<TransientTrackBuilder> trackBuilder = es.getHandle(token_trackBuilder);
+
+  const MagneticField* theMagneticField = &es.getData(esTokenMF_);
 
   auto recoVertices = std::make_unique<Product>();
   if (!primaryVertices->empty()) {
@@ -196,13 +216,23 @@ void TemplatedInclusiveVertexFinder<InputContainer, VTX>::produce(edm::Event &ev
 
     std::vector<TransientTrack> tts;
     //Fill transient track vector
+    reco::TrackRef ref;
     for (typename InputContainer::const_iterator track = tracks->begin(); track != tracks->end(); ++track) {
-      //TransientTrack tt = trackBuilder->build(ref);
-      //TrackRef ref(tracks, track - tracks->begin());
+      if constexpr (std::is_same_v<InputContainer, reco::TrackCollection>) {
+	      ref = reco::TrackRef(tracks, track - tracks->begin());
+      }
+      else if constexpr (std::is_same_v<InputContainer, edm::View<reco::Candidate>>) {
+	      const reco::Candidate& cand = *track;
+	      const reco::PFCandidate* tmpCand = dynamic_cast<const reco::PFCandidate*>(&cand);
+	      ref = tmpCand->trackRef();
+      }
+      int totalHits = 99;
+      if (ref.isNonnull()) totalHits = nValidPixelHitsMap[ref] + nValidStripHitsMap[ref]; 
       TransientTrack tt(tthelpers::buildTT(tracks, trackBuilder, track - tracks->begin()));
+      //reco::TransientTrack tt(*ref, theMagneticField);
       if (!tt.isValid())
         continue;
-      if (!trackFilter(tt.track()))
+      if (!trackFilter(tt.track(), totalHits))
         continue;
       if (std::abs(tt.track().dz(pv.position())) > maxLIP)
         continue;
@@ -212,7 +242,6 @@ void TemplatedInclusiveVertexFinder<InputContainer, VTX>::produce(edm::Event &ev
         if (dtSig > maxTimeSig)
           continue;
       }
-      tt.setBeamSpot(*beamSpot);
       tts.push_back(tt);
     }
     std::vector<TracksClusteringFromDisplacedSeed::Cluster> clusters = clusterizer->clusters(pv, tts);
