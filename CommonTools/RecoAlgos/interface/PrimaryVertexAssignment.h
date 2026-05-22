@@ -105,6 +105,7 @@ public:
       time = pfcand.time();
       timeResolution = pfcand.timeError();
     }
+    std::cout << "is this being used?" << std::endl;
     if (!pfcand.hasTrackDetails())
       return {-1, PrimaryVertexAssignment::Unassigned};
     else

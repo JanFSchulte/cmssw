@@ -78,7 +78,7 @@ void UnifiedParticleTransformerAK4ONNXJetTagsScoutingv2Producer::fillDescription
   desc.add<std::vector<std::string>>(
       "input_names", {"input_1", "input_2", "input_3", "input_4", "input_5", "input_6", "input_7", "input_8"});
   desc.add<edm::FileInPath>("model_path",
-                            edm::FileInPath("RecoBTag/CombinedScouting/data/model_v2.onnx"));
+                            edm::FileInPath("RecoBTag/CombinedScouting/data/model_upartv2.onnx"));
   desc.add<std::vector<std::string>>("output_names", {"softmax"});
   desc.add<std::vector<std::string>>(
       "flav_names",
@@ -124,11 +124,11 @@ void UnifiedParticleTransformerAK4ONNXJetTagsScoutingv2Producer::produce(edm::Ev
       input_shapes_ = {{(int64_t)1, (int64_t)n_cpf_, (int64_t)ScoutingUparT::N_InputFeatures.at(ScoutingUparT::kChargedCandidates)},
                        {(int64_t)1, (int64_t)n_npf_, (int64_t)ScoutingUparT::N_InputFeatures.at(ScoutingUparT::kNeutralCandidates)},
                        {(int64_t)1, (int64_t)n_sv_, (int64_t)ScoutingUparT::N_InputFeatures.at(ScoutingUparT::kVertices)},
-                       {(int64_t)1, (int64_t)n_lt_, (int64_t)ScoutingUparT::N_InputFeatures.at(ScoutingUparT::kLostTracks)},
-                       {(int64_t)1, (int64_t)n_cpf_, (int64_t)ScoutingUparT::N_InputFeatures.at(ScoutingUparT::kChargedCandidates4Vec)},
-                       {(int64_t)1, (int64_t)n_npf_, (int64_t)ScoutingUparT::N_InputFeatures.at(ScoutingUparT::kNeutralCandidates4Vec)},
-                       {(int64_t)1, (int64_t)n_sv_, (int64_t)ScoutingUparT::N_InputFeatures.at(ScoutingUparT::kVertices4Vec)},
-                       {(int64_t)1, (int64_t)n_lt_, (int64_t)ScoutingUparT::N_InputFeatures.at(ScoutingUparT::kLostTracks4Vec)}};
+                       {(int64_t)1, (int64_t)n_lt_, (int64_t)ScoutingUparT::N_InputFeatures.at(ScoutingUparT::kLostTracks)}};
+                       //{(int64_t)1, (int64_t)n_cpf_, (int64_t)ScoutingUparT::N_InputFeatures.at(ScoutingUparT::kChargedCandidates4Vec)},
+                       //{(int64_t)1, (int64_t)n_npf_, (int64_t)ScoutingUparT::N_InputFeatures.at(ScoutingUparT::kNeutralCandidates4Vec)},
+                       //{(int64_t)1, (int64_t)n_sv_, (int64_t)ScoutingUparT::N_InputFeatures.at(ScoutingUparT::kVertices4Vec)},
+                       //{(int64_t)1, (int64_t)n_lt_, (int64_t)ScoutingUparT::N_InputFeatures.at(ScoutingUparT::kLostTracks4Vec)}};
 
       outputs = globalCache()->run(input_names_, data_, input_shapes_, output_names_, 1)[0];
       assert(outputs.size() == flav_names_.size());
@@ -172,10 +172,10 @@ void UnifiedParticleTransformerAK4ONNXJetTagsScoutingv2Producer::get_input_sizes
       n_npf_ * ScoutingUparT::N_InputFeatures.at(ScoutingUparT::kNeutralCandidates),
       n_sv_ * ScoutingUparT::N_InputFeatures.at(ScoutingUparT::kVertices),
       n_lt_ * ScoutingUparT::N_InputFeatures.at(ScoutingUparT::kLostTracks),
-      n_cpf_ * ScoutingUparT::N_InputFeatures.at(ScoutingUparT::kChargedCandidates4Vec),
-      n_npf_ * ScoutingUparT::N_InputFeatures.at(ScoutingUparT::kNeutralCandidates4Vec),
-      n_sv_ * ScoutingUparT::N_InputFeatures.at(ScoutingUparT::kVertices4Vec),
-      n_lt_ * ScoutingUparT::N_InputFeatures.at(ScoutingUparT::kLostTracks4Vec),
+//      n_cpf_ * ScoutingUparT::N_InputFeatures.at(ScoutingUparT::kChargedCandidates4Vec),
+//      n_npf_ * ScoutingUparT::N_InputFeatures.at(ScoutingUparT::kNeutralCandidates4Vec),
+//      n_sv_ * ScoutingUparT::N_InputFeatures.at(ScoutingUparT::kVertices4Vec),
+//      n_lt_ * ScoutingUparT::N_InputFeatures.at(ScoutingUparT::kLostTracks4Vec),
   };
   // init data storage
   data_.clear();
@@ -205,13 +205,13 @@ void UnifiedParticleTransformerAK4ONNXJetTagsScoutingv2Producer::make_inputs(
   // lt candidates
   ScoutingUparT_tensor_filler(data_, ScoutingUparT::kLostTracks, features.lt_features, max_lt_n, start, offset);
   // cpf pairwise features (4-vectors)
-  ScoutingUparT_tensor_filler(data_, ScoutingUparT::kChargedCandidates4Vec, features.c_pf_features, max_c_pf_n, start, offset);
+  //ScoutingUparT_tensor_filler(data_, ScoutingUparT::kChargedCandidates4Vec, features.c_pf_features, max_c_pf_n, start, offset);
   // npf pairwise features (4-vectors)
-  ScoutingUparT_tensor_filler(data_, ScoutingUparT::kNeutralCandidates4Vec, features.n_pf_features, max_n_pf_n, start, offset);
+  //ScoutingUparT_tensor_filler(data_, ScoutingUparT::kNeutralCandidates4Vec, features.n_pf_features, max_n_pf_n, start, offset);
   // sv pairwise features (4-vectors)
-  ScoutingUparT_tensor_filler(data_, ScoutingUparT::kVertices4Vec, features.sv_features, max_sv_n, start, offset);
+  //ScoutingUparT_tensor_filler(data_, ScoutingUparT::kVertices4Vec, features.sv_features, max_sv_n, start, offset);
   // lt pairwise features (4-vectors) specific case requiring (pt,eta,phi,e)
-  ScoutingUparT_tensor_filler(data_, ScoutingUparT::kLostTracks4Vec, features.lt_features, max_lt_n, start, offset);
+ // ScoutingUparT_tensor_filler(data_, ScoutingUparT::kLostTracks4Vec, features.lt_features, max_lt_n, start, offset);
 
 }
 

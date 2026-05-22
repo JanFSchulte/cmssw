@@ -131,10 +131,10 @@ namespace ScoutingUparT {
   inline constexpr unsigned n_sv_accept = 4;
 
   constexpr std::array<unsigned int, kEnd> N_InputFeatures{{
-      31,  // kChargedCandidates
-      13,  // kNeutralCandidates
+      27,  // kChargedCandidates
+      11,  // kNeutralCandidates
       18,  // kVertices
-      22,  // kLostTracks
+      21,  // kLostTracks
       4,   // kChargedCandidates4Vec
       4,   // kNeutralCandidates4Vec
       4,   // kVertices4Vec

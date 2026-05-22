@@ -41,7 +41,6 @@ std::pair<int, PrimaryVertexAssignment::Quality> PrimaryVertexAssignment::charge
     const TransientTrackBuilder& builder) const {
   typedef reco::VertexCollection::const_iterator IV;
   typedef reco::Vertex::trackRef_iterator IT;
-
   bool useTime = useTiming_;
   if (edm::isNotFinite(time) || timeReso < 1e-6) {
     useTime = false;
