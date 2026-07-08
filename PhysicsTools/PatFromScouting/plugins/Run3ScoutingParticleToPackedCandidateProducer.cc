@@ -92,7 +92,8 @@ void Run3ScoutingParticleToPackedCandidateProducer::produce(edm::Event& iEvent, 
   std::vector<bool> trackUsed(tracks.size(), false);
 
   output->reserve(particles.size());
-  std::vector<int> mapping(particles.size());
+  std::vector<int> mapping;
+  mapping.reserve(particles.size());
   std::vector<int> vtx_ass;
   std::vector<int> qual;
   std::vector<int> pfToPVVector;
@@ -112,6 +113,10 @@ void Run3ScoutingParticleToPackedCandidateProducer::produce(edm::Event& iEvent, 
       continue;
     }
     float mass = pdtData->mass().value();
+
+    // Index this candidate will occupy in the output collections. Particles can
+    // be skipped (CHS pileup drop, unknown PDG id) so this differs from ic.
+    const int outIdx = static_cast<int>(output->size());
 
     reco::PFCandidate::ParticleType particleType = reco::PFCandidate::ParticleType::X;
     switch(std::abs(pdgId)) {
@@ -237,12 +242,12 @@ void Run3ScoutingParticleToPackedCandidateProducer::produce(edm::Event& iEvent, 
       }
 
       if (pfCand.trackRef().isNonnull() && pfCand.trackRef().id() == trackHandle.id()) {
-          mappingTk[pfCand.trackRef().key()] = ic;
+          mappingTk[pfCand.trackRef().key()] = outIdx;
       }
 
     }
 
-    mapping[ic] = ic;
+    mapping.push_back(outIdx);
     outputReco->push_back(pfCand);
     output->push_back(cand);
     qual.push_back(cand.hasTrackDetails() ? cand.pseudoTrack().qualityMask() : (1 << reco::TrackBase::loose));

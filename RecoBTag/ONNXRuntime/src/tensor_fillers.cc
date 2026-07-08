@@ -336,7 +336,6 @@ namespace btagbtvdeep {
     std::vector<float> inputs;
     if (ifeature == ScoutingUparT::kChargedCandidates) {
 
-
       inputs.push_back(c_pf_features.btagPf_trackEtaRel);
       inputs.push_back(c_pf_features.btagPf_trackPtRel);
       inputs.push_back(c_pf_features.btagPf_trackPPar);
@@ -350,20 +349,16 @@ namespace btagbtvdeep {
       inputs.push_back(c_pf_features.ptrel);
       inputs.push_back(c_pf_features.drminsv);
       inputs.push_back(c_pf_features.vtx_ass);
-      inputs.push_back(0);
       inputs.push_back(c_pf_features.chi2);
       inputs.push_back(c_pf_features.quality);
       inputs.push_back(c_pf_features.pt);
       inputs.push_back(c_pf_features.charge);
       inputs.push_back(c_pf_features.dz);
       inputs.push_back(c_pf_features.btagPf_trackDecayLen);
-      inputs.push_back(c_pf_features.HadFrac);
-      inputs.push_back(c_pf_features.CaloFrac);
       inputs.push_back(c_pf_features.pdgID);
       inputs.push_back(c_pf_features.lostInnerHits);
       inputs.push_back(c_pf_features.numberOfPixelHits);
       inputs.push_back(c_pf_features.numberOfStripHits);
-      inputs.push_back(c_pf_features.tau_signal);
       inputs.push_back(c_pf_features.px);
       inputs.push_back(c_pf_features.py);
       inputs.push_back(c_pf_features.pz);
@@ -388,14 +383,11 @@ namespace btagbtvdeep {
       inputs.push_back(n_pf_features.phirel);
       inputs.push_back(n_pf_features.deltaR);
       inputs.push_back(n_pf_features.isGamma);
-      inputs.push_back(n_pf_features.hadFrac);
       inputs.push_back(n_pf_features.drminsv);
-      inputs.push_back(0);
       inputs.push_back(n_pf_features.px);
       inputs.push_back(n_pf_features.py);
       inputs.push_back(n_pf_features.pz);
       inputs.push_back(n_pf_features.e);
-
 
     } else if (ifeature == ScoutingUparT::kNeutralCandidates4Vec) {
       inputs.push_back(n_pf_features.px);
@@ -410,7 +402,6 @@ namespace btagbtvdeep {
                                   ScoutingUparT::InputFeatures ifeature) {
     std::vector<float> inputs;
     if (ifeature == ScoutingUparT::kVertices) {
-
 
       inputs.push_back(sv_features.pt);
       inputs.push_back(sv_features.deltaR);
@@ -453,7 +444,6 @@ namespace btagbtvdeep {
       inputs.push_back(lt_features.btagPf_trackSip3dSig);
       inputs.push_back(lt_features.btagPf_trackJetDistVal);
       inputs.push_back(lt_features.drminsv);
-      inputs.push_back(0);
       inputs.push_back(lt_features.chi2);
       inputs.push_back(lt_features.quality);
       inputs.push_back(lt_features.charge);

@@ -451,54 +451,6 @@ def customizeForScoutingAK4ReclusteredJets(process, pName):
         vertices = cms.InputTag("offlineSlimmedPrimaryVertices", "", pName)
     )
 
-    process.scoutingPFJetReclusterHLTParticleNetJetTagInfos = cms.EDProducer("DeepBoostedJetTagInfoProducer",
-        covariancePackingSchemas = cms.vint32(8, 264, 520, 776, 0),
-        covarianceVersion = cms.int32(1),
-        dxy_value_map = cms.InputTag(""),
-        dxysig_value_map = cms.InputTag(""),
-        dz_value_map = cms.InputTag(""),
-        dzsig_value_map = cms.InputTag(""),
-        flip_ip_sign = cms.bool(False),
-        include_neutrals = cms.bool(True),
-        jet_radius = cms.double(0.4),
-        jets = cms.InputTag("recoScoutingPFJetRecluster"),
-        lostInnerHits_value_map = cms.InputTag(""),
-        max_jet_eta = cms.double(2.6), # HLT has 2.5
-        min_jet_pt = cms.double(5.0), # lower from 30.0
-        min_pt_for_pfcandidates = cms.double(0.1),
-        min_pt_for_track_properties = cms.double(0.95),
-        min_puppi_wgt = cms.double(-1.0),
-        normchi2_value_map = cms.InputTag(""),
-        #pf_candidates = cms.InputTag("packedPFCandidates", "recoCands", pName),
-        pf_candidates = cms.InputTag("packedPFCandidates", "", pName),
-        puppi_value_map = cms.InputTag(""),
-        quality_value_map = cms.InputTag(""),
-        secondary_vertices = cms.InputTag("inclusiveCandidateSecondaryVertices", "", pName),
-        sip3dSigMax = cms.double(-1.0),
-        sort_by_sip2dsig = cms.bool(False),
-        trkEta_value_map = cms.InputTag(""),
-        trkPhi_value_map = cms.InputTag(""),
-        trkPt_value_map = cms.InputTag(""),
-        unsubjet_map = cms.InputTag(""),
-        use_hlt_features = cms.bool(True),
-        use_puppiP4 = cms.bool(False),
-        use_scouting_features = cms.bool(False),
-        vertex_associator = cms.InputTag("scoutingPFJetReclusterPrimaryVertexAssociation", "original"),
-        vertices = cms.InputTag("offlineSlimmedPrimaryVertices", "", pName)
-    )
-
-    process.scoutingPFJetReclusterHLTParticleNetONNXJetTags = cms.EDProducer("BoostedJetONNXJetTagsProducer",
-        debugMode = cms.untracked.bool(False),
-        flav_names = cms.vstring('probtauhp', 'probtauhm', 'probb', 'probc', 'probuds', 'probg', 'ptcorr'),
-        model_path = cms.FileInPath('RecoBTag/Combined/data/HLT/ParticleNetAK4/V01/particle-net.onnx'),
-        preprocessParams = cms.PSet(),
-        preprocess_json = cms.string('RecoBTag/Combined/data/HLT/ParticleNetAK4/V01/preprocess.json'),
-        produceValueMap = cms.untracked.bool(False), # False in HLT
-        src = cms.InputTag("scoutingPFJetReclusterHLTParticleNetJetTagInfos"),
-        jets = cms.InputTag("recoScoutingPFJetRecluster")
-    )
-
-
     process.scoutingPFJetReclusterPFUnifiedParticleTransformerAK4TagInfos = cms.EDProducer('UnifiedParticleTransformerAK4TagInfoProducer',
         jet_radius = cms.double(0.4),
         min_candidate_pt = cms.double(0.1),
@@ -524,7 +476,6 @@ def customizeForScoutingAK4ReclusteredJets(process, pName):
         max_jet_eta = cms.double(2.5),
         mightGet = cms.optional.untracked.vstring
       )
-
     process.scoutingPFJetReclusterPFUnifiedParticleTransformerAK4Tags = cms.EDProducer('UnifiedParticleTransformerAK4ONNXJetTagsScoutingv2Producer',
         src = cms.InputTag('scoutingPFJetReclusterPFUnifiedParticleTransformerAK4TagInfos'),
         input_names = cms.vstring(
@@ -532,12 +483,28 @@ def customizeForScoutingAK4ReclusteredJets(process, pName):
           'input_2',
           'input_3',
           'input_4',
-          'input_5',
-          'input_6',
-          'input_7',
-          'input_8',
         ),
-        model_path = cms.FileInPath('RecoBTag/CombinedScouting/data/model_v2.onnx'),
+        model_path = cms.FileInPath('RecoBTag/CombinedScouting/data/model_v3.onnx'),
+        output_names = cms.vstring('ID_pred'),
+        flav_names = cms.vstring(
+        'probb',
+        'probbb',
+        'probleptonicB',
+        'probc',
+        'probuds',
+        'probg',            
+        ),
+        mightGet = cms.optional.untracked.vstring
+    )
+    process.scoutingPFJetReclusterPFUnifiedParticleTransformerAK4TagsTT4Q = cms.EDProducer('UnifiedParticleTransformerAK4ONNXJetTagsScoutingv2Producer',
+        src = cms.InputTag('scoutingPFJetReclusterPFUnifiedParticleTransformerAK4TagInfos'),
+        input_names = cms.vstring(
+          'input_1',
+          'input_2',
+          'input_3',
+          'input_4',
+        ),
+        model_path = cms.FileInPath('RecoBTag/CombinedScouting/data/model_upartv2.onnx'),
         output_names = cms.vstring('ID_pred'),
         flav_names = cms.vstring(
         'probb',
@@ -562,19 +529,19 @@ def customizeForScoutingAK4ReclusteredJets(process, pName):
         addBTagInfo = True,
         addDiscriminators = True,
         discriminatorSources = [
-            "scoutingPFJetReclusterHLTParticleNetONNXJetTags:probtauhp",
-            "scoutingPFJetReclusterHLTParticleNetONNXJetTags:probtauhm",
-            "scoutingPFJetReclusterHLTParticleNetONNXJetTags:probb",
-            "scoutingPFJetReclusterHLTParticleNetONNXJetTags:probc",
-            "scoutingPFJetReclusterHLTParticleNetONNXJetTags:probuds",
-            "scoutingPFJetReclusterHLTParticleNetONNXJetTags:probg",
             'scoutingPFJetReclusterPFUnifiedParticleTransformerAK4Tags:probb',
             'scoutingPFJetReclusterPFUnifiedParticleTransformerAK4Tags:probbb',
             'scoutingPFJetReclusterPFUnifiedParticleTransformerAK4Tags:probleptonicB',
             'scoutingPFJetReclusterPFUnifiedParticleTransformerAK4Tags:probc',
             'scoutingPFJetReclusterPFUnifiedParticleTransformerAK4Tags:probuds',
             'scoutingPFJetReclusterPFUnifiedParticleTransformerAK4Tags:probg',            
-           
+            'scoutingPFJetReclusterPFUnifiedParticleTransformerAK4TagsTT4Q:probb',
+            'scoutingPFJetReclusterPFUnifiedParticleTransformerAK4TagsTT4Q:probbb',
+            'scoutingPFJetReclusterPFUnifiedParticleTransformerAK4TagsTT4Q:probleptonicB',
+            'scoutingPFJetReclusterPFUnifiedParticleTransformerAK4TagsTT4Q:probc',
+            'scoutingPFJetReclusterPFUnifiedParticleTransformerAK4TagsTT4Q:probuds',
+            'scoutingPFJetReclusterPFUnifiedParticleTransformerAK4TagsTT4Q:probg',            
+        
             ],
         addAssociatedTracks = False,
         addJetCharge = True,
@@ -637,8 +604,7 @@ def customizeForScoutingAK4ReclusteredJets(process, pName):
             process.scoutingPFJetReclusterCorrFactors, # JEC
             process.scoutingPFJetReclusterTracksAssociatorAtVertex, process.scoutingPFJetReclusterCharge, # jet charge
             process.scoutingPFJetReclusterPrimaryVertexAssociation, # pv association
-            process.scoutingPFJetReclusterHLTParticleNetJetTagInfos, process.scoutingPFJetReclusterHLTParticleNetONNXJetTags, # HLTPNet tagging,
-            process.scoutingPFJetReclusterPFUnifiedParticleTransformerAK4TagInfos, process.scoutingPFJetReclusterPFUnifiedParticleTransformerAK4Tags,
+            process.scoutingPFJetReclusterPFUnifiedParticleTransformerAK4TagInfos, process.scoutingPFJetReclusterPFUnifiedParticleTransformerAK4Tags, process.scoutingPFJetReclusterPFUnifiedParticleTransformerAK4TagsTT4Q,
             process.patScoutingPFJetRecluster, # pat-ify
             process.slimmedJets
             )
@@ -649,6 +615,182 @@ def customizeForScoutingAK4ReclusteredJets(process, pName):
             process.scoutingPFJetReclusterGenPartonMatch,
             process.scoutingPFJetReclusterFlavourAssociation,
             )
+
+    # ------------------------------------------------------------------
+    # Parallel AK4 collection with charged-hadron subtraction (CHS).
+    #
+    # These jets provide pileup-mitigated kinematics only. They deliberately
+    # do NOT run the UParT/ParticleNet taggers: those taggers are trained on
+    # the full (non-CHS) PF candidates, and the jet constituents are exactly
+    # the tagger inputs, so re-using them on CHS jets would create a
+    # train/inference mismatch. Tagging stays on the non-CHS jets above.
+    # ------------------------------------------------------------------
+
+    # CHS candidate collection: clone the scouting PF->PackedCandidate producer
+    # with CHS enabled, which drops charged candidates assigned to a pileup
+    # vertex (Run3ScoutingParticle::vertex() > 0). Scoped to these jets only,
+    # so MET, SVs, lost tracks and the tagged jets are unaffected.
+    if not hasattr(process, "packedPFCandidatesCHS"):
+        process.packedPFCandidatesCHS = process.packedPFCandidates.clone(CHS = True)
+
+    process.recoScoutingPFJetReclusterCHS = ak4PFJets.clone(
+        src = ("packedPFCandidatesCHS", "recoCands", pName),
+        jetPtMin = 20,
+    )
+
+    process.scoutingPFJetReclusterCHSCorrFactors = patJetCorrFactors.clone(
+        src = "recoScoutingPFJetReclusterCHS",
+        levels = cms.vstring(
+            "L1FastJet",
+            "L2Relative",
+            "L3Absolute",
+            "L2L3Residual"),
+        payload = cms.string("AK4PFHLT"),
+        primaryVertices = cms.InputTag("offlineSlimmedPrimaryVertices", "", pName),
+    )
+
+    process.scoutingPFJetReclusterCHSTracksAssociatorAtVertex = ak4JetTracksAssociatorAtVertex.clone(
+        jets = cms.InputTag("recoScoutingPFJetReclusterCHS"),
+        coneSize = cms.double(0.4),
+        tracks = cms.InputTag("scoutingTracks"),
+        pvSrc = cms.InputTag("offlineSlimmedPrimaryVertices", "", pName),
+    )
+
+    process.scoutingPFJetReclusterCHSCharge = patJetCharge.clone(
+        src = cms.InputTag("scoutingPFJetReclusterCHSTracksAssociatorAtVertex"),
+    )
+
+    process.scoutingPFJetReclusterPFUnifiedParticleTransformerAK4TagInfosCHS = cms.EDProducer('UnifiedParticleTransformerAK4TagInfoProducer',
+        jet_radius = cms.double(0.4),
+        min_candidate_pt = cms.double(0.1),
+        flip = cms.bool(False),
+        scouting = cms.bool(True),
+        sort_cand_by_pt = cms.bool(False),
+        fix_lt_sorting = cms.bool(True),
+        vertices = cms.InputTag("offlineSlimmedPrimaryVertices", "", pName),
+        losttracks = cms.InputTag("lostTracks", "", pName),
+        puppi_value_map = cms.InputTag(''),
+        #secondary_vertices = cms.InputTag('inclusiveCandidateSecondaryVertices'),
+        secondary_vertices = cms.InputTag('slimmedSecondaryVertices', "", pName),
+        jets = cms.InputTag('recoScoutingPFJetReclusterCHS'),
+        unsubjet_map = cms.InputTag(''),
+        candidates = cms.InputTag("packedPFCandidatesCHS", "recoCands", pName),
+        #vertex_associator = cms.InputTag("scoutingPFJetReclusterPrimaryVertexAssociation", "original", pName),
+        vertex_associator = cms.InputTag("packedPFCandidatesCHS", "vtxass", pName),
+        quality = cms.InputTag("packedPFCandidatesCHS", "quality", pName),
+        fallback_puppi_weight = cms.bool(True),
+        fallback_vertex_association = cms.bool(True),
+        is_weighted_jet = cms.bool(False),
+        min_jet_pt = cms.double(0),
+        max_jet_eta = cms.double(2.5),
+        mightGet = cms.optional.untracked.vstring
+      )
+    process.scoutingPFJetReclusterPFUnifiedParticleTransformerAK4TagsCHS = cms.EDProducer('UnifiedParticleTransformerAK4ONNXJetTagsScoutingv2Producer',
+        src = cms.InputTag('scoutingPFJetReclusterPFUnifiedParticleTransformerAK4TagInfosCHS'),
+        input_names = cms.vstring(
+          'input_1',
+          'input_2',
+          'input_3',
+          'input_4',
+        ),
+        model_path = cms.FileInPath('RecoBTag/CombinedScouting/data/model_tautagging.onnx'),
+        output_names = cms.vstring('ID_pred'),
+        flav_names = cms.vstring(
+        'probb',
+        'probc',
+        'probuds',
+        'probg',
+        'probtaup',
+        'probtaum',
+        ),
+        mightGet = cms.optional.untracked.vstring
+    )
+
+    # convert to PAT (no b-tagging / discriminators on CHS jets)
+    process.patScoutingPFJetReclusterCHS = _patJets.clone(
+        jetSource = "recoScoutingPFJetReclusterCHS",
+        addJetCorrFactors = True,
+        jetCorrFactorsSource = [
+            "scoutingPFJetReclusterCHSCorrFactors",
+            ],
+        addBTagInfo = True,
+        addDiscriminators = True,
+        discriminatorSources = [
+            'scoutingPFJetReclusterPFUnifiedParticleTransformerAK4TagsCHS:probb',
+            'scoutingPFJetReclusterPFUnifiedParticleTransformerAK4TagsCHS:probc',
+            'scoutingPFJetReclusterPFUnifiedParticleTransformerAK4TagsCHS:probuds',
+            'scoutingPFJetReclusterPFUnifiedParticleTransformerAK4TagsCHS:probg',
+            'scoutingPFJetReclusterPFUnifiedParticleTransformerAK4TagsCHS:probtaup',
+            'scoutingPFJetReclusterPFUnifiedParticleTransformerAK4TagsCHS:probtaum',
+            ],
+        addAssociatedTracks = False,
+        addJetCharge = True,
+        jetChargeSource = "scoutingPFJetReclusterCHSCharge",
+        addGenPartonMatch = True,
+        embedGenPartonMatch = True,
+        genPartonMatch = cms.InputTag("scoutingPFJetReclusterCHSGenPartonMatch"),
+        addGenJetMatch = True,
+        embedGenJetMatch = True,
+        genJetMatch = cms.InputTag("scoutingPFJetReclusterCHSGenJetMatch"),
+        getJetMCFlavour = True,
+        useLegacyJetMCFlavour = False,
+        addJetFlavourInfo = True,
+        JetFlavourInfoSource = cms.InputTag("scoutingPFJetReclusterCHSFlavourAssociation"),
+    )
+    process.slimmedJetsCHS = cms.EDProducer("PATJetSlimmer",
+       src = cms.InputTag("patScoutingPFJetReclusterCHS"),
+       # The CHS jets are clustered from packedPFCandidatesCHS:recoCands, so
+       # their daughters are Ptrs into the CHS product. rekeyDaughters reads an
+       # Association<PackedCandidateCollection> to remap them; it must come from
+       # the CHS producer, not the non-CHS packedPFCandidates (whose association
+       # has no entry for the CHS product -> "ValueMap: no associated value").
+       packedPFCandidates = cms.InputTag("packedPFCandidatesCHS", "", pName),
+       dropJetVars = cms.string("1"),
+       dropDaughters = cms.string("0"),
+       rekeyDaughters = cms.string("1"),
+       dropTrackRefs = cms.string("1"),
+       dropSpecific = cms.string("0"),
+       dropTagInfos = cms.string("1"),
+       modifyJets = cms.bool(True),
+       mixedDaughters = cms.bool(False),
+       modifierConfig = cms.PSet( modifications = cms.VPSet() )
+    )
+
+    process.scoutingPFJetReclusterCHSGenJetMatch = patJetGenJetMatch.clone(
+        src = cms.InputTag("recoScoutingPFJetReclusterCHS"),
+        matched = cms.InputTag("slimmedGenJets"),
+        resolveByMatchQuality = cms.bool(True)
+    )
+
+    process.scoutingPFJetReclusterCHSGenPartonMatch = patJetPartonMatch.clone(
+        src = cms.InputTag("recoScoutingPFJetReclusterCHS"),
+        matched = cms.InputTag("prunedGenParticles"),
+    )
+
+    process.scoutingPFJetReclusterCHSFlavourAssociation = patJetFlavourAssociation.clone(
+        jets = cms.InputTag("recoScoutingPFJetReclusterCHS"),
+        bHadrons = cms.InputTag("patJetPartonsNano","bHadrons"),
+        cHadrons = cms.InputTag("patJetPartonsNano","cHadrons"),
+        partons = cms.InputTag("patJetPartonsNano","physicsPartons"),
+        leptons = cms.InputTag("patJetPartonsNano","leptons"),
+    )
+
+    process.scoutingPFJetReclusterCHS2Task = cms.Task(
+            process.packedPFCandidatesCHS, # CHS candidate collection
+            process.recoScoutingPFJetReclusterCHS, # jet clustering
+            process.scoutingPFJetReclusterCHSCorrFactors, # JEC
+            process.scoutingPFJetReclusterCHSTracksAssociatorAtVertex, process.scoutingPFJetReclusterCHSCharge, # jet charge
+            process.scoutingPFJetReclusterPFUnifiedParticleTransformerAK4TagInfosCHS, process.scoutingPFJetReclusterPFUnifiedParticleTransformerAK4TagsCHS,
+            process.patScoutingPFJetReclusterCHS, # pat-ify
+            process.slimmedJetsCHS
+            )
+
+    process.scoutingPFJetReclusterCHS2MCTask = cms.Task(
+            process.scoutingPFJetReclusterCHSGenJetMatch,
+            process.scoutingPFJetReclusterCHSGenPartonMatch,
+            process.scoutingPFJetReclusterCHSFlavourAssociation,
+            )
+
     return process
 
 
@@ -713,7 +855,7 @@ def customiseScoutingNanoDerived(process, pName):
 
     process = customizeForScoutingAK4ReclusteredJets(process, pName)
 
-    from PhysicsTools.NanoAOD.common_cff import Var, P4Vars
+    from PhysicsTools.NanoAOD.common_cff import Var, ExtVar, P4Vars
     PFJetVariables = cms.PSet(
         P4Vars,
         area = Var("jetArea()", float, doc="jet catchment area, for JECs",precision=10),
@@ -744,18 +886,39 @@ def customiseScoutingNanoDerived(process, pName):
             PFJetVariables,
             rawFactor = Var("1.-jecFactor('Uncorrected')", float, doc="1 - Factor to get back to raw pT", precision=10),
             charge = Var("jetCharge()", float, doc="charge", precision=10),
-            hltPNet_probtauhp = Var("?(pt>=5)&&(abs(eta)<=2.6)?bDiscriminator('scoutingPFJetReclusterHLTParticleNetONNXJetTags:probtauhp'):-1", float, doc="HLT PNet tagger tauhp raw score", precision=10),
-            hltPNet_probtauhm = Var("?(pt>=5)&&(abs(eta)<=2.6)?bDiscriminator('scoutingPFJetReclusterHLTParticleNetONNXJetTags:probtauhm'):-1", float, doc="HLT PNet tagger tauhm raw score", precision=10),
-            hltPNet_probb = Var("?(pt>=5)&&(abs(eta)<=2.6)?bDiscriminator('scoutingPFJetReclusterHLTParticleNetONNXJetTags:probb'):-1", float, doc="HLT PNet tagger b raw score", precision=10),
-            hltPNet_probc = Var("?(pt>=5)&&(abs(eta)<=2.6)?bDiscriminator('scoutingPFJetReclusterHLTParticleNetONNXJetTags:probc'):-1", float, doc="HLT PNet tagger c raw score", precision=10),
-            hltPNet_probuds = Var("?(pt>=5)&&(abs(eta)<=2.6)?bDiscriminator('scoutingPFJetReclusterHLTParticleNetONNXJetTags:probuds'):-1", float, doc="HLT PNet tagger uds raw score", precision=10),
-            hltPNet_probg = Var("?(pt>=5)&&(abs(eta)<=2.6)?bDiscriminator('scoutingPFJetReclusterHLTParticleNetONNXJetTags:probg'):-1", float, doc="HLT PNet tagger g raw score", precision=10),
             scoutUParT_probb = Var("?(pt>=15)&&(abs(eta)<=2.5)?bDiscriminator('scoutingPFJetReclusterPFUnifiedParticleTransformerAK4Tags:probb'):-1", float, doc="scouting uParT tagger b raw score", precision=10),
             scoutUParT_probbb = Var("?(pt>=15)&&(abs(eta)<=2.5)?bDiscriminator('scoutingPFJetReclusterPFUnifiedParticleTransformerAK4Tags:probbb'):-1", float, doc="scouting uParT tagger bb raw score", precision=10),
             scoutUParT_probleptonicB = Var("?(pt>=15)&&(abs(eta)<=2.5)?bDiscriminator('scoutingPFJetReclusterPFUnifiedParticleTransformerAK4Tags:probleptonicB'):-1", float, doc="scouting uParT tagger leptonicB raw score", precision=10),
             scoutUParT_probc = Var("?(pt>=15)&&(abs(eta)<=2.5)?bDiscriminator('scoutingPFJetReclusterPFUnifiedParticleTransformerAK4Tags:probc'):-1", float, doc="scouting uParT tagger c raw score", precision=10),
             scoutUParT_probuds = Var("?(pt>=15)&&(abs(eta)<=2.5)?bDiscriminator('scoutingPFJetReclusterPFUnifiedParticleTransformerAK4Tags:probuds'):-1", float, doc="scouting uParT tagger uds raw score", precision=10),
             scoutUParT_probg = Var("?(pt>=15)&&(abs(eta)<=2.5)?bDiscriminator('scoutingPFJetReclusterPFUnifiedParticleTransformerAK4Tags:probg'):-1", float, doc="scouting uParT tagger g raw score", precision=10),
+            scoutUParT_probb_TT4Q = Var("?(pt>=15)&&(abs(eta)<=2.5)?bDiscriminator('scoutingPFJetReclusterPFUnifiedParticleTransformerAK4TagsTT4Q:probb'):-1", float, doc="scouting uParT tagger b raw score TT4Q", precision=10),
+            scoutUParT_probbb_TT4Q = Var("?(pt>=15)&&(abs(eta)<=2.5)?bDiscriminator('scoutingPFJetReclusterPFUnifiedParticleTransformerAK4TagsTT4Q:probbb'):-1", float, doc="scouting uParT tagger bb raw score TT4Q", precision=10),
+            scoutUParT_probleptonicB_TT4Q = Var("?(pt>=15)&&(abs(eta)<=2.5)?bDiscriminator('scoutingPFJetReclusterPFUnifiedParticleTransformerAK4TagsTT4Q:probleptonicB'):-1", float, doc="scouting uParT tagger leptonicB raw score TT4Q", precision=10),
+            scoutUParT_probc_TT4Q = Var("?(pt>=15)&&(abs(eta)<=2.5)?bDiscriminator('scoutingPFJetReclusterPFUnifiedParticleTransformerAK4TagsTT4Q:probc'):-1", float, doc="scouting uParT tagger c raw score TT4Q", precision=10),
+            scoutUParT_probuds_TT4Q = Var("?(pt>=15)&&(abs(eta)<=2.5)?bDiscriminator('scoutingPFJetReclusterPFUnifiedParticleTransformerAK4TagsTT4Q:probuds'):-1", float, doc="scouting uParT tagger uds raw score TT4Q", precision=10),
+            scoutUParT_probg_TT4Q = Var("?(pt>=15)&&(abs(eta)<=2.5)?bDiscriminator('scoutingPFJetReclusterPFUnifiedParticleTransformerAK4TagsTT4Q:probg'):-1", float, doc="scouting uParT tagger g raw score TT4Q", precision=10),
+           
+        ),
+    )
+
+    # CHS jets: kinematics + JEC only (no tagger discriminators)
+    process.scoutingPFJetReclusterCHS2Table = simplePATJetFlatTableProducer.clone(
+        src = cms.InputTag("patScoutingPFJetReclusterCHS"),
+        name = cms.string("ScoutingPFJetReclusterCHS"),
+        doc = cms.string("AK4 scouting jets reclustered with charged-hadron subtraction (CHS)"),
+        cut = cms.string(""),
+        variables = cms.PSet(
+            PFJetVariables,
+            rawFactor = Var("1.-jecFactor('Uncorrected')", float, doc="1 - Factor to get back to raw pT", precision=10),
+            charge = Var("jetCharge()", float, doc="charge", precision=10),
+            scoutUParT_probb = Var("?(pt>=15)&&(abs(eta)<=2.5)?bDiscriminator('scoutingPFJetReclusterPFUnifiedParticleTransformerAK4TagsCHS:probb'):-1", float, doc="scouting uParT tagger b raw score", precision=10),
+            scoutUParT_probc = Var("?(pt>=15)&&(abs(eta)<=2.5)?bDiscriminator('scoutingPFJetReclusterPFUnifiedParticleTransformerAK4TagsCHS:probc'):-1", float, doc="scouting uParT tagger c raw score", precision=10),
+            scoutUParT_probuds = Var("?(pt>=15)&&(abs(eta)<=2.5)?bDiscriminator('scoutingPFJetReclusterPFUnifiedParticleTransformerAK4TagsCHS:probuds'):-1", float, doc="scouting uParT tagger uds raw score", precision=10),
+            scoutUParT_probg = Var("?(pt>=15)&&(abs(eta)<=2.5)?bDiscriminator('scoutingPFJetReclusterPFUnifiedParticleTransformerAK4TagsCHS:probg'):-1", float, doc="scouting uParT tagger g raw score", precision=10),
+            scoutUParT_probtaup = Var("?(pt>=15)&&(abs(eta)<=2.5)?bDiscriminator('scoutingPFJetReclusterPFUnifiedParticleTransformerAK4TagsCHS:probtaup'):-1", float, doc="scouting uParT tagger taup raw score", precision=10),
+            scoutUParT_probtaum = Var("?(pt>=15)&&(abs(eta)<=2.5)?bDiscriminator('scoutingPFJetReclusterPFUnifiedParticleTransformerAK4TagsCHS:probtaum'):-1", float, doc="scouting uParT tagger taum raw score", precision=10),
+          
         ),
     )
 
@@ -766,13 +929,40 @@ def customiseScoutingNanoDerived(process, pName):
         cut = process.scoutingPFJetRecluster2Table.cut,
     )
 
+    # DeepNTuples-style jet flavour category, following the categorization in
+    # DeepNTuples/DeepNtuplizer/src/helpers.cc (deep_ntuples::jet_flavour), minus
+    # its muon/electron/tau sub-categories (see ScoutingJetFlavourCategoryProducer.cc).
+    process.scoutingPFJetRecluster2FlavourCategory = cms.EDProducer("ScoutingJetFlavourCategoryProducer",
+        jets = process.scoutingPFJetRecluster2Table.src,
+        genParticles = cms.InputTag("prunedGenParticles"),
+        usePhysForLightAndUndefined = cms.bool(False),
+    )
+    process.scoutingPFJetRecluster2MCTable.externalVariables = cms.PSet(
+        jetFlavourCategory = ExtVar(cms.InputTag("scoutingPFJetRecluster2FlavourCategory"), int,
+            doc="DeepNTuples-style jet flavour category, following DeepNTuples/DeepNtuplizer/interface/helpers.h::JetFlavor "
+                "(UNDEFINED=0, G=1, U=2, D=3, S=4, C=5, GCC=6, CC=7, B=8, GBB=9, BB=10, LeptonicB=11, LeptonicB_C=12, PU=26); "
+                "the muon/electron/tau sub-categories of that scheme are not produced and never appear"),
+    )
+
+    process.scoutingPFJetReclusterCHS2MCTable = jetMCTable.clone(
+        src = process.scoutingPFJetReclusterCHS2Table.src,
+        name = process.scoutingPFJetReclusterCHS2Table.name,
+        cut = process.scoutingPFJetReclusterCHS2Table.cut,
+    )
+
     process.scoutingPFJetRecluster2TableTask = cms.Task( process.scoutingSecondaryVertexTask, process.scoutingCandidateSecondaryVertexTask, process.scoutingV0Task, process.scoutingLostTracksTask, process.scoutingPFJetRecluster2Task, process.scoutingPFJetRecluster2Table)
     process.scoutingNanoSequence.associate(process.scoutingPFJetRecluster2TableTask)
 
+    process.scoutingPFJetReclusterCHS2TableTask = cms.Task( process.scoutingPFJetReclusterCHS2Task, process.scoutingPFJetReclusterCHS2Table)
+    process.scoutingNanoSequence.associate(process.scoutingPFJetReclusterCHS2TableTask)
+
     runOnMC = hasattr(process,"NANOEDMAODSIMoutput") or hasattr(process,"NANOAODSIMoutput")
     if runOnMC:
-        process.scoutingPFJetRecluster2MCTableTask = cms.Task(process.scoutingPFJetRecluster2MCTask, process.scoutingPFJetRecluster2MCTable)
+        process.scoutingPFJetRecluster2MCTableTask = cms.Task(process.scoutingPFJetRecluster2MCTask, process.scoutingPFJetRecluster2FlavourCategory, process.scoutingPFJetRecluster2MCTable)
         process.scoutingNanoSequence.associate(process.scoutingPFJetRecluster2MCTableTask)
+
+        process.scoutingPFJetReclusterCHS2MCTableTask = cms.Task(process.scoutingPFJetReclusterCHS2MCTask, process.scoutingPFJetReclusterCHS2MCTable)
+        process.scoutingNanoSequence.associate(process.scoutingPFJetReclusterCHS2MCTableTask)
 
     return process
 
