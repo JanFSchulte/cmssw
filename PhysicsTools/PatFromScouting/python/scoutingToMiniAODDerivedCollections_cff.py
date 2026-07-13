@@ -586,6 +586,23 @@ def customizeForScoutingAK4ReclusteredJets(process, pName):
         matched = cms.InputTag("prunedGenParticles"),
     )
 
+    # genPartIdx (separate from the genParton() embedding above, which stays
+    # targeted at prunedGenParticles): matches against finalGenParticles, the
+    # exact source of the GenPart table, so the index this producer records
+    # is a genuine GenPart row index. src must be patScoutingPFJetRecluster
+    # (not recoScoutingPFJetRecluster): CandMCMatchTableProducer below reads
+    # this match keyed by the *same* product it's looking up (the final PAT
+    # jets used by the ScoutingPFJetRecluster2 table); an Association/ValueMap
+    # keyed to the pre-PAT reco jets would not resolve against edm::Ptrs into
+    # a different product ("ValueMap: no associated value" at run time). This
+    # is unlike scoutingPFJetReclusterGenPartonMatch above, which is consumed
+    # by _patJets/PATJetProducer itself while it still iterates the original
+    # recoScoutingPFJetRecluster collection, so that one is fine as-is.
+    process.scoutingPFJetReclusterGenParticleMatch = patJetPartonMatch.clone(
+        src = cms.InputTag("patScoutingPFJetRecluster"),
+        matched = cms.InputTag("finalGenParticles"),
+    )
+
 
     from PhysicsTools.NanoAOD.jetMC_cff import patJetPartonsNano
     process.patJetPartonsNano = patJetPartonsNano
@@ -613,6 +630,7 @@ def customizeForScoutingAK4ReclusteredJets(process, pName):
             process.patJetPartonsNano,
             process.scoutingPFJetReclusterGenJetMatch,
             process.scoutingPFJetReclusterGenPartonMatch,
+            process.scoutingPFJetReclusterGenParticleMatch,
             process.scoutingPFJetReclusterFlavourAssociation,
             )
 
@@ -767,6 +785,15 @@ def customizeForScoutingAK4ReclusteredJets(process, pName):
         matched = cms.InputTag("prunedGenParticles"),
     )
 
+    # genPartIdx (separate from the genParton() embedding above): matches
+    # against finalGenParticles, mirroring scoutingPFJetReclusterGenParticleMatch.
+    # src must be patScoutingPFJetReclusterCHS, not recoScoutingPFJetReclusterCHS
+    # -- see the comment on scoutingPFJetReclusterGenParticleMatch above.
+    process.scoutingPFJetReclusterCHSGenParticleMatch = patJetPartonMatch.clone(
+        src = cms.InputTag("patScoutingPFJetReclusterCHS"),
+        matched = cms.InputTag("finalGenParticles"),
+    )
+
     process.scoutingPFJetReclusterCHSFlavourAssociation = patJetFlavourAssociation.clone(
         jets = cms.InputTag("recoScoutingPFJetReclusterCHS"),
         bHadrons = cms.InputTag("patJetPartonsNano","bHadrons"),
@@ -788,6 +815,7 @@ def customizeForScoutingAK4ReclusteredJets(process, pName):
     process.scoutingPFJetReclusterCHS2MCTask = cms.Task(
             process.scoutingPFJetReclusterCHSGenJetMatch,
             process.scoutingPFJetReclusterCHSGenPartonMatch,
+            process.scoutingPFJetReclusterCHSGenParticleMatch,
             process.scoutingPFJetReclusterCHSFlavourAssociation,
             )
 
@@ -950,6 +978,27 @@ def customiseScoutingNanoDerived(process, pName):
         cut = process.scoutingPFJetReclusterCHS2Table.cut,
     )
 
+    # Matched gen particle index (only): independent extension table
+    # (CandMCMatchTableProducer builds its own nanoaod::FlatTable, merged by
+    # objName -- it can't be wired via ExtVar into the *MCTable above).
+    process.scoutingPFJetRecluster2GenPartIdxTable = cms.EDProducer("CandMCMatchTableProducer",
+        src = process.scoutingPFJetRecluster2Table.src,
+        mcMap = cms.InputTag("scoutingPFJetReclusterGenParticleMatch"),
+        objName = process.scoutingPFJetRecluster2Table.name,
+        objType = cms.string("Other"),
+        branchName = cms.string("genPart"),
+        docString = cms.string("MC matching of AK4 jet axis to nearest parton (via patJetPartonMatch) into GenPart"),
+    )
+
+    process.scoutingPFJetReclusterCHS2GenPartIdxTable = cms.EDProducer("CandMCMatchTableProducer",
+        src = process.scoutingPFJetReclusterCHS2Table.src,
+        mcMap = cms.InputTag("scoutingPFJetReclusterCHSGenParticleMatch"),
+        objName = process.scoutingPFJetReclusterCHS2Table.name,
+        objType = cms.string("Other"),
+        branchName = cms.string("genPart"),
+        docString = cms.string("MC matching of AK4 jet axis to nearest parton (via patJetPartonMatch) into GenPart"),
+    )
+
     process.scoutingPFJetRecluster2TableTask = cms.Task( process.scoutingSecondaryVertexTask, process.scoutingCandidateSecondaryVertexTask, process.scoutingV0Task, process.scoutingLostTracksTask, process.scoutingPFJetRecluster2Task, process.scoutingPFJetRecluster2Table)
     process.scoutingNanoSequence.associate(process.scoutingPFJetRecluster2TableTask)
 
@@ -958,10 +1007,10 @@ def customiseScoutingNanoDerived(process, pName):
 
     runOnMC = hasattr(process,"NANOEDMAODSIMoutput") or hasattr(process,"NANOAODSIMoutput")
     if runOnMC:
-        process.scoutingPFJetRecluster2MCTableTask = cms.Task(process.scoutingPFJetRecluster2MCTask, process.scoutingPFJetRecluster2FlavourCategory, process.scoutingPFJetRecluster2MCTable)
+        process.scoutingPFJetRecluster2MCTableTask = cms.Task(process.scoutingPFJetRecluster2MCTask, process.scoutingPFJetRecluster2FlavourCategory, process.scoutingPFJetRecluster2MCTable, process.scoutingPFJetRecluster2GenPartIdxTable)
         process.scoutingNanoSequence.associate(process.scoutingPFJetRecluster2MCTableTask)
 
-        process.scoutingPFJetReclusterCHS2MCTableTask = cms.Task(process.scoutingPFJetReclusterCHS2MCTask, process.scoutingPFJetReclusterCHS2MCTable)
+        process.scoutingPFJetReclusterCHS2MCTableTask = cms.Task(process.scoutingPFJetReclusterCHS2MCTask, process.scoutingPFJetReclusterCHS2MCTable, process.scoutingPFJetReclusterCHS2GenPartIdxTable)
         process.scoutingNanoSequence.associate(process.scoutingPFJetReclusterCHS2MCTableTask)
 
     return process

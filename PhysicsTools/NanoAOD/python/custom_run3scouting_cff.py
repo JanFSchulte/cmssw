@@ -5,6 +5,7 @@ from PhysicsTools.NanoAOD.triggerObjects_cff import l1bits
 from PhysicsTools.NanoAOD.globals_cff import puTable
 from PhysicsTools.NanoAOD.genWeightsTable_cfi import genWeightsTable
 from PhysicsTools.NanoAOD.jetMC_cff import *
+from PhysicsTools.NanoAOD.genparticles_cff import finalGenParticles, genIso, genParticleTable, genParticleTask, genParticleTablesTask
 #from PhysicsTools.NanoAOD.nanogen_cff import customizeNanoGENFromMini 
 ############################
 ### Sub Task Definitions ###
@@ -22,8 +23,13 @@ scoutingMuonTableTask = cms.Task(scoutingMuonTable)
 scoutingMuonDisplacedVertexTableTask = cms.Task(scoutingMuonDisplacedVertexTable)
 
 # from 2024, there are two muon collections (https://its.cern.ch/jira/browse/CMSHLT-3089)
-(run3_scouting_2024 | run3_scouting_2025).toReplaceWith(scoutingMuonTableTask, cms.Task(scoutingMuonVtxTable, scoutingMuonNoVtxTable))\
-    .toReplaceWith(scoutingMuonDisplacedVertexTableTask, cms.Task(scoutingMuonVtxDisplacedVertexTable, scoutingMuonNoVtxDisplacedVertexTable))
+# only the vertex-constrained collection is kept, to slim the output
+(run3_scouting_2024 | run3_scouting_2025).toReplaceWith(scoutingMuonTableTask, cms.Task(scoutingMuonVtxTable))\
+    .toReplaceWith(scoutingMuonDisplacedVertexTableTask, cms.Task(scoutingMuonVtxDisplacedVertexTable))
+
+# muon matched gen particle index (only for MC); era-switched like scoutingMuonTableTask above
+scoutingMuonGenPartMatchTask = cms.Task(scoutingMuonGenPartMatch)
+(run3_scouting_2024 | run3_scouting_2025).toReplaceWith(scoutingMuonGenPartMatchTask, cms.Task(scoutingMuonVtxGenPartMatch))
 
 # Scouting Electron
 scoutingElectronTableTask = cms.Task(scoutingElectronTable)
@@ -41,30 +47,37 @@ scoutingElectronTableTask = cms.Task(scoutingElectronTable)
 ############################
 
 scoutingPFCandidateTask = cms.Task(scoutingPFCandidate, scoutingPFCandidateTable)
-scoutingPFJetReclusterTask = cms.Task(
-    scoutingPFCandidate, # translate to reco::PFCandidate, used as input
-    scoutingPFJetRecluster, # jet clustering
-    scoutingPFJetReclusterParticleNetJetTagInfos, scoutingPFJetReclusterParticleNetJetTags, # jet tagging
-    scoutingPFJetReclusterTable
-)
-scoutingPFJetReclusterMatchGenExtensionTask = cms.Task(
-    scoutingPFJetReclusterMatchGen, # gen jet matching
-    scoutingPFJetReclusterMatchGenExtensionTable
-)
 
 scoutingFatPFJetReclusterTask = cms.Task(
     scoutingPFCandidate, # translate to reco::PFCandidate, used as input
     scoutingFatPFJetRecluster, # jet clustering
-    scoutingFatPFJetReclusterParticleNetJetTagInfos, scoutingFatPFJetReclusterParticleNetJetTags, # jet tagging
     scoutingFatPFJetReclusterGlobalParticleTransformerJetTagInfos, scoutingFatPFJetReclusterGlobalParticleTransformerJetTags, # jet tagging with Global Particle Transformer
     scoutingFatPFJetReclusterSoftDrop, scoutingFatPFJetReclusterSoftDropMass, # softdrop mass
-    scoutingFatPFJetReclusterParticleNetJetTagInfos, scoutingFatPFJetReclusterParticleNetMassRegressionJetTags, # regressed mass
     scoutingFatPFJetReclusterEcfNbeta1, scoutingFatPFJetReclusterNjettiness, # substructure variables
     scoutingFatPFJetReclusterTable
 )
 scoutingFatPFJetReclusterMatchGenExtensionTask = cms.Task(
     scoutingFatPFJetReclusterMatchGen, # gen jet matching
+    scoutingFatPFJetReclusterMatchFlavourAssociation, scoutingFatPFJetReclusterFlavourOnlyPATJets, scoutingFatPFJetReclusterMatchFlavour, # hadron/parton flavour
+    scoutingFatPFJetReclusterTopWCategory, # top/W merging category
+    scoutingFatPFJetReclusterGloParTCategory, # GloParT tagger truth category
+    scoutingFatPFJetReclusterGenParticleMatch, scoutingFatPFJetReclusterGenPartIdxTable, # matched gen particle index
     scoutingFatPFJetReclusterMatchGenExtensionTable
+)
+
+scoutingFatPFJetReclusterCHSTask = cms.Task(
+    scoutingPFCandidateCHS, # CHS translation to reco::PFCandidate
+    scoutingFatPFJetReclusterCHS, # jet clustering
+    scoutingFatPFJetReclusterCHSSoftDrop, scoutingFatPFJetReclusterCHSSoftDropMass, # softdrop mass
+    scoutingFatPFJetReclusterCHSEcfNbeta1, scoutingFatPFJetReclusterCHSNjettiness, # substructure variables
+    scoutingFatPFJetReclusterCHSTable
+)
+scoutingFatPFJetReclusterCHSMatchGenExtensionTask = cms.Task(
+    scoutingFatPFJetReclusterCHSMatchGen, # gen jet matching
+    scoutingFatPFJetReclusterCHSMatchFlavourAssociation, scoutingFatPFJetReclusterCHSFlavourOnlyPATJets, scoutingFatPFJetReclusterCHSMatchFlavour, # hadron/parton flavour
+    scoutingFatPFJetReclusterCHSTopWCategory, # top/W merging category
+    scoutingFatPFJetReclusterCHSGenParticleMatch, scoutingFatPFJetReclusterCHSGenPartIdxTable, # matched gen particle index
+    scoutingFatPFJetReclusterCHSMatchGenExtensionTable
 )
 
 ############################
@@ -101,28 +114,29 @@ def prepareScoutingNanoTaskCommon():
     scoutingNanoTaskCommon = cms.Task()
     scoutingNanoTaskCommon.add(scoutingMuonTableTask, scoutingMuonDisplacedVertexTableTask)
     scoutingNanoTaskCommon.add(scoutingElectronTableTask)
-    scoutingNanoTaskCommon.add(scoutingPhotonTable)
     scoutingNanoTaskCommon.add(scoutingPrimaryVertexTable)
-    scoutingNanoTaskCommon.add(scoutingPFJetTable)
-    scoutingNanoTaskCommon.add(scoutingMETTable, scoutingRhoTable)
-    
+    scoutingNanoTaskCommon.add(scoutingMETTable)
+
     # Scouting derived objects
-    scoutingNanoTaskCommon.add(scoutingPFJetReclusterTask)
     scoutingNanoTaskCommon.add(scoutingFatPFJetReclusterTask)
+    scoutingNanoTaskCommon.add(scoutingFatPFJetReclusterCHSTask)
 
     return scoutingNanoTaskCommon
 
 # tasks related to trigger bits and objects
+# L1 object tables (l1Mu/l1EG/l1Tau/l1Jet/l1EtSumScoutingTable) are defined
+# above but deliberately not added here, to slim the output; the definitions
+# are kept because customiseScoutingNanoForScoutingPFMonitor/FromMini below
+# still reference them (e.g. to repoint their src for non-scouting L1 input).
 def prepareScoutingTriggerTask():
     scoutingTriggerTask = cms.Task(gtStage2DigisScouting, l1bitsScouting)
-    scoutingTriggerTask.add(cms.Task(l1MuScoutingTable, l1EGScoutingTable, l1TauScoutingTable, l1JetScoutingTable, l1EtSumScoutingTable))
     return scoutingTriggerTask
 
 # additional tasks for running on MC
 def prepareScoutingNanoTaskMC():
     scoutingNanoTaskMC = cms.Task()
-    scoutingNanoTaskMC.add(scoutingPFJetReclusterMatchGenExtensionTask)
     scoutingNanoTaskMC.add(scoutingFatPFJetReclusterMatchGenExtensionTask)
+    scoutingNanoTaskMC.add(scoutingFatPFJetReclusterCHSMatchGenExtensionTask)
 
     scoutingNanoTaskMC.add(puTable)
     scoutingNanoTaskMC.add(genWeightsTable)
@@ -130,6 +144,15 @@ def prepareScoutingNanoTaskMC():
     scoutingNanoTaskMC.add(patJetPartonsNano)
     scoutingNanoTaskMC.add(genJetFlavourAssociation)
     scoutingNanoTaskMC.add(genJetFlavourTable)
+
+    # GenPart table
+    scoutingNanoTaskMC.add(genParticleTask)
+    scoutingNanoTaskMC.add(genParticleTablesTask)
+
+    # lepton matched gen particle index
+    scoutingNanoTaskMC.add(scoutingMuonGenPartMatchTask)
+    scoutingNanoTaskMC.add(scoutingElectronGenPartMatch)
+
     return scoutingNanoTaskMC
 
 # Common tasks added to main scoutingNanoSequence
@@ -328,3 +351,24 @@ def addScoutingElectronTrack(process):
         qoverpModeError = Var("trkqoverpModeError", "float", doc="track qoverpModeError"),
     )
     return process
+
+# use for samples with no relevant top/W/Z gen truth chain (pure multijet
+# QCD): every ScoutingFatPFJetRecluster jet's topWCategory is then
+# unconditionally "Others" (see scoutingFatPFJetReclusterTopWCategory in
+# run3scouting_cff.py). Should NOT be applied for ttbar/single-top/ttV/VV/
+# Z+jets samples, which use the default (applyTopWMerging=True) to get the
+# actual Top-merged/W-merged/Z-merged/Non-merged categorization.
+def setScoutingFatJetTopWCategoryAsBackground(process):
+    process.scoutingFatPFJetReclusterTopWCategory.applyTopWMerging = cms.bool(False)
+    return process
+
+# use for samples with no relevant resonance gen truth chain (pure multijet
+# QCD): every ScoutingFatPFJetRecluster jet's gloParTCategory is then
+# unconditionally "QCD" (see scoutingFatPFJetReclusterGloParTCategory in
+# run3scouting_cff.py). Should NOT be applied for samples with a genuine
+# resonance decay (Higgs, Z', or any other model), which use the default
+# (applyGloParTMatching=True) to get the actual per-class categorization.
+def setScoutingFatJetGloParTCategoryAsBackground(process):
+    process.scoutingFatPFJetReclusterGloParTCategory.applyGloParTMatching = cms.bool(False)
+    return process
+

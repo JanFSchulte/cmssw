@@ -8,6 +8,7 @@ from PhysicsTools.NanoAOD.jetsAK8_cff import fatJetTable as _fatJetTable
 from PhysicsTools.NanoAOD.jetsAK8_cff import subJetTable as _subJetTable
 from RecoJets.JetProducers.ak4GenJets_cfi import ak4GenJets
 
+
 jetMCTable = simplePATJetFlatTableProducer.clone(
     src = cms.InputTag("linkedObjects","jets"),
     name = cms.string("Jet"),
