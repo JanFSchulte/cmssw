@@ -57,6 +57,7 @@ scoutingFatPFJetReclusterTask = cms.Task(
     scoutingFatPFJetReclusterTable
 )
 scoutingFatPFJetReclusterMatchGenExtensionTask = cms.Task(
+    genJetsAK8ForMatch, # pt>100 filtered slimmedGenJetsAK8, shared with GenJetAK8 table so indices line up
     scoutingFatPFJetReclusterMatchGen, # gen jet matching
     scoutingFatPFJetReclusterMatchFlavourAssociation, scoutingFatPFJetReclusterFlavourOnlyPATJets, scoutingFatPFJetReclusterMatchFlavour, # hadron/parton flavour
     scoutingFatPFJetReclusterTopWCategory, # top/W merging category
@@ -145,6 +146,18 @@ def prepareScoutingNanoTaskMC():
     scoutingNanoTaskMC.add(genJetFlavourAssociation)
     scoutingNanoTaskMC.add(genJetFlavourTable)
 
+    # GenJetAK8 table, sourced from the same pt>100 filtered collection
+    # (genJetsAK8ForMatch) that scoutingFatPFJetReclusterMatchGen/CHS match
+    # against, so genJetAK8Idx lines up exactly with this table's row numbers.
+    # cut is cleared since genJetsAK8ForMatch already applied it upstream.
+    genJetAK8Table.src = cms.InputTag("genJetsAK8ForMatch")
+    genJetAK8Table.cut = cms.string("")
+    genJetAK8FlavourTable.src = genJetAK8Table.src
+    genJetAK8FlavourTable.cut = genJetAK8Table.cut
+    scoutingNanoTaskMC.add(genJetAK8Table)
+    scoutingNanoTaskMC.add(genJetAK8FlavourAssociation)
+    scoutingNanoTaskMC.add(genJetAK8FlavourTable)
+
     # GenPart table
     scoutingNanoTaskMC.add(genParticleTask)
     scoutingNanoTaskMC.add(genParticleTablesTask)
@@ -178,7 +191,17 @@ def customiseScoutingNano(process):
         #process.load('PhysicsTools.NanoAOD.nanogen_cff')
         #process = customizeNanoGENFromMini(process)
         process.scoutingNanoSequence.associate(scoutingNanoTaskMC)
-    
+    else:
+        # scoutingMuonTable/scoutingMuonVtxTable/scoutingElectronTable carry a
+        # genPartIdx externalVariable pointing at the *GenPartMatch producers,
+        # but those producers are only scheduled by scoutingNanoTaskMC above;
+        # on data the getByToken for that ValueMap<int> would otherwise fail
+        # with ProductNotFound, so drop the branch here instead.
+        for tableName in ("scoutingMuonTable", "scoutingMuonVtxTable", "scoutingElectronTable"):
+            table = getattr(process, tableName, None)
+            if table is not None and hasattr(table.externalVariables, "genPartIdx"):
+                del table.externalVariables.genPartIdx
+
     return process
 
 ##############

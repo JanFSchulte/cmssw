@@ -578,10 +578,22 @@ scoutingFatPFJetReclusterTable = cms.EDProducer("SimplePFJetFlatTableProducer",
 )
 
 # AK8 gen jet matching (only for MC)
+#
+# genJetAK8Table (jetMC_cff.py) keeps only genjets with pt > 100, but
+# slimmedGenJetsAK8 itself is unfiltered -- so genJetAK8Idx must be computed
+# against the SAME physically pt-filtered, order-preserving collection the
+# GenJetAK8 table is sourced from, or its indices would not line up with the
+# table's row numbers. GenJetSelector filters while preserving order (same
+# idiom used by central NanoAOD's custom_jme_cff.py for the AK4 case).
+genJetsAK8ForMatch = cms.EDFilter("GenJetSelector",
+    src = cms.InputTag("slimmedGenJetsAK8"),
+    cut = cms.string("pt > 100."),
+    filter = cms.bool(False),
+)
 
 scoutingFatPFJetReclusterMatchGen = cms.EDProducer("RecoJetToGenJetDeltaRValueMapProducer",
     src = cms.InputTag("scoutingFatPFJetRecluster"),
-    matched = cms.InputTag("slimmedGenJetsAK8"),
+    matched = cms.InputTag("genJetsAK8ForMatch"),
     distMax = cms.double(0.8),
     value = cms.string("index"),
 )
@@ -684,6 +696,9 @@ from PhysicsTools.PatAlgos.mcMatchLayer0.jetMatch_cfi import patJetPartonMatch
 scoutingFatPFJetReclusterGenParticleMatch = patJetPartonMatch.clone(
     src = cms.InputTag("scoutingFatPFJetRecluster"),
     matched = cms.InputTag("finalGenParticles"),
+    mcPdgId = cms.vint32(),
+    mcStatus = cms.vint32(),
+    maxDPtRel = cms.double(1e9),
 )
 
 scoutingFatPFJetReclusterGenPartIdxTable = cms.EDProducer("CandMCMatchTableProducer",
@@ -806,7 +821,7 @@ scoutingFatPFJetReclusterCHSTable = cms.EDProducer("SimplePFJetFlatTableProducer
 
 scoutingFatPFJetReclusterCHSMatchGen = cms.EDProducer("RecoJetToGenJetDeltaRValueMapProducer",
     src = cms.InputTag("scoutingFatPFJetReclusterCHS"),
-    matched = cms.InputTag("slimmedGenJetsAK8"),
+    matched = cms.InputTag("genJetsAK8ForMatch"),
     distMax = cms.double(0.8),
     value = cms.string("index"),
 )
@@ -876,6 +891,9 @@ scoutingFatPFJetReclusterCHSTopWCategory = cms.EDProducer("ScoutingAK8TopWCatego
 scoutingFatPFJetReclusterCHSGenParticleMatch = patJetPartonMatch.clone(
     src = cms.InputTag("scoutingFatPFJetReclusterCHS"),
     matched = cms.InputTag("finalGenParticles"),
+    mcPdgId = cms.vint32(),
+    mcStatus = cms.vint32(),
+    maxDPtRel = cms.double(1e9),
 )
 
 scoutingFatPFJetReclusterCHSGenPartIdxTable = cms.EDProducer("CandMCMatchTableProducer",

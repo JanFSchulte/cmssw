@@ -598,9 +598,18 @@ def customizeForScoutingAK4ReclusteredJets(process, pName):
     # is unlike scoutingPFJetReclusterGenPartonMatch above, which is consumed
     # by _patJets/PATJetProducer itself while it still iterates the original
     # recoScoutingPFJetRecluster collection, so that one is fine as-is.
+    # mcPdgId/mcStatus/maxDPtRel loosened to match nothing but deltaR<0.4
+    # (same requirement used to derive genJetIdx via GenJetMatcher, which has
+    # no pdgId/status/dPt restriction at all): empty mcPdgId/mcStatus lists
+    # mean MCMatchSelector accepts any pdgId/status, and maxDPtRel is set high
+    # enough to never reject a candidate (genparticles, unlike genjets, can
+    # have near-zero pt, so a merely "large" value isn't enough headroom).
     process.scoutingPFJetReclusterGenParticleMatch = patJetPartonMatch.clone(
         src = cms.InputTag("patScoutingPFJetRecluster"),
         matched = cms.InputTag("finalGenParticles"),
+        mcPdgId = cms.vint32(),
+        mcStatus = cms.vint32(),
+        maxDPtRel = cms.double(1e9),
     )
 
 
@@ -792,6 +801,9 @@ def customizeForScoutingAK4ReclusteredJets(process, pName):
     process.scoutingPFJetReclusterCHSGenParticleMatch = patJetPartonMatch.clone(
         src = cms.InputTag("patScoutingPFJetReclusterCHS"),
         matched = cms.InputTag("finalGenParticles"),
+        mcPdgId = cms.vint32(),
+        mcStatus = cms.vint32(),
+        maxDPtRel = cms.double(1e9),
     )
 
     process.scoutingPFJetReclusterCHSFlavourAssociation = patJetFlavourAssociation.clone(
