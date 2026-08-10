@@ -1,5 +1,7 @@
 import FWCore.ParameterSet.Config as cms
 
+from Configuration.ProcessModifiers.unifiedparticleTransformerAK4SonicTriton_cff import unifiedparticleTransformerAK4SonicTriton
+
 
 def customiseForScoutingSecondaryVertices(process, pName):
 
@@ -492,9 +494,29 @@ def customizeForScoutingAK4ReclusteredJets(process, pName):
         'probleptonicB',
         'probc',
         'probuds',
-        'probg',            
+        'probg',
         ),
         mightGet = cms.optional.untracked.vstring
+    )
+    unifiedparticleTransformerAK4SonicTriton.toReplaceWith(
+        process.scoutingPFJetReclusterPFUnifiedParticleTransformerAK4Tags,
+        cms.EDProducer('UnifiedParticleTransformerAK4SonicJetTagsScoutingV2Producer',
+            Client = cms.PSet(
+                mode = cms.string("Async"),
+                timeout = cms.untracked.uint32(500),
+                modelName = cms.string("unifiedparticletransformer_AK4_scouting_v3"),
+                modelConfigPath = cms.FileInPath("RecoBTag/CombinedScouting/data/models/unifiedparticletransformer_AK4_scouting_v3/config.pbtxt"),
+                modelVersion = cms.string(""),
+                verbose = cms.untracked.bool(True),
+                allowedTries = cms.untracked.uint32(0),
+                useSharedMemory = cms.untracked.bool(True),
+                compression = cms.untracked.string(""),
+            ),
+            src = process.scoutingPFJetReclusterPFUnifiedParticleTransformerAK4Tags.src,
+            input_names = process.scoutingPFJetReclusterPFUnifiedParticleTransformerAK4Tags.input_names,
+            output_names = process.scoutingPFJetReclusterPFUnifiedParticleTransformerAK4Tags.output_names,
+            flav_names = process.scoutingPFJetReclusterPFUnifiedParticleTransformerAK4Tags.flav_names,
+        )
     )
     process.scoutingPFJetReclusterPFUnifiedParticleTransformerAK4TagsTT4Q = cms.EDProducer('UnifiedParticleTransformerAK4ONNXJetTagsScoutingv2Producer',
         src = cms.InputTag('scoutingPFJetReclusterPFUnifiedParticleTransformerAK4TagInfos'),
@@ -512,9 +534,29 @@ def customizeForScoutingAK4ReclusteredJets(process, pName):
         'probleptonicB',
         'probc',
         'probuds',
-        'probg',            
+        'probg',
         ),
         mightGet = cms.optional.untracked.vstring
+    )
+    unifiedparticleTransformerAK4SonicTriton.toReplaceWith(
+        process.scoutingPFJetReclusterPFUnifiedParticleTransformerAK4TagsTT4Q,
+        cms.EDProducer('UnifiedParticleTransformerAK4SonicJetTagsScoutingV2Producer',
+            Client = cms.PSet(
+                mode = cms.string("Async"),
+                timeout = cms.untracked.uint32(500),
+                modelName = cms.string("unifiedparticletransformer_AK4_scouting_tt4q"),
+                modelConfigPath = cms.FileInPath("RecoBTag/CombinedScouting/data/models/unifiedparticletransformer_AK4_scouting_tt4q/config.pbtxt"),
+                modelVersion = cms.string(""),
+                verbose = cms.untracked.bool(True),
+                allowedTries = cms.untracked.uint32(0),
+                useSharedMemory = cms.untracked.bool(True),
+                compression = cms.untracked.string(""),
+            ),
+            src = process.scoutingPFJetReclusterPFUnifiedParticleTransformerAK4TagsTT4Q.src,
+            input_names = process.scoutingPFJetReclusterPFUnifiedParticleTransformerAK4TagsTT4Q.input_names,
+            output_names = process.scoutingPFJetReclusterPFUnifiedParticleTransformerAK4TagsTT4Q.output_names,
+            flav_names = process.scoutingPFJetReclusterPFUnifiedParticleTransformerAK4TagsTT4Q.flav_names,
+        )
     )
 
 
@@ -731,6 +773,26 @@ def customizeForScoutingAK4ReclusteredJets(process, pName):
         'probtaum',
         ),
         mightGet = cms.optional.untracked.vstring
+    )
+    unifiedparticleTransformerAK4SonicTriton.toReplaceWith(
+        process.scoutingPFJetReclusterPFUnifiedParticleTransformerAK4TagsCHS,
+        cms.EDProducer('UnifiedParticleTransformerAK4SonicJetTagsScoutingV2Producer',
+            Client = cms.PSet(
+                mode = cms.string("Async"),
+                timeout = cms.untracked.uint32(500),
+                modelName = cms.string("unifiedparticletransformer_AK4_scouting_tautagging"),
+                modelConfigPath = cms.FileInPath("RecoBTag/CombinedScouting/data/models/unifiedparticletransformer_AK4_scouting_tautagging/config.pbtxt"),
+                modelVersion = cms.string(""),
+                verbose = cms.untracked.bool(True),
+                allowedTries = cms.untracked.uint32(0),
+                useSharedMemory = cms.untracked.bool(True),
+                compression = cms.untracked.string(""),
+            ),
+            src = process.scoutingPFJetReclusterPFUnifiedParticleTransformerAK4TagsCHS.src,
+            input_names = process.scoutingPFJetReclusterPFUnifiedParticleTransformerAK4TagsCHS.input_names,
+            output_names = process.scoutingPFJetReclusterPFUnifiedParticleTransformerAK4TagsCHS.output_names,
+            flav_names = process.scoutingPFJetReclusterPFUnifiedParticleTransformerAK4TagsCHS.flav_names,
+        )
     )
 
     # convert to PAT (no b-tagging / discriminators on CHS jets)
@@ -1024,6 +1086,79 @@ def customiseScoutingNanoDerived(process, pName):
 
         process.scoutingPFJetReclusterCHS2MCTableTask = cms.Task(process.scoutingPFJetReclusterCHS2MCTask, process.scoutingPFJetReclusterCHS2MCTable, process.scoutingPFJetReclusterCHS2GenPartIdxTable)
         process.scoutingNanoSequence.associate(process.scoutingPFJetReclusterCHS2MCTableTask)
+
+    return process
+
+
+def customiseScoutingNanoWithOfflineJets(process, offlineProcessName="PAT"):
+    """
+    Add the *offline* (non-scouting) AK4 PFCHS and AK8 PFPUPPI jets from the
+    input MiniAOD to the scouting NanoAOD output, so scouting jets can be
+    dR-matched to fully-calibrated offline jets downstream to derive ad-hoc
+    scouting jet corrections.
+
+    Why the explicit process name: customiseScoutingNanoDerived() (above)
+    reuses the standard MiniAOD module labels "slimmedJets"/"slimmedJetsAK8"
+    for jets *reclustered from scouting PF candidates*, produced fresh in the
+    current process. A plain InputTag("slimmedJets") therefore always
+    resolves to that scouting-reclustered collection, never the genuine
+    offline one already sitting in the input file. Pinning the InputTag to
+    the process the central MiniAOD production ran under reaches the real
+    collection instead; "PAT" is the standard label for official Run2/Run3
+    MiniAOD (see e.g. DeepNtuplizer_cfi.py's
+    InputTag("slimmedJets", "tagInfos", "PAT")). Pass offlineProcessName= if
+    a given input file was produced under a different process name.
+
+    Branch names intentionally match the ScoutingPFJetRecluster2/
+    ScoutingPFJetReclusterCHS tables' PFJetVariables (chHEF, neHEF, ...) so
+    offline and scouting jets can be compared with the same downstream code.
+    """
+
+    from PhysicsTools.NanoAOD.common_cff import Var, P4Vars
+    from PhysicsTools.NanoAOD.simplePATJetFlatTableProducer_cfi import simplePATJetFlatTableProducer
+
+    offlineJetVariables = cms.PSet(
+        P4Vars,
+        area = Var("jetArea()", float, doc="jet catchment area, for JECs", precision=10),
+        rawFactor = Var("1.-jecFactor('Uncorrected')", float, doc="1 - Factor to get back to raw pT", precision=10),
+        chHEF = Var("chargedHadronEnergyFraction()", float, doc="charged Hadron Energy Fraction", precision=10),
+        neHEF = Var("neutralHadronEnergyFraction()", float, doc="neutral Hadron Energy Fraction", precision=10),
+        chEmEF = Var("chargedEmEnergyFraction()", float, doc="charged Electromagnetic Energy Fraction", precision=10),
+        neEmEF = Var("neutralEmEnergyFraction()", float, doc="neutral Electromagnetic Energy Fraction", precision=10),
+        hfHEF = Var("HFHadronEnergyFraction()", float, doc="hadronic Energy Fraction in HF", precision=10),
+        hfEmEF = Var("HFEMEnergyFraction()", float, doc="electromagnetic Energy Fraction in HF", precision=10),
+        muEF = Var("muonEnergyFraction()", float, doc="muon Energy Fraction", precision=10),
+        chHadMultiplicity = Var("chargedHadronMultiplicity()", "int16", doc="number of charged hadrons in the jet"),
+        neHadMultiplicity = Var("neutralHadronMultiplicity()", int, doc="number of neutral hadrons in the jet"),
+        hfHadMultiplicity = Var("HFHadronMultiplicity()", int, doc="number of HF hadrons in the jet"),
+        hfEMMultiplicity = Var("HFEMMultiplicity()", int, doc="number of HF EMs in the jet"),
+        muMultiplicity = Var("muonMultiplicity()", int, doc="number of muons in the jet"),
+        elMultiplicity = Var("electronMultiplicity()", int, doc="number of electrons in the jet"),
+        phMultiplicity = Var("photonMultiplicity()", int, doc="number of photons in the jet"),
+        nConstituents = Var("numberOfDaughters()", int, doc="number of particles in the jet"),
+    )
+
+    process.offlineJetTable = simplePATJetFlatTableProducer.clone(
+        src = cms.InputTag("slimmedJets", "", offlineProcessName),
+        name = cms.string("OfflineJet"),
+        doc = cms.string("Offline AK4 PFCHS jets from the input MiniAOD (process '%s'), for comparison to scouting jets" % offlineProcessName),
+        cut = cms.string(""),
+        variables = offlineJetVariables,
+    )
+
+    process.offlineFatJetTable = simplePATJetFlatTableProducer.clone(
+        src = cms.InputTag("slimmedJetsAK8", "", offlineProcessName),
+        name = cms.string("OfflineFatJet"),
+        doc = cms.string("Offline AK8 PFPUPPI jets from the input MiniAOD (process '%s'), for comparison to scouting jets" % offlineProcessName),
+        cut = cms.string(""),
+        variables = cms.PSet(
+            offlineJetVariables,
+            msoftdrop = Var("groomedMass('SoftDropPuppi')", float, doc="Corrected soft drop mass", precision=10),
+        ),
+    )
+
+    process.offlineJetTableTask = cms.Task(process.offlineJetTable, process.offlineFatJetTable)
+    process.scoutingNanoSequence.associate(process.offlineJetTableTask)
 
     return process
 

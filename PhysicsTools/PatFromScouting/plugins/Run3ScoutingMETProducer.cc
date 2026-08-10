@@ -28,6 +28,8 @@
 #include "FWCore/ParameterSet/interface/ParameterSetDescription.h"
 
 #include "DataFormats/PatCandidates/interface/MET.h"
+#include "DataFormats/METReco/interface/GenMET.h"
+#include "DataFormats/METReco/interface/GenMETCollection.h"
 
 class Run3ScoutingMETProducer : public edm::stream::EDProducer<> {
 public:
@@ -41,11 +43,26 @@ private:
 
   const edm::EDGetTokenT<double> metPtToken_;
   const edm::EDGetTokenT<double> metPhiToken_;
+  // Opt-in, default off (empty InputTag): embedding a GenMET is only
+  // needed/possible on MC and only if the caller also wires up the
+  // genMetTrue-equivalent production chain (see ScoutingPuppiCalibration's
+  // _addMETTables, which builds it from packedGenParticles since this is a
+  // MiniAOD-derived workflow, not the AOD-level genParticles the standard
+  // RecoMET/Configuration/python/GenMETParticles_cff.py recipe expects).
+  // Default-off so every other user of this shared plugin (ScoutingNanoProduction,
+  // DeepNTuples, ...) is completely unaffected -- same pattern as
+  // Run3ScoutingParticleToPackedCandidateProducer's useImprovedVertexAssociation.
+  const bool hasGenMET_;
+  edm::EDGetTokenT<reco::GenMETCollection> genMETToken_;
 };
 
 Run3ScoutingMETProducer::Run3ScoutingMETProducer(const edm::ParameterSet& iConfig)
     : metPtToken_(consumes<double>(iConfig.getParameter<edm::InputTag>("metPt"))),
-      metPhiToken_(consumes<double>(iConfig.getParameter<edm::InputTag>("metPhi"))) {
+      metPhiToken_(consumes<double>(iConfig.getParameter<edm::InputTag>("metPhi"))),
+      hasGenMET_(!iConfig.getParameter<edm::InputTag>("genMET").label().empty()) {
+  if (hasGenMET_) {
+    genMETToken_ = consumes<reco::GenMETCollection>(iConfig.getParameter<edm::InputTag>("genMET"));
+  }
   produces<pat::METCollection>();
 }
 
@@ -75,6 +92,13 @@ void Run3ScoutingMETProducer::produce(edm::Event& iEvent, const edm::EventSetup&
   patMET.setCorShift(metPx, metPy, sumEt, pat::MET::Chs);
   patMET.setCorShift(metPx, metPy, sumEt, pat::MET::Trk);
 
+  if (hasGenMET_) {
+    const auto& genMETs = iEvent.get(genMETToken_);
+    if (!genMETs.empty()) {
+      patMET.setGenMET(genMETs.front());
+    }
+  }
+
   patMETs->push_back(patMET);
 
   iEvent.put(std::move(patMETs));
@@ -84,6 +108,12 @@ void Run3ScoutingMETProducer::fillDescriptions(edm::ConfigurationDescriptions& d
   edm::ParameterSetDescription desc;
   desc.add<edm::InputTag>("metPt", edm::InputTag("hltScoutingPFPacker", "pfMetPt"));
   desc.add<edm::InputTag>("metPhi", edm::InputTag("hltScoutingPFPacker", "pfMetPhi"));
+  desc.add<edm::InputTag>("genMET", edm::InputTag(""))
+      ->setComment("Optional reco::GenMETCollection to embed via pat::MET::setGenMET(), for "
+                   "NanoAOD's standard GenMET table (PhysicsTools/NanoAOD/python/met_cff.py's "
+                   "metMCTable, which reads pat::MET::genMET()). Empty (default) skips this "
+                   "entirely -- MC-only, and no genMET production chain exists upstream for this "
+                   "HLT-scouting-derived MET, unlike a standard offline MiniAOD's slimmedMETs.");
   descriptions.addWithDefaultLabel(desc);
 }
 

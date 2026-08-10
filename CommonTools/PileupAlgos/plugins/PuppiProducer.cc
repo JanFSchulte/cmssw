@@ -210,10 +210,35 @@ void PuppiProducer::produce(edm::Event& iEvent, const edm::EventSetup& iSetup) {
           pReco.id = 3;
         else if (closestVtx != nullptr && pVtxId == 0)
           pReco.id = 1;  // Associated to main vertex
-        else if (closestVtx != nullptr && pVtxId > 0)
+        else if (closestVtx != nullptr && pVtxId > 0) {
           pReco.id = 2;  // Associated to PU
-        else
+          // PUPPI v15-style protection (DP-2021/001): the vertex-association
+          // fit can mis-assign a genuine LV track to a nearby PU vertex
+          // (track stealing / vertex splitting); reuse the same PtMaxCharged
+          // knob v15 uses to unconditionally protect high-pT charged
+          // candidates from that failure mode, regardless of eta/quality.
+          if ((fPtMaxCharged > 0) && (pReco.pt > fPtMaxCharged))
+            pReco.id = 1;
+        } else {
+          // Unassociated (closestVtx == nullptr): no offline PUPPI branch
+          // has an exact analog of this state -- it only arises because
+          // scouting's coarser HLT track-to-vertex matching frequently
+          // fails to associate a candidate to *any* vertex at all (measured:
+          // ~2/3 of all charged candidates, still ~13-16% above 20-50 GeV --
+          // not because they are actually pileup). Structurally this is
+          // closest to v15's "closestVtxForUnassociateds" case, so reuse the
+          // same two v15 protections it applies there: an unconditional
+          // high-pT keep (PtMaxCharged) and a softer pT floor
+          // (UseFromPV2Recovery/PtMinForFromPV2Recovery) instead of always
+          // falling through to id=0 (neutral), which silently subjects
+          // these candidates to the neutral pT threshold and PUPPI's
+          // alpha-based suppression.
           pReco.id = 0;  // Unassociated
+          if ((fPtMaxCharged > 0) && (pReco.pt > fPtMaxCharged))
+            pReco.id = 1;
+          else if (fUseFromPV2Recovery && (pReco.pt > fPtMinForFromPV2Recovery))
+            pReco.id = 1;
+        }
       } else if (lPack == nullptr) {
         const reco::PFCandidate* pPF = dynamic_cast<const reco::PFCandidate*>(&aPF);
         double curdz = 9999;

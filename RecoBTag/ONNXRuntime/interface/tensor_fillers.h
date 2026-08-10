@@ -161,12 +161,12 @@ namespace btagbtvdeep {
                            const std::vector<UparT_features>& features,
                            const unsigned int target_n) {
     unsigned int n = std::clamp(
-        (unsigned int)features.size(), (unsigned int)0, (unsigned int)UparT::N_AcceptedFeatures.at(ifeature));
+        (unsigned int)features.size(), (unsigned int)0, (unsigned int)ScoutingUparT::N_AcceptedFeatures.at(ifeature));
     for (unsigned int count = 0; count < n; count++) {
       const std::vector<float>& inputs = inputs_ScoutingUparT(features.at(count), ifeature);
       vdata.insert(vdata.end(), inputs.begin(), inputs.end());
     }
-    unsigned int n_features = UparT::N_InputFeatures.at(ifeature);
+    unsigned int n_features = ScoutingUparT::N_InputFeatures.at(ifeature);
     if (n < target_n)
       vdata.insert(vdata.end(), (target_n - n) * n_features, 0);  // Add 0 to unfilled part as padding value
   }

@@ -10,6 +10,7 @@
 
 #include <memory>
 #include <cmath>
+#include <limits>
 
 #include "FWCore/Framework/interface/Frameworkfwd.h"
 #include "FWCore/Framework/interface/stream/EDProducer.h"
@@ -53,6 +54,10 @@ private:
   const bool useCHS_;
   const int covarianceVersion_;
   const int covarianceSchema_;
+  const bool useImprovedVertexAssociation_;
+  const double maxDzForPrimaryAssignment_;
+  const double maxDzSigForPrimaryAssignment_;
+  const bool useTrackMatchedVertexAssociation_;
 };
 
 Run3ScoutingParticleToPackedCandidateProducer::Run3ScoutingParticleToPackedCandidateProducer(
@@ -63,7 +68,11 @@ Run3ScoutingParticleToPackedCandidateProducer::Run3ScoutingParticleToPackedCandi
       pdtToken_(esConsumes<HepPDT::ParticleDataTable, edm::DefaultRecord>()),
       useCHS_(iConfig.getParameter<bool>("CHS")),
       covarianceVersion_(iConfig.getParameter<int>("covarianceVersion")),
-      covarianceSchema_(iConfig.getParameter<int>("covarianceSchema")) {
+      covarianceSchema_(iConfig.getParameter<int>("covarianceSchema")),
+      useImprovedVertexAssociation_(iConfig.getParameter<bool>("useImprovedVertexAssociation")),
+      maxDzForPrimaryAssignment_(iConfig.getParameter<double>("maxDzForPrimaryAssignment")),
+      maxDzSigForPrimaryAssignment_(iConfig.getParameter<double>("maxDzSigForPrimaryAssignment")),
+      useTrackMatchedVertexAssociation_(iConfig.getParameter<bool>("useTrackMatchedVertexAssociation")) {
   produces<reco::PFCandidateCollection>("recoCands");
   produces<pat::PackedCandidateCollection>();
   produces<edm::Association<pat::PackedCandidateCollection>>();
@@ -163,8 +172,131 @@ void Run3ScoutingParticleToPackedCandidateProducer::produce(edm::Event& iEvent, 
     float trkEta = relativeTrackVars ? particle.trk_eta() + particle.eta() : particle.trk_eta();
     float trkPhi = relativeTrackVars ? particle.trk_phi() + particle.phi() : particle.trk_phi();
 
+    // Find a kinematically-matched reco::Track early, before deciding vtxIdx,
+    // so a confident match (if any) can be used below for genuine per-vertex
+    // dz/dxy via tracks[matchedTrackIdx].dz(Point)/.dxy(Point) -- exact
+    // analytic closest-approach formulas (DataFormats/TrackReco/TrackBase.h),
+    // depending on the vertex's full (x,y,z) position -- instead of
+    // approximating from particle.dz() by a z-only shift. The track-detail
+    // embedding block further down reuses this same search result rather
+    // than repeating it.
+    bool eligibleForTrackMatch =
+        (pdgId != 22 && pdgId != 130 && pdgId != 2 && pdgId != 1 && trkPt > 0);
+    int matchedTrackIdx = -1;
+    float matchedTrackMetric = 999.f;
+    if (eligibleForTrackMatch) {
+      for (size_t iTk = 0; iTk < tracks.size(); ++iTk) {
+        if (trackUsed[iTk])
+          continue;
+        const auto& tk = tracks[iTk];
+        float dEta = trkEta - tk.eta();
+        float dPhi = reco::deltaPhi(trkPhi, tk.phi());
+        float dR2 = dEta * dEta + dPhi * dPhi;
+        float dPtRel = std::abs(trkPt - tk.pt()) / trkPt;
+        float metric = dR2 + dPtRel * dPtRel;
+        if (metric < matchedTrackMetric) {
+          matchedTrackMetric = metric;
+          matchedTrackIdx = static_cast<int>(iTk);
+        }
+      }
+    }
+    constexpr float kTrackMatchMaxMetric = 0.01f;
+    bool hasConfidentTrackMatch = (matchedTrackIdx >= 0 && matchedTrackMetric < kTrackMatchMaxMetric);
+
     int vtxIdx = particle.vertex();
+    float dxy = particle.dxy();
+    float dz = particle.dz();
+
+    if (useImprovedVertexAssociation_ && charge != 0 && trkPt > 0 && !vertices.empty()) {
+      // particle.vertex() is essentially unusable for charged candidates: at HLT
+      // (HLTScoutingPFProducer.cc) it comes from a 100-micron 3D-position match
+      // between the PF candidate's *stored* vertex point and the scouting vertex
+      // positions. For charged candidates that stored point is the track's helix
+      // reference point near the beamline (set in PFAlgo.cc), which essentially
+      // never coincides with a reconstructed vertex position -- so the large
+      // majority of charged candidates end up with vertex()<0 ("unassociated")
+      // regardless of their true origin, not because of any real dz-based
+      // incompatibility with the leading vertex. particle.dz()/dzsig(), by
+      // contrast, ARE a genuine trk->dz() against vertex 0 (see
+      // HLTScoutingPFProducer.cc), so redo a proper nearest-vertex-in-dz search
+      // here instead of trusting vertex().
+      if (useTrackMatchedVertexAssociation_ && hasConfidentTrackMatch) {
+        // tracks[matchedTrackIdx] is a full reco::Track (pat::makeRecoTrack,
+        // built by Run3ScoutingTrackToRecoTrackProducer from the same
+        // underlying track, with its own reference point/momentum/
+        // covariance), so .dz(Point)/.dxy(Point) give a genuine per-vertex
+        // impact parameter honoring the vertex's x/y position too, not just
+        // its z -- unlike the linear z-shift approximation below, and the
+        // same calculation offline PrimaryVertexAssignment-style code
+        // performs, just reusing the persisted track covariance for the
+        // error rather than a fresh refit.
+        const auto& matchedTrack = tracks[matchedTrackIdx];
+        double trackDzError = matchedTrack.dzError();
+        if (trackDzError > 0.0 && std::isfinite(trackDzError)) {
+          double bestDist = std::numeric_limits<double>::max();
+          int bestVtx = -1;
+          double bestDz = 0.0;
+          double bestDzE = 0.0;
+          for (size_t iv = 0; iv < vertices.size(); ++iv) {
+            double dzI = matchedTrack.dz(vertices[iv].position());
+            double dzE = std::hypot(trackDzError, static_cast<double>(vertices[iv].zError()));
+            double dist = (dzI / dzE) * (dzI / dzE);
+            if (dist < bestDist) {
+              bestDist = dist;
+              bestVtx = static_cast<int>(iv);
+              bestDz = dzI;
+              bestDzE = dzE;
+            }
+          }
+          if (bestVtx >= 0 && std::abs(bestDz) < maxDzForPrimaryAssignment_ &&
+              std::abs(bestDz) / bestDzE < maxDzSigForPrimaryAssignment_) {
+            vtxIdx = bestVtx;
+            dz = static_cast<float>(bestDz);
+            dxy = static_cast<float>(matchedTrack.dxy(vertices[bestVtx].position()));
+          } else {
+            vtxIdx = -1;
+          }
+        } else {
+          vtxIdx = -1;
+        }
+      } else {
+        // Fallback used whenever useTrackMatchedVertexAssociation_ is off, or
+        // no confident track match was found for this particle: approximate
+        // dz to a vertex other than 0 the same way pat::PackedCandidate::
+        // dz(ipv) itself approximates dz to a vertex it wasn't packed
+        // against -- shifting by the Delta_z between vertex positions --
+        // mirroring CommonTools/RecoAlgos/PrimaryVertexAssignment's dz+dzSig
+        // window test.
+        float dzSig0 = particle.dzsig();
+        double dzError0 = (dzSig0 != 0.f) ? std::abs(static_cast<double>(dz) / static_cast<double>(dzSig0)) : 0.0;
+        if (dzError0 > 0.0) {
+          double bestDist = std::numeric_limits<double>::max();
+          int bestVtx = -1;
+          double bestDz = 0.0;
+          double bestDzE = 0.0;
+          for (size_t iv = 0; iv < vertices.size(); ++iv) {
+            double dzI = static_cast<double>(dz) - (vertices[iv].position().z() - vertices[0].position().z());
+            double dzE = std::hypot(dzError0, static_cast<double>(vertices[iv].zError()));
+            double dist = (dzI / dzE) * (dzI / dzE);
+            if (dist < bestDist) {
+              bestDist = dist;
+              bestVtx = static_cast<int>(iv);
+              bestDz = dzI;
+              bestDzE = dzE;
+            }
+          }
+          if (bestVtx >= 0 && std::abs(bestDz) < maxDzForPrimaryAssignment_ &&
+              std::abs(bestDz) / bestDzE < maxDzSigForPrimaryAssignment_) {
+            vtxIdx = bestVtx;
+            dz = static_cast<float>(bestDz);
+          } else {
+            vtxIdx = -1;
+          }
+        }
+      }
+    }
     pfToPVVector.push_back(vtxIdx);
+
     reco::VertexRef::key_type pvKey = 0;
     if (vtxIdx >= 0 && static_cast<size_t>(vtxIdx) < vertices.size()) {
       pvKey = static_cast<reco::VertexRef::key_type>(vtxIdx);
@@ -175,8 +307,6 @@ void Run3ScoutingParticleToPackedCandidateProducer::produce(edm::Event& iEvent, 
       pvPos = vertices[pvKey].position();
     }
 
-    float dxy = particle.dxy();
-    float dz = particle.dz();
     float sinPhi = std::sin(phi);
     float cosPhi = std::cos(phi);
 
@@ -214,31 +344,15 @@ void Run3ScoutingParticleToPackedCandidateProducer::produce(edm::Event& iEvent, 
     }
 
 
-    // Match charged candidates to reco::Tracks and embed track details
-    if (particle.pdgId() != 22 && particle.pdgId() != 130 && particle.pdgId() != 2 && particle.pdgId() != 1 && trkPt > 0) {
-      int bestIdx = -1;
-      float bestMetric = 999.f;
-      for (size_t iTk = 0; iTk < tracks.size(); ++iTk) {
-        if (trackUsed[iTk])
-          continue;
-        const auto& tk = tracks[iTk];
-        float dEta = trkEta - tk.eta();
-        float dPhi = reco::deltaPhi(trkPhi, tk.phi());
-        float dR2 = dEta * dEta + dPhi * dPhi;
-        float dPtRel = std::abs(trkPt - tk.pt()) / trkPt;
-        float metric = dR2 + dPtRel * dPtRel;
-        if (metric < bestMetric) {
-          bestMetric = metric;
-          bestIdx = iTk;
-        }
-      }
-      // Require reasonable match quality
-      if (bestIdx >= 0 && bestMetric < 0.01f) {
-	reco::TrackRef trackRef(trackHandle, bestIdx);
-	//std::cout << particle.pdgId() << std::endl;
-        pfCand.setTrackRef(trackRef);	
-        cand.setTrackProperties(tracks[bestIdx], covarianceSchema_, covarianceVersion_);
-        trackUsed[bestIdx] = true;
+    // Match charged candidates to reco::Tracks and embed track details.
+    // Reuses the search already performed above (matchedTrackIdx/
+    // matchedTrackMetric/hasConfidentTrackMatch), rather than repeating it.
+    if (eligibleForTrackMatch) {
+      if (hasConfidentTrackMatch) {
+        reco::TrackRef trackRef(trackHandle, matchedTrackIdx);
+        pfCand.setTrackRef(trackRef);
+        cand.setTrackProperties(tracks[matchedTrackIdx], covarianceSchema_, covarianceVersion_);
+        trackUsed[matchedTrackIdx] = true;
       }
 
       if (pfCand.trackRef().isNonnull() && pfCand.trackRef().id() == trackHandle.id()) {
@@ -295,6 +409,24 @@ void Run3ScoutingParticleToPackedCandidateProducer::fillDescriptions(edm::Config
   desc.add<bool>("CHS", false)->setComment("Apply Charged Hadron Subtraction (skip vtx > 0)");
   desc.add<int>("covarianceVersion", 1)->setComment("Covariance parameterization version (0=Phase0, 1=Phase1)");
   desc.add<int>("covarianceSchema", 520)->setComment("Covariance packing schema");
+  desc.add<bool>("useImprovedVertexAssociation", false)
+      ->setComment(
+          "Default off, existing consumers unaffected. When true, ignore particle.vertex() for charged "
+          "candidates (see comment at its use in produce()) and instead redo a nearest-vertex-in-dz search "
+          "from particle.dz()/dzsig(), mirroring CommonTools/RecoAlgos/PrimaryVertexAssignment's dz+dzSig "
+          "window test.");
+  desc.add<double>("maxDzForPrimaryAssignment", 0.1)
+      ->setComment("cm; only used if useImprovedVertexAssociation=True. Matches PrimaryVertexAssignment default.");
+  desc.add<double>("maxDzSigForPrimaryAssignment", 5.0)
+      ->setComment("only used if useImprovedVertexAssociation=True. Matches PrimaryVertexAssignment default.");
+  desc.add<bool>("useTrackMatchedVertexAssociation", false)
+      ->setComment(
+          "Default off. Only has an effect when useImprovedVertexAssociation=True. When true, for "
+          "charged candidates with a confident kinematic match to a 'tracks' entry, use that "
+          "reco::Track's own dz(Point)/dxy(Point)/dzError() for the nearest-vertex-in-dz search "
+          "(genuine, x/y/z-dependent impact parameter) instead of approximating dz to a vertex "
+          "other than 0 with a z-only linear shift. Falls back to the linear-shift approximation "
+          "when no confident match exists.");
   descriptions.addWithDefaultLabel(desc);
 }
 
