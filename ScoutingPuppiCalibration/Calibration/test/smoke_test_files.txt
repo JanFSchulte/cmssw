@@ -1,0 +1,13 @@
+# A few LFNs from the QCD_HT-100to200 MINIAODSIM sample, for local cmsRun
+# smoke-testing of scoutingPuppiCalib_mc_cfg.py. Regenerate with:
+#
+#   dasgoclient -query="file dataset=/QCD-4Jets_Bin-HT-100to200_TuneCP5_13p6TeV_madgraphMLM-pythia8/RunIII2024Summer24MiniAODv6-150X_mcRun3_2024_realistic_v2-v2/MINIAODSIM instance=prod/global"
+#
+# Usage:
+#   cmsRun scoutingPuppiCalib_mc_cfg.py maxEvents=300 outputFile=calib_smoke.root \
+#       inputFiles_load=smoke_test_files.txt
+# (prefix each line with root://cms-xrd-global.cern.ch/ if reading remotely
+# rather than from a local /store/mc mount)
+/store/mc/RunIII2024Summer24MiniAODv6/QCD-4Jets_Bin-HT-100to200_TuneCP5_13p6TeV_madgraphMLM-pythia8/MINIAODSIM/150X_mcRun3_2024_realistic_v2-v2/2530000/bc1d3ddf-97d9-449a-a304-4af3d2452252.root
+/store/mc/RunIII2024Summer24MiniAODv6/QCD-4Jets_Bin-HT-100to200_TuneCP5_13p6TeV_madgraphMLM-pythia8/MINIAODSIM/150X_mcRun3_2024_realistic_v2-v2/2810000/9359a309-6ce4-4f61-be64-5de5f1a624d6.root
+/store/mc/RunIII2024Summer24MiniAODv6/QCD-4Jets_Bin-HT-100to200_TuneCP5_13p6TeV_madgraphMLM-pythia8/MINIAODSIM/150X_mcRun3_2024_realistic_v2-v2/2810000/89cdbb77-96e8-4f02-9c33-ce67a4e62f1b.root

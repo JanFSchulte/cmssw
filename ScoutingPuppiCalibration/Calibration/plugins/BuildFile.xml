@@ -1,0 +1,6 @@
+<use name="FWCore/Framework"/>
+<use name="FWCore/ParameterSet"/>
+<use name="FWCore/PluginManager"/>
+<use name="DataFormats/Common"/>
+<use name="DataFormats/ParticleFlowCandidate"/>
+<flags EDM_PLUGIN="1"/>
